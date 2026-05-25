@@ -993,6 +993,12 @@ void GBAFrameEnded(struct GBA* gba) {
 		GBASIOPlayerUpdate(gba);
 	}
 
+#ifdef USE_LIBMOBILE
+	if (gba->sio.magb) {
+		GBASIOMobileAdapterUpdate(gba->sio.magb);
+	}
+#endif
+
 	struct mRumble* rumble = gba->rumble;
 	if (rumble && rumble->integrate) {
 		gba->lastRumble = mTimingCurrentTime(&gba->timing);

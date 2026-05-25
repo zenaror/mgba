@@ -13,6 +13,10 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
 
+#ifdef USE_LIBMOBILE
+#include <mgba/core/mobile.h>
+#endif
+
 #define GBA_IDLE_LOOP_NONE 0xFFFFFFFF
 
 enum {

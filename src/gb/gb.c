@@ -1218,6 +1218,14 @@ void GBFrameEnded(struct GB* gb) {
 		gb->video.renderer->getPixels(gb->video.renderer, &stride, (const void**) &pixels);
 		gb->stream->postVideoFrame(gb->stream, pixels, stride);
 	}
+
+#ifdef USE_LIBMOBILE
+	// TODO: is this still where this goes?
+	if (gb->sio.magb) {
+		GBSIOMobileAdapterUpdate(gb->sio.magb);
+	}
+#endif
+
 	mCALLBACKS_INVOKE(gb, videoFrameEnded);
 }
 
