@@ -13,10 +13,6 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
 
-#ifdef USE_LIBMOBILE
-#include <mgba/core/mobile.h>
-#endif
-
 #define GBA_IDLE_LOOP_NONE 0xFFFFFFFF
 
 enum {
@@ -109,6 +105,7 @@ bool GBAIsMB(struct VFile* vf);
 bool GBAIsBIOS(struct VFile* vf);
 
 bool GBAOverrideFind(const struct Configuration*, struct GBACartridgeOverride* override);
+bool GBAOverrideFindConfig(const struct Configuration*, struct GBACartridgeOverride* override);
 void GBAOverrideSave(struct Configuration*, const struct GBACartridgeOverride* override);
 
 struct GBASIODriver {
