@@ -36,6 +36,8 @@
 #include "input/SDLInputDriver.h"
 #endif
 
+#include "moc_GBAApp.cpp"
+
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
@@ -50,7 +52,11 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
 #ifdef BUILD_SDL
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Init(SDL_INIT_NOPARACHUTE);
+#else
+	SDL_Init(0);
+#endif
 #endif
 
 	SocketSubsystemInit();
@@ -119,7 +125,7 @@ void GBAApp::cleanup() {
 bool GBAApp::event(QEvent* event) {
 	if (event->type() == QEvent::FileOpen) {
 		CoreController* core = m_manager.loadGame(static_cast<QFileOpenEvent*>(event)->file());
-		m_windows[0]->setController(core, static_cast<QFileOpenEvent*>(event)->file());
+		m_windows[0]->setController(core);
 		return true;
 	}
 	return QApplication::event(event);
@@ -369,12 +375,12 @@ void GBAApp::cleanupAfterUpdate() {
 
 void GBAApp::restartForUpdate() {
 	QFileInfo updaterPath(m_updater.updateInfo().url.path());
-	QDir configDir(ConfigController::configDir());
+	QDir cacheDir(ConfigController::cacheDir());
 	if (updaterPath.suffix() == "exe") {
-		m_invokeOnExit = configDir.filePath(QLatin1String("update.exe"));
+		m_invokeOnExit = cacheDir.filePath(QLatin1String("update.exe"));
 	} else {
 		QFile updater(":/updater");
-		QString extractedPath = configDir.filePath(QLatin1String("updater"));
+		QString extractedPath = cacheDir.filePath(QLatin1String("updater"));
 	#ifdef Q_OS_WIN
 		extractedPath += ".exe";
 	#endif
@@ -412,7 +418,7 @@ void GBAApp::initMultiplayer() {
 			break;
 		}
 		CoreController* core = m_manager.loadGame(fname);
-		w->setController(core, fname);
+		w->setController(core);
 		w = nullptr;
 	}
 }

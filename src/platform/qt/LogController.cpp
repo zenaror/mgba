@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LogController.h"
+#include "moc_LogController.cpp"
 
 #include <QLoggingCategory>
 #include <QMessageBox>
@@ -57,7 +58,6 @@ LogController::LogController(int levels, QObject* parent)
 	if (this == &s_global) {
 		setDefaultTarget(this);
 	} else {
-		connect(&s_global, &LogController::logPosted, this, &LogController::postLog);
 		connect(this, static_cast<void (LogController::*)(int)>(&LogController::levelsSet), &s_global, static_cast<void (LogController::*)(int)>(&LogController::setLevels));
 		connect(this, static_cast<void (LogController::*)(int)>(&LogController::levelsEnabled), &s_global, static_cast<void (LogController::*)(int)>(&LogController::enableLevels));
 		connect(this, static_cast<void (LogController::*)(int)>(&LogController::levelsDisabled), &s_global, static_cast<void (LogController::*)(int)>(&LogController::disableLevels));
@@ -93,7 +93,7 @@ void LogController::postLog(int level, int category, const QString& string) {
 	if (!mLogFilterTest(&m_filter, category, static_cast<mLogLevel>(level))) {
 		return;
 	}
-	if ((m_logToStdout || m_logToFile) && this == &s_global) {
+	if (m_logToStdout || m_logToFile) {
 		QString line = tr("[%1] %2: %3").arg(LogController::toString(level)).arg(mLogCategoryName(category)).arg(string);
 
 		if (m_logToStdout) {

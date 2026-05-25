@@ -4,14 +4,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "scripting/AutorunScriptModel.h"
+#include "scripting/moc_AutorunScriptModel.cpp"
 
 #include "Log.h"
 
 QDataStream& operator<<(QDataStream& stream, const QGBA::AutorunScriptModel::ScriptInfo& object) {
+	int restoreVersion = stream.version();
 	stream.setVersion(QDataStream::Qt_5_0);
 	stream << QGBA::AutorunScriptModel::ScriptInfo::VERSION;
 	stream << object.filename.toUtf8();
 	stream << object.active;
+	stream.setVersion(restoreVersion);
 	return stream;
 }
 
