@@ -26,6 +26,8 @@
 #include <mgba-util/math.h>
 #include <mgba-util/string.h>
 
+#include "scripting/moc_ScriptingController.cpp"
+
 using namespace QGBA;
 
 ScriptingController::ScriptingController(ConfigController* config, QObject* parent)
@@ -86,8 +88,10 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
 		attach();
+#ifdef ENABLE_DEBUGGERS
 	} else {
 		m_controller->attachDebugger(false);
+#endif
 	}
 	updateVideoScale();
 	connect(m_controller.get(), &CoreController::stopping, this, &ScriptingController::clearController);
