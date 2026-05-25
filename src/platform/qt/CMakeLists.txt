@@ -300,6 +300,11 @@ if(USE_DISCORD_RPC)
 	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
 endif()
 
+if(USE_LIBMOBILE)
+	list(APPEND SOURCE_FILES MobileAdapterView.cpp)
+	list(APPEND UI_FILES MobileAdapterView.ui)
+endif()
+
 if(ENABLE_SCRIPTING)
 	list(APPEND SOURCE_FILES
 		scripting/AutorunScriptModel.cpp
