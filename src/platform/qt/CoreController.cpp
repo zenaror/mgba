@@ -1220,7 +1220,7 @@ void CoreController::getMobileAdapterConfig(int* type, bool* unmetered, QString*
 	if (mobile_config_get_relay_token(adapter, token_get)) {
 		for (int i = 0; i < MOBILE_RELAY_TOKEN_SIZE; ++i) {
 			if (token_get[i] < 0x10)
-				token += '0';
+				*token += '0';
 			QString tmp;
 			tmp.setNum(token_get[i], 0x10);
 			*token += tmp;
