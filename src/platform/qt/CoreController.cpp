@@ -341,15 +341,6 @@ void CoreController::loadConfig(ConfigController* config) {
 	}
 	m_threadContext.core->reloadConfigOption(m_threadContext.core, "gb.pal", config->config());
 #endif
-
-#ifdef USE_LIBMOBILE
-	bool mobileAdapterEnabled = config->getOption("mobileAdapterEnabled", false).toInt();
-	if (mobileAdapterEnabled && !getMobileAdapter()->adapter) {
-		attachMobileAdapter();
-	} else if (!mobileAdapterEnabled && getMobileAdapter()->adapter) {
-		detachMobileAdapter();
-	}
-#endif
 }
 
 #ifdef ENABLE_DEBUGGERS

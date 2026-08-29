@@ -88,15 +88,18 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 		QString::number(mobile_version_patch));
 	m_ui.versionText->setText(versionText);
 
+	// The checkbox reflects whether the adapter is actually attached right now.
+	// This state is intentionally not persisted: it always starts disabled for a
+	// fresh game session, and stays enabled only for as long as this session runs.
+	bool alreadyAttached = m_controller->getMobileAdapter()->adapter != nullptr;
+	m_ui.enableAdapter->setChecked(alreadyAttached);
+	connect(m_ui.enableAdapter, &QAbstractButton::toggled, this, &MobileAdapterView::setAdapterEnabled);
+
 	// Attach temporarily (if not already attached) so the Status/Settings tabs have
-	// live data to show and edit, even if the adapter isn't enabled to persist yet.
-	if (!m_controller->getMobileAdapter()->adapter) {
+	// live data to show and edit, even if the adapter isn't enabled to keep running.
+	if (!alreadyAttached) {
 		m_controller->attachMobileAdapter();
 	}
-
-	bool enabled = m_window->config()->getOption("mobileAdapterEnabled", false).toInt();
-	m_ui.enableAdapter->setChecked(enabled);
-	connect(m_ui.enableAdapter, &QAbstractButton::toggled, this, &MobileAdapterView::setAdapterEnabled);
 
 	getConfig();
 }
@@ -112,7 +115,6 @@ MobileAdapterView::~MobileAdapterView() {
 }
 
 void MobileAdapterView::setAdapterEnabled(bool enabled) {
-	m_window->config()->setOption("mobileAdapterEnabled", enabled);
 	if (enabled) {
 		if (!m_controller->getMobileAdapter()->adapter) {
 			m_controller->attachMobileAdapter();
