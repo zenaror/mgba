@@ -40,6 +40,9 @@ struct mGUIMobileAdapter {
 #endif
 	int platform;
 	bool attached;
+	// Set when the adapter exists only to read and edit the stored config,
+	// with no game to plug into. It is never started, so it never runs.
+	bool configOnly;
 };
 
 enum mGUIMobileItem {
@@ -113,8 +116,15 @@ static void _loadConfig(struct mGUIMobileAdapter* m) {
 static void _saveConfig(struct mGUIMobileAdapter* m) {
 	// An adapter that never ran has nothing but zeroes to write back, which
 	// would clobber a perfectly good config file.
-	if (!m || !m->attached || !_adapter(m)) {
+	if (!m || !(m->attached || m->configOnly) || !_adapter(m)) {
 		return;
+	}
+
+	// Settings reach the config blob only when the library flushes them, which
+	// it normally does from mobile_loop(). Emulation is paused for as long as
+	// this screen is up, so no frame will run to do it for us.
+	if (_adapter(m)->adapter) {
+		mobile_config_save(_adapter(m)->adapter);
 	}
 	char path[PATH_MAX];
 	_configPath(path, sizeof(path));
@@ -129,6 +139,55 @@ static void _saveConfig(struct mGUIMobileAdapter* m) {
 	vf->close(vf);
 }
 
+static bool _alloc(struct mGUIRunner* runner) {
+	if (!runner->mobile) {
+		runner->mobile = calloc(1, sizeof(*runner->mobile));
+	}
+	return runner->mobile;
+}
+
+// Without a game there is no serial port to plug into, but the stored settings
+// can still be read and edited through an adapter that is never started.
+static bool _attachConfigOnly(struct mGUIRunner* runner) {
+	if (!_alloc(runner)) {
+		return false;
+	}
+	struct mGUIMobileAdapter* m = runner->mobile;
+	if (m->attached || m->configOnly) {
+		return true;
+	}
+
+#ifdef M_CORE_GB
+	m->platform = mPLATFORM_GB;
+	GBSIOMobileAdapterCreate(&m->gb);
+#else
+	m->platform = mPLATFORM_GBA;
+	GBASIOMobileAdapterCreate(&m->gba);
+#endif
+
+	_loadConfig(m);
+	struct MobileAdapterGB* gb = _adapter(m);
+	gb->adapter = MobileAdapterGBNew(gb);
+	if (!gb->adapter) {
+		return false;
+	}
+	mobile_config_load(gb->adapter);
+	m->configOnly = true;
+	return true;
+}
+
+static void _detachConfigOnly(struct mGUIRunner* runner) {
+	struct mGUIMobileAdapter* m = runner->mobile;
+	if (!m || !m->configOnly) {
+		return;
+	}
+	_saveConfig(m);
+	struct MobileAdapterGB* gb = _adapter(m);
+	free(gb->adapter);
+	gb->adapter = NULL;
+	m->configOnly = false;
+}
+
 static bool _attach(struct mGUIRunner* runner) {
 	if (!runner->core) {
 		return false;
@@ -136,11 +195,11 @@ static bool _attach(struct mGUIRunner* runner) {
 	if (runner->mobile && runner->mobile->attached) {
 		return true;
 	}
-	if (!runner->mobile) {
-		runner->mobile = calloc(1, sizeof(*runner->mobile));
-		if (!runner->mobile) {
-			return false;
-		}
+	// A config-only adapter has no serial port behind it, so it can't just be
+	// promoted; it is torn down and rebuilt against the game that just loaded.
+	_detachConfigOnly(runner);
+	if (!_alloc(runner)) {
+		return false;
 	}
 	struct mGUIMobileAdapter* m = runner->mobile;
 	m->platform = runner->core->platform(runner->core);
@@ -190,8 +249,16 @@ static bool _attach(struct mGUIRunner* runner) {
 	return m->attached;
 }
 
+void mGUIMobileAdapterAttach(struct mGUIRunner* runner) {
+	_attach(runner);
+}
+
 void mGUIMobileAdapterDetach(struct mGUIRunner* runner) {
 	struct mGUIMobileAdapter* m = runner->mobile;
+	if (m && m->configOnly) {
+		_detachConfigOnly(runner);
+		return;
+	}
 	if (!m || !m->attached) {
 		return;
 	}
@@ -333,7 +400,9 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 		return;
 	}
 
-	if (gb->number[0][0]) {
+	if (runner->mobile->configOnly) {
+		strlcpy(text->status, runner->mobileEnabled ? "On once a game loads" : "No game loaded", sizeof(text->status));
+	} else if (gb->number[0][0]) {
 		snprintf(text->status, sizeof(text->status), "Line %s", gb->number[0]);
 		if (gb->number[1][0]) {
 			size_t used = strlen(text->status);
@@ -379,7 +448,8 @@ static void _applyToggles(struct mGUIRunner* runner, struct GUIMenu* menu) {
 	// Switching it off doesn't unplug the adapter yet: it stays up while this
 	// screen is open so the settings below still have something to edit. The
 	// teardown happens once the screen closes.
-	if (GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_ENABLE)->state) {
+	runner->mobileEnabled = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_ENABLE)->state;
+	if (runner->mobileEnabled && runner->core) {
 		_attach(runner);
 	}
 
@@ -554,14 +624,23 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		.data = GUI_V_U(MOBILE_ITEM_CLOSE)
 	};
 
-	// Attach temporarily if needed, so the settings have live data to show and
-	// edit even when the adapter isn't enabled to keep running afterwards.
-	bool wasAttached = runner->mobile && runner->mobile->attached;
-	if (!wasAttached) {
-		_attach(runner);
+	// Bring an adapter up if there isn't one, so the settings have live data to
+	// show and edit even when it isn't enabled to keep running afterwards. With
+	// no game loaded that adapter can only ever be a config-editing one.
+	if (!runner->mobile || !runner->mobile->attached) {
+		if (runner->core) {
+			_attach(runner);
+		} else {
+			_attachConfigOnly(runner);
+		}
+	}
+	if (!runner->mobile) {
+		GUIShowMessageBox(&runner->params, GUI_MESSAGE_BOX_OK, 240, "Could not start the Mobile Adapter");
+		GUIMenuItemListDeinit(&menu.items);
+		return;
 	}
 	_refresh(runner, &menu, &text);
-	GUIMenuItemListGetPointer(&menu.items, MOBILE_ITEM_ENABLE)->state = wasAttached;
+	GUIMenuItemListGetPointer(&menu.items, MOBILE_ITEM_ENABLE)->state = runner->mobileEnabled;
 
 	while (true) {
 		struct GUIMenuItem* item;
@@ -608,7 +687,11 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		_refresh(runner, &menu, &text);
 	}
 
-	if (GUIMenuItemListGetPointer(&menu.items, MOBILE_ITEM_ENABLE)->state) {
+	// A config-only adapter never outlives this screen; a real one is left
+	// plugged in unless the user switched it off.
+	if (runner->mobile->configOnly) {
+		_detachConfigOnly(runner);
+	} else if (runner->mobileEnabled) {
 		_saveConfig(runner->mobile);
 	} else {
 		mGUIMobileAdapterDetach(runner);
