@@ -79,6 +79,9 @@ struct mGUIRunner {
 
 #ifdef USE_LIBMOBILE
 	struct mGUIMobileAdapter* mobile;
+	// Whether the user wants an adapter plugged in, which outlives any one
+	// game so it can be set up before loading one, but never reaches disk.
+	bool mobileEnabled;
 #endif
 
 	struct GUIInputKeys* keySources;

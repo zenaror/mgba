@@ -13,6 +13,7 @@ CXX_GUARD_START
 struct mGUIRunner;
 
 void mGUIShowMobileAdapter(struct mGUIRunner* runner);
+void mGUIMobileAdapterAttach(struct mGUIRunner* runner);
 void mGUIMobileAdapterDetach(struct mGUIRunner* runner);
 
 CXX_GUARD_END
