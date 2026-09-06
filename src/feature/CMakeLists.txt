@@ -14,6 +14,7 @@ endif()
 set(GUI_FILES
 	gui/cheats.c
 	gui/gui-config.c
+	gui/gui-mobile.c
 	gui/gui-runner.c
 	gui/remap.c)
 
