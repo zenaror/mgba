@@ -274,7 +274,8 @@ static inline Socket SocketCreate(bool useIPv6, int type, int protocol) {
 
 static inline int SocketOpen(Socket sock, int port, const struct Address* bindAddress) {
 	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
-	int err;
+	// Stays set on platforms where an IPv6 address can't be bound at all
+	int err = -1;
 
 	const int enable = 1;
 #ifdef GEKKO
@@ -359,7 +360,8 @@ static inline Socket SocketOpenUDP(int port, const struct Address* bindAddress) 
 }
 
 static inline int SocketConnect(Socket sock, int port, const struct Address* destinationAddress) {
-	int err;
+	// Stays set on platforms where an IPv6 address can't be connected to at all
+	int err = -1;
 
 	if (!destinationAddress) {
 		struct sockaddr_in bindInfo;

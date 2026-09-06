@@ -45,6 +45,10 @@ struct mGUIRunnerLux {
 	int luxLevel;
 };
 
+#ifdef USE_LIBMOBILE
+struct mGUIMobileAdapter;
+#endif
+
 #ifndef DISABLE_THREADING
 struct VFile;
 struct mGUIAutosaveContext {
@@ -72,6 +76,10 @@ struct mGUIRunner {
 	struct mCoreConfig config;
 	struct GUIMenuItem* configExtra;
 	size_t nConfigExtra;
+
+#ifdef USE_LIBMOBILE
+	struct mGUIMobileAdapter* mobile;
+#endif
 
 	struct GUIInputKeys* keySources;
 

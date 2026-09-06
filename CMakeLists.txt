@@ -300,7 +300,9 @@ if(DEFINED 3DS OR DEFINED PSP2 OR DEFINED WII OR DEFINED SWITCH)
 	set(ENABLE_DEBUGGERS OFF)
 	set(USE_SQLITE3 OFF)
 	set(USE_DISCORD_RPC OFF)
-	set(USE_LIBMOBILE OFF)
+	if(NOT DEFINED 3DS)
+		set(USE_LIBMOBILE OFF)
+	endif()
 	set(USE_LIBZIP OFF CACHE BOOL "")
 endif()
 
@@ -950,6 +952,18 @@ if(NOT MINIMAL_CORE)
 		list(APPEND SRC ${GB_SIO_SRC})
 	endif()
 	list(APPEND SRC ${FEATURE_SRC})
+endif()
+
+# MINIMAL_CORE strips out the SIO extras (lockstep, printer, mobile adapter) to
+# save space on embedded platforms, but the 3DS has enough room and networking
+# capability (via the SOC service) to support the mobile adapter specifically.
+if(MINIMAL_CORE AND DEFINED 3DS)
+	if(M_CORE_GBA)
+		list(APPEND SRC ${GBA_SIO_SRC})
+	endif()
+	if(M_CORE_GB)
+		list(APPEND SRC ${GB_SIO_SRC})
+	endif()
 endif()
 
 if(ENABLE_EXTRA)

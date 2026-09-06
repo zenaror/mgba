@@ -149,8 +149,8 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 		return 0;
 	}
 
-	struct Address srcaddr;
-	int srcport;
+	struct Address srcaddr = {0};
+	int srcport = 0;
 	ssize_t res = SocketRecvFrom(mobile->socket[conn].fd, data, size, &srcport, &srcaddr);
 	if (SOCKET_RESERROR(res)) {
 		return SocketWouldBlock() ? 0 : -1;

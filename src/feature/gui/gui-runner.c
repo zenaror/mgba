@@ -9,6 +9,7 @@
 #include <mgba/core/serialize.h>
 #include "feature/gui/gui-config.h"
 #include "feature/gui/cheats.h"
+#include "feature/gui/gui-mobile.h"
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba/gba/interface.h>
@@ -43,6 +44,7 @@ enum {
 	RUNNER_CONFIG,
 	RUNNER_RESET,
 	RUNNER_CHEATS,
+	RUNNER_MOBILE_ADAPTER,
 	RUNNER_COMMAND_MASK = 0xFFFF
 };
 
@@ -213,6 +215,9 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	GUIInit(&runner->params);
 	runner->port = port;
 	runner->core = NULL;
+#ifdef USE_LIBMOBILE
+	runner->mobile = NULL;
+#endif
 	runner->luminanceSource.d.readLuminance = _readLux;
 	runner->luminanceSource.d.sample = _updateLux;
 	runner->luminanceSource.luxLevel = 0;
@@ -398,6 +403,9 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Cheats", .data = GUI_V_U(RUNNER_CHEATS) };
 	}
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Configure", .data = GUI_V_U(RUNNER_CONFIG) };
+#ifdef USE_LIBMOBILE
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Mobile Adapter GB", .data = GUI_V_U(RUNNER_MOBILE_ADAPTER) };
+#endif
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Reset game", .data = GUI_V_U(RUNNER_RESET) };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = GUI_V_U(RUNNER_EXIT) };
 
@@ -676,6 +684,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			case RUNNER_CHEATS:
 				mGUIShowCheats(runner);
 				break;
+#ifdef USE_LIBMOBILE
+			case RUNNER_MOBILE_ADAPTER:
+				mGUIShowMobileAdapter(runner);
+				break;
+#endif
 			case RUNNER_CONTINUE:
 				break;
 			}
@@ -746,6 +759,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		}
 		mCoreConfigSave(&runner->config);
 	}
+#ifdef USE_LIBMOBILE
+	// Unplugging the adapter belongs to unloading the game, not to closing its
+	// config screen, so it happens here rather than when that menu exits.
+	mGUIMobileAdapterDetach(runner);
+	free(runner->mobile);
+	runner->mobile = NULL;
+#endif
 	mInputMapDeinit(&runner->core->inputMap);
 	mLOG(GUI_RUNNER, DEBUG, "Deinitializing core...");
 	mCoreConfigDeinit(&runner->core->config);
