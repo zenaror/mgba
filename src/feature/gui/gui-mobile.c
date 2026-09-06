@@ -111,7 +111,9 @@ static void _loadConfig(struct mGUIMobileAdapter* m) {
 }
 
 static void _saveConfig(struct mGUIMobileAdapter* m) {
-	if (!_adapter(m)) {
+	// An adapter that never ran has nothing but zeroes to write back, which
+	// would clobber a perfectly good config file.
+	if (!m || !m->attached || !_adapter(m)) {
 		return;
 	}
 	char path[PATH_MAX];
@@ -143,10 +145,6 @@ static bool _attach(struct mGUIRunner* runner) {
 	struct mGUIMobileAdapter* m = runner->mobile;
 	m->platform = runner->core->platform(runner->core);
 
-	// Nothing else on these frontends uses sockets, so the network stack is
-	// only brought up once an adapter is actually plugged in.
-	SocketSubsystemInit();
-
 	switch (m->platform) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
@@ -161,6 +159,10 @@ static bool _attach(struct mGUIRunner* runner) {
 	default:
 		return false;
 	}
+
+	// Nothing else on these frontends uses sockets, so the network stack is
+	// only brought up once an adapter is actually plugged in.
+	SocketSubsystemInit();
 
 	// The config blob has to be in place before the driver is initialized,
 	// since starting the adapter is what parses it.
@@ -182,6 +184,9 @@ static bool _attach(struct mGUIRunner* runner) {
 	}
 
 	m->attached = _adapter(m)->adapter;
+	if (!m->attached) {
+		SocketSubsystemDeinit();
+	}
 	return m->attached;
 }
 
