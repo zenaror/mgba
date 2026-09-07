@@ -12,7 +12,7 @@ name, and connects. Tested on a New 3DS XL against a local REON server.
 - Mobile Adapter GB support in the 3DS build, which upstream disables.
 - A native configuration screen, since the Qt dialog obviously does not exist
   there: enable, adapter type, unmetered, DNS 1 and 2, P2P port, relay server,
-  relay token, mail port redirection, and a DNS test.
+  relay token and mail port redirection.
 - The library's own chatter on the bottom screen while a game runs.
 - Reaching that screen before a game is loaded, on the 3DS and on the desktop.
 - The vendored libmobile swapped for the `feature/custom-mail-port` fork.
