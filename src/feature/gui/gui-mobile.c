@@ -61,6 +61,36 @@ static const char* _logLine(size_t i) {
 	return s_log[(oldest + i) % MOBILE_LOG_LINES];
 }
 
+ATTRIBUTE_FORMAT(printf, 1, 2)
+static void _logPrintf(const char* format, ...) {
+	char line[MOBILE_LOG_LEN];
+	va_list args;
+	va_start(args, format);
+	vsnprintf(line, sizeof(line), format, args);
+	va_end(args);
+	_debugLog(NULL, line);
+}
+
+// Whether the console can actually reach the network is otherwise only visible
+// as the library failing much later, with nothing to say which part gave up.
+static void _logNetworkState(void) {
+	struct Address any = {0};
+	any.version = IPV4;
+	Socket test = SocketOpenUDP(0, &any);
+	if (SOCKET_FAILED(test)) {
+		_logPrintf("<mGBA> no network: socket failed (%i)", SocketError());
+		return;
+	}
+	SocketClose(test);
+#ifdef __3DS__
+	uint32_t ip = gethostid();
+	const uint8_t* octet = (const uint8_t*) &ip;
+	_logPrintf("<mGBA> network ready, console is %u.%u.%u.%u", octet[0], octet[1], octet[2], octet[3]);
+#else
+	_logPrintf("<mGBA> network ready");
+#endif
+}
+
 struct mGUIMobileAdapter {
 #ifdef M_CORE_GB
 	struct GBSIOMobileAdapter gb;
@@ -281,6 +311,7 @@ static bool _attach(struct mGUIRunner* runner) {
 	// Replaces the driver's own logger, which only ever reached a file nobody
 	// can read without powering the console down.
 	mobile_def_debug_log(_adapter(m)->adapter, _debugLog);
+	_logNetworkState();
 	return true;
 }
 

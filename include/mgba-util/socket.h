@@ -310,6 +310,13 @@ static inline int SocketOpen(Socket sock, int port, const struct Address* bindAd
 		bindInfo.sin_family = AF_INET;
 		bindInfo.sin_port = htons(port);
 		bindInfo.sin_addr.s_addr = htonl(bindAddress->ipv4);
+#ifdef __3DS__
+		// The SOC service refuses to bind the unspecified address, the same way
+		// it does when no address is given at all, and wants the console's own.
+		if (!bindAddress->ipv4) {
+			bindInfo.sin_addr.s_addr = gethostid();
+		}
+#endif
 #ifdef GEKKO
 		err = net_bind(sock, (struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #else
