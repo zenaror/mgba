@@ -297,6 +297,15 @@ static inline int SocketOpen(Socket sock, int port, const struct Address* bindAd
 	}
 #endif
 
+#ifdef __3DS__
+	// A socket only making outgoing connections has no reason to be named, and
+	// the service will not bind the unspecified address that naming it implies
+	// here. Sending from it names it anyway.
+	if (!port && (!bindAddress || !bindAddress->ipv4)) {
+		return 0;
+	}
+#endif
+
 	if (!bindAddress) {
 		struct sockaddr_in bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
