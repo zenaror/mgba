@@ -30,9 +30,24 @@ void mobile_addr_copy(struct mobile_addr *dest, const struct mobile_addr *src)
 bool mobile_addr_compare(const struct mobile_addr *addr1, const struct mobile_addr *addr2)
 {
     if (addr1->type != addr2->type) return false;
-    unsigned size = mobile_addr_size(addr2);
-    if (!size) return false;
-    return memcmp(addr1, addr2, size) == 0;
+
+    // Comparing these byte for byte would take in the padding a compiler is
+    // free to leave after the type, which is three bytes wide wherever an enum
+    // is stored in one byte, and which nothing here ever sets. Two addresses
+    // that are the same in every field would then still fail to match.
+    if (addr1->type == MOBILE_ADDRTYPE_IPV4) {
+        const struct mobile_addr4 *a1 = (const struct mobile_addr4 *)addr1;
+        const struct mobile_addr4 *a2 = (const struct mobile_addr4 *)addr2;
+        return a1->port == a2->port &&
+            memcmp(a1->host, a2->host, MOBILE_HOSTLEN_IPV4) == 0;
+    }
+    if (addr1->type == MOBILE_ADDRTYPE_IPV6) {
+        const struct mobile_addr6 *a1 = (const struct mobile_addr6 *)addr1;
+        const struct mobile_addr6 *a2 = (const struct mobile_addr6 *)addr2;
+        return a1->port == a2->port &&
+            memcmp(a1->host, a2->host, MOBILE_HOSTLEN_IPV6) == 0;
+    }
+    return false;
 }
 
 // Converts a string of 12 characters to a binary representation for an IPv4
