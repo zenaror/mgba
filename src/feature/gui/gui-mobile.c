@@ -74,6 +74,13 @@ static void _logPrintf(const char* format, ...) {
 // Whether the console can actually reach the network is otherwise only visible
 // as the library failing much later, with nothing to say which part gave up.
 static void _logNetworkState(void) {
+#ifdef __3DS__
+	// Zero here means the console never joined a network, which would other-
+	// wise only show up as everything past this point quietly failing.
+	uint32_t ip = gethostid();
+	const uint8_t* octet = (const uint8_t*) &ip;
+	_logPrintf("<mGBA> console is %u.%u.%u.%u", octet[0], octet[1], octet[2], octet[3]);
+#endif
 	Socket test = SocketCreate(false, SOCK_DGRAM, IPPROTO_UDP);
 	if (SOCKET_FAILED(test)) {
 		_logPrintf("<mGBA> no network: socket() failed (%i)", SocketError());
@@ -87,13 +94,7 @@ static void _logNetworkState(void) {
 		return;
 	}
 	SocketClose(test);
-#ifdef __3DS__
-	uint32_t ip = gethostid();
-	const uint8_t* octet = (const uint8_t*) &ip;
-	_logPrintf("<mGBA> network ready, console is %u.%u.%u.%u", octet[0], octet[1], octet[2], octet[3]);
-#else
 	_logPrintf("<mGBA> network ready");
-#endif
 }
 
 struct mGUIMobileAdapter {
