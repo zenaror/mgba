@@ -31,6 +31,12 @@
 #define MOBILE_CONFIG_FILE "mobile_config.bin"
 #define ADDR_TEXT_LEN 64
 #define TOKEN_TEXT_LEN (MOBILE_RELAY_TOKEN_SIZE * 2 + 1)
+// Set to 1 to trace every socket the adapter opens, sends on and reads from,
+// plus what the console's own network looks like when one is plugged in. Costs
+// a line of on-screen log per packet, so it is only worth it while chasing
+// something that the library's own chatter does not explain.
+#define MOBILE_SOCKET_TRACE 0
+
 #define MOBILE_LOG_LINES 48
 #define MOBILE_LOG_LEN 96
 
@@ -55,11 +61,51 @@ static void _debugLog(void* user, const char* line) {
 	mLOG(GUI_MOBILE, DEBUG, "%s", line);
 }
 
-ATTRIBUTE_FORMAT(printf, 1, 2)
-static void _logPrintf(const char* format, ...);
+// Oldest first, so index 0 is the start of what is still remembered.
+static const char* _logLine(size_t i) {
+	size_t oldest = s_logCount == MOBILE_LOG_LINES ? s_logNext : 0;
+	return s_log[(oldest + i) % MOBILE_LOG_LINES];
+}
 
-// Stands in for the core's own callbacks to report what the adapter's sockets
-// actually do, which is otherwise invisible from here.
+#if MOBILE_SOCKET_TRACE
+ATTRIBUTE_FORMAT(printf, 1, 2)
+static void _logPrintf(const char* format, ...) {
+	char line[MOBILE_LOG_LEN];
+	va_list args;
+	va_start(args, format);
+	vsnprintf(line, sizeof(line), format, args);
+	va_end(args);
+	_debugLog(NULL, line);
+}
+
+// Whether the console can actually reach the network is otherwise only visible
+// as the library failing much later, with nothing to say which part gave up.
+static void _logNetworkState(void) {
+#ifdef __3DS__
+	// Zero here means the console never joined a network, which would other-
+	// wise only show up as everything past this point quietly failing.
+	uint32_t ip = gethostid();
+	const uint8_t* octet = (const uint8_t*) &ip;
+	_logPrintf("<mGBA> console is %u.%u.%u.%u", octet[0], octet[1], octet[2], octet[3]);
+#endif
+	Socket test = SocketCreate(false, SOCK_DGRAM, IPPROTO_UDP);
+	if (SOCKET_FAILED(test)) {
+		_logPrintf("<mGBA> no network: socket() failed (%i)", SocketError());
+		return;
+	}
+	struct Address any = {0};
+	any.version = IPV4;
+	if (SocketOpen(test, 0, &any)) {
+		_logPrintf("<mGBA> no network: bind failed (%i)", SocketError());
+		SocketClose(test);
+		return;
+	}
+	SocketClose(test);
+	_logPrintf("<mGBA> network ready");
+}
+
+// Stand in for the core's own callbacks to report what the adapter's sockets
+// actually do, which is otherwise invisible from a console.
 static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
 	struct MobileAdapterGB* mobile = user;
 
@@ -141,163 +187,7 @@ static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size
 
 	return (res || mobile->socket[conn].socktype == MOBILE_SOCKTYPE_UDP) ? res : -2;
 }
-
-// Oldest first, so index 0 is the start of what is still remembered.
-static const char* _logLine(size_t i) {
-	size_t oldest = s_logCount == MOBILE_LOG_LINES ? s_logNext : 0;
-	return s_log[(oldest + i) % MOBILE_LOG_LINES];
-}
-
-ATTRIBUTE_FORMAT(printf, 1, 2)
-static void _logPrintf(const char* format, ...) {
-	char line[MOBILE_LOG_LEN];
-	va_list args;
-	va_start(args, format);
-	vsnprintf(line, sizeof(line), format, args);
-	va_end(args);
-	_debugLog(NULL, line);
-}
-
-// Whether the console can actually reach the network is otherwise only visible
-// as the library failing much later, with nothing to say which part gave up.
-static void _logNetworkState(void) {
-#ifdef __3DS__
-	// Zero here means the console never joined a network, which would other-
-	// wise only show up as everything past this point quietly failing.
-	uint32_t ip = gethostid();
-	const uint8_t* octet = (const uint8_t*) &ip;
-	_logPrintf("<mGBA> console is %u.%u.%u.%u", octet[0], octet[1], octet[2], octet[3]);
 #endif
-	Socket test = SocketCreate(false, SOCK_DGRAM, IPPROTO_UDP);
-	if (SOCKET_FAILED(test)) {
-		_logPrintf("<mGBA> no network: socket() failed (%i)", SocketError());
-		return;
-	}
-	struct Address any = {0};
-	any.version = IPV4;
-	if (SocketOpen(test, 0, &any)) {
-		_logPrintf("<mGBA> no network: bind failed (%i)", SocketError());
-		SocketClose(test);
-		return;
-	}
-	SocketClose(test);
-	_logPrintf("<mGBA> network ready");
-}
-
-// Writes a minimal A-record query for name into out, returning its length.
-static size_t _dnsQuery(const char* name, uint8_t* out, size_t outLength) {
-	if (outLength < 12 + strlen(name) + 6) {
-		return 0;
-	}
-	memset(out, 0, 12);
-	out[0] = 0x3D;  // Any id will do; nothing else is asking
-	out[2] = 0x01;  // Recursion desired
-	out[5] = 0x01;  // One question
-	size_t len = 12;
-
-	const char* label = name;
-	while (*label) {
-		const char* dot = strchr(label, '.');
-		size_t part = dot ? (size_t) (dot - label) : strlen(label);
-		if (!part || part > 63) {
-			return 0;
-		}
-		out[len++] = part;
-		memcpy(&out[len], label, part);
-		len += part;
-		label += dot ? part + 1 : part;
-	}
-	out[len++] = 0;
-	out[len++] = 0;
-	out[len++] = 1;  // A
-	out[len++] = 0;
-	out[len++] = 1;  // IN
-	return len;
-}
-
-// Asks the configured server for a name itself, so a failure points at the
-// step that broke rather than surfacing as a bare error code inside a game.
-static void _probeDns(struct mobile_adapter* adapter) {
-	struct mobile_addr dns;
-	mobile_config_get_dns(adapter, &dns, MOBILE_DNS1);
-	if (dns.type != MOBILE_ADDRTYPE_IPV4) {
-		_logPrintf("<mGBA> no IPv4 DNS server set, skipping probe");
-		return;
-	}
-	const struct mobile_addr4* dns4 = (const struct mobile_addr4*) &dns;
-
-	uint8_t query[128];
-	size_t len = _dnsQuery("pop.reon.dion.ne.jp", query, sizeof(query));
-	if (!len) {
-		return;
-	}
-
-	Socket sock = SocketCreate(false, SOCK_DGRAM, IPPROTO_UDP);
-	if (SOCKET_FAILED(sock)) {
-		_logPrintf("<mGBA> DNS probe: no socket (%i)", SocketError());
-		return;
-	}
-	struct Address any = {0};
-	any.version = IPV4;
-	if (SocketOpen(sock, 0, &any)) {
-		_logPrintf("<mGBA> DNS probe: bind failed (%i)", SocketError());
-		SocketClose(sock);
-		return;
-	}
-
-	struct Address to = {0};
-	to.version = IPV4;
-	to.ipv4 = ntohl(*(const uint32_t*) dns4->host);
-	if (SOCKET_RESERROR(SocketSendTo(sock, query, len, dns4->port, &to))) {
-		_logPrintf("<mGBA> DNS probe: send failed (%i)", SocketError());
-		SocketClose(sock);
-		return;
-	}
-
-	// How the adapter itself polls: a read set and an exception set together,
-	// which is the part a limited service is most likely to refuse.
-	Socket r2 = sock;
-	Socket e2 = sock;
-	if (SocketPoll(1, &r2, NULL, &e2, 0) < 0) {
-		_logPrintf("<mGBA> DNS probe: poll refuses an error set (%i)", SocketError());
-	}
-
-	Socket r = sock;
-	int ready = SocketPoll(1, &r, NULL, NULL, 2000);
-	if (ready < 0) {
-		_logPrintf("<mGBA> DNS probe: poll failed (%i)", SocketError());
-	} else if (!ready) {
-		_logPrintf("<mGBA> DNS probe: no reply from %u.%u.%u.%u:%u",
-		           dns4->host[0], dns4->host[1], dns4->host[2], dns4->host[3], dns4->port);
-	} else {
-		// The library throws away a reply whose sender doesn't match the server
-		// it asked, so the address reported back matters as much as the data.
-		uint8_t reply[256];
-		struct Address from = {0};
-		int fromPort = 0;
-		ssize_t got = SocketRecvFrom(sock, reply, sizeof(reply), &fromPort, &from);
-		if (got > 0) {
-			_logPrintf("<mGBA> DNS reply: %i bytes from %u.%u.%u.%u:%i", (int) got,
-			           (unsigned) ((from.ipv4 >> 24) & 0xFF), (unsigned) ((from.ipv4 >> 16) & 0xFF),
-			           (unsigned) ((from.ipv4 >> 8) & 0xFF), (unsigned) (from.ipv4 & 0xFF), fromPort);
-			_logPrintf("<mGBA> expected from: %u.%u.%u.%u:%u",
-			           dns4->host[0], dns4->host[1], dns4->host[2], dns4->host[3], dns4->port);
-		} else {
-			_logPrintf("<mGBA> DNS probe: read failed (%i)", SocketError());
-		}
-	}
-
-	// The adapter's own sockets are non-blocking, and everything hinges on a
-	// read finding nothing being told apart from a read going wrong.
-	SocketSetBlocking(sock, false);
-	uint8_t scratch[16];
-	struct Address idleFrom = {0};
-	int idlePort = 0;
-	ssize_t idle = SocketRecvFrom(sock, scratch, sizeof(scratch), &idlePort, &idleFrom);
-	_logPrintf("<mGBA> idle read: %i, errno %i, wouldblock %i", (int) idle, SocketError(),
-	           SocketWouldBlock() ? 1 : 0);
-	SocketClose(sock);
-}
 
 struct mGUIMobileAdapter {
 #ifdef M_CORE_GB
@@ -317,7 +207,6 @@ enum mGUIMobileItem {
 	MOBILE_ITEM_ENABLE = 0,
 	MOBILE_ITEM_STATUS,
 	MOBILE_ITEM_SHOW_LOG,
-	MOBILE_ITEM_TEST_DNS,
 	MOBILE_ITEM_TYPE,
 	MOBILE_ITEM_UNMETERED,
 	MOBILE_ITEM_DNS1,
@@ -520,10 +409,12 @@ static bool _attach(struct mGUIRunner* runner) {
 	// Replaces the driver's own logger, which only ever reached a file nobody
 	// can read without powering the console down.
 	mobile_def_debug_log(_adapter(m)->adapter, _debugLog);
+#if MOBILE_SOCKET_TRACE
 	mobile_def_sock_open(_adapter(m)->adapter, _loggingSockOpen);
 	mobile_def_sock_send(_adapter(m)->adapter, _loggingSockSend);
 	mobile_def_sock_recv(_adapter(m)->adapter, _loggingSockRecv);
 	_logNetworkState();
+#endif
 	return true;
 }
 
@@ -902,10 +793,6 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
-		.title = "Test DNS server",
-		.data = GUI_V_U(MOBILE_ITEM_TEST_DNS)
-	};
-	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Adapter type",
 		.data = GUI_V_U(MOBILE_ITEM_TYPE),
 		.validStates = (const char*[]) { "Blue", "Yellow", "Green", "Red" },
@@ -1008,12 +895,6 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 			break;
 		case MOBILE_ITEM_P2P_PORT:
 			_editPort(runner, text.p2pPort, sizeof(text.p2pPort));
-			break;
-		case MOBILE_ITEM_TEST_DNS:
-			if (_live(runner)) {
-				_logNetworkState();
-				_probeDns(_live(runner));
-			}
 			break;
 		case MOBILE_ITEM_CLOSE:
 			done = true;
