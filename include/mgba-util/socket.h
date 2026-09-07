@@ -256,6 +256,10 @@ static inline void SocketCloseQuiet(Socket socket) {
 }
 
 static inline Socket SocketCreate(bool useIPv6, int type, int protocol) {
+#ifdef __3DS__
+	// The SOC service rejects anything but the default protocol for the type
+	protocol = IPPROTO_IP;
+#endif
 	if (useIPv6) {
 #ifdef HAS_IPV6
 		return socket(AF_INET6, type, protocol);
@@ -277,6 +281,9 @@ static inline int SocketOpen(Socket sock, int port, const struct Address* bindAd
 	// Stays set on platforms where an IPv6 address can't be bound at all
 	int err = -1;
 
+	// The 3DS SOC service doesn't take this option, and refusing to open the
+	// socket over an optimization it can live without would be the wrong call.
+#ifndef __3DS__
 	const int enable = 1;
 #ifdef GEKKO
 	err = net_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
@@ -288,6 +295,7 @@ static inline int SocketOpen(Socket sock, int port, const struct Address* bindAd
 	if (err) {
 		return err;
 	}
+#endif
 
 	if (!bindAddress) {
 		struct sockaddr_in bindInfo;
