@@ -116,7 +116,9 @@ static bool _testExtensions(const char* name) {
 static void _drawBackground(struct GUIBackground* background, void* context) {
 	UNUSED(context);
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
-	if (gbaBackground->p->drawFrame) {
+	// Menus can now be opened with no game loaded, and the backdrop is the
+	// running game's last frame, which there is nothing to draw without a core.
+	if (gbaBackground->p->core && gbaBackground->p->drawFrame) {
 		gbaBackground->p->drawFrame(gbaBackground->p, true);
 	}
 }
