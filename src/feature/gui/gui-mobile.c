@@ -31,12 +31,6 @@
 #define MOBILE_CONFIG_FILE "mobile_config.bin"
 #define ADDR_TEXT_LEN 64
 #define TOKEN_TEXT_LEN (MOBILE_RELAY_TOKEN_SIZE * 2 + 1)
-// Set to 1 to trace every socket the adapter opens, sends on and reads from,
-// plus what the console's own network looks like when one is plugged in. Costs
-// a line of on-screen log per packet, so it is only worth it while chasing
-// something that the library's own chatter does not explain.
-#define MOBILE_SOCKET_TRACE 0
-
 #define MOBILE_LOG_LINES 48
 #define MOBILE_LOG_LEN 96
 
@@ -50,6 +44,12 @@ static char s_log[MOBILE_LOG_LINES][MOBILE_LOG_LEN];
 static size_t s_logNext;
 static size_t s_logCount;
 static bool s_showLog = true;
+
+// Narrating every socket the adapter opens, sends on and reads from. Off by
+// default, because it is a line of log per packet; worth turning on from the
+// adapter screen when a session fails for reasons the library does not explain,
+// which on a console is the only way to see any of this.
+static bool s_traceSockets = false;
 
 static void _debugLog(void* user, const char* line) {
 	UNUSED(user);
@@ -67,7 +67,6 @@ static const char* _logLine(size_t i) {
 	return s_log[(oldest + i) % MOBILE_LOG_LINES];
 }
 
-#if MOBILE_SOCKET_TRACE
 ATTRIBUTE_FORMAT(printf, 1, 2)
 static void _logPrintf(const char* format, ...) {
 	char line[MOBILE_LOG_LEN];
@@ -121,11 +120,11 @@ static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype typ
 		fd = SocketOpenUDP(bindport, &bindaddr);
 	}
 	if (SOCKET_FAILED(fd)) {
-		_logPrintf("<mGBA> conn %u open %s failed (%i)", conn,
+		if (s_traceSockets) _logPrintf("<mGBA> conn %u open %s failed (%i)", conn,
 		           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", SocketError());
 	} else {
 		SocketSetBlocking(fd, false);
-		_logPrintf("<mGBA> conn %u open %s ok, port %u", conn,
+		if (s_traceSockets) _logPrintf("<mGBA> conn %u open %s ok, port %u", conn,
 		           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", bindport);
 	}
 
@@ -139,20 +138,27 @@ static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigne
 	struct Address sendaddr = {0};
 	int destport = 0;
 	struct Address* destaddr = NULL;
-	if (addr && addr->type == MOBILE_ADDRTYPE_IPV4) {
-		const struct mobile_addr4* addr4 = (const struct mobile_addr4*) addr;
-		sendaddr.version = IPV4;
-		sendaddr.ipv4 = ntohl(*(const uint32_t*) &addr4->host);
+	if (addr) {
 		destaddr = &sendaddr;
-		destport = addr4->port;
+		if (addr->type == MOBILE_ADDRTYPE_IPV6) {
+			const struct mobile_addr6* addr6 = (const struct mobile_addr6*) addr;
+			sendaddr.version = IPV6;
+			memcpy(&sendaddr.ipv6, addr6->host, MOBILE_HOSTLEN_IPV6);
+			destport = addr6->port;
+		} else {
+			const struct mobile_addr4* addr4 = (const struct mobile_addr4*) addr;
+			sendaddr.version = IPV4;
+			sendaddr.ipv4 = ntohl(*(const uint32_t*) &addr4->host);
+			destport = addr4->port;
+		}
 	}
 
 	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destport, destaddr);
 	if (SOCKET_RESERROR(res)) {
-		_logPrintf("<mGBA> conn %u send failed (%i)", conn, SocketError());
+		if (s_traceSockets) _logPrintf("<mGBA> conn %u send failed (%i)", conn, SocketError());
 		return -1;
 	}
-	_logPrintf("<mGBA> conn %u sent %i to %u.%u.%u.%u:%i", conn, (int) res,
+	if (s_traceSockets) _logPrintf("<mGBA> conn %u sent %i to %u.%u.%u.%u:%i", conn, (int) res,
 	           (unsigned) ((sendaddr.ipv4 >> 24) & 0xFF), (unsigned) ((sendaddr.ipv4 >> 16) & 0xFF),
 	           (unsigned) ((sendaddr.ipv4 >> 8) & 0xFF), (unsigned) (sendaddr.ipv4 & 0xFF), destport);
 	return res;
@@ -168,17 +174,22 @@ static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size
 		if (SocketWouldBlock()) {
 			return 0;
 		}
-		_logPrintf("<mGBA> conn %u read error %i", conn, SocketError());
+		if (s_traceSockets) _logPrintf("<mGBA> conn %u read error %i", conn, SocketError());
 		return -1;
 	}
 
-	if (res > 0) {
+	if (res > 0 && s_traceSockets) {
 		_logPrintf("<mGBA> conn %u got %i from %u.%u.%u.%u:%i", conn, (int) res,
 		           (unsigned) ((srcaddr.ipv4 >> 24) & 0xFF), (unsigned) ((srcaddr.ipv4 >> 16) & 0xFF),
 		           (unsigned) ((srcaddr.ipv4 >> 8) & 0xFF), (unsigned) (srcaddr.ipv4 & 0xFF), srcport);
 	}
 
-	if (res > 0 && addr) {
+	if (res > 0 && addr && srcaddr.version == IPV6) {
+		struct mobile_addr6* addr6 = (struct mobile_addr6*) addr;
+		addr6->type = MOBILE_ADDRTYPE_IPV6;
+		memcpy(&addr6->host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
+		addr6->port = srcport;
+	} else if (res > 0 && addr) {
 		struct mobile_addr4* addr4 = (struct mobile_addr4*) addr;
 		addr4->type = MOBILE_ADDRTYPE_IPV4;
 		*(uint32_t*) &addr4->host = htonl(srcaddr.ipv4);
@@ -187,7 +198,6 @@ static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size
 
 	return (res || mobile->socket[conn].socktype == MOBILE_SOCKTYPE_UDP) ? res : -2;
 }
-#endif
 
 struct mGUIMobileAdapter {
 #ifdef M_CORE_GB
@@ -207,6 +217,7 @@ enum mGUIMobileItem {
 	MOBILE_ITEM_ENABLE = 0,
 	MOBILE_ITEM_STATUS,
 	MOBILE_ITEM_SHOW_LOG,
+	MOBILE_ITEM_TRACE,
 	MOBILE_ITEM_TYPE,
 	MOBILE_ITEM_UNMETERED,
 	MOBILE_ITEM_DNS1,
@@ -226,6 +237,9 @@ struct mGUIMobileText {
 	char p2pPort[8];
 	char relay[ADDR_TEXT_LEN];
 	char token[TOKEN_TEXT_LEN];
+	// The token is 32 characters and runs straight into its own label at this
+	// width, so the list shows a stub. Editing it still shows the whole thing.
+	char tokenShown[16];
 };
 
 static struct MobileAdapterGB* _adapter(struct mGUIMobileAdapter* m) {
@@ -409,12 +423,9 @@ static bool _attach(struct mGUIRunner* runner) {
 	// Replaces the driver's own logger, which only ever reached a file nobody
 	// can read without powering the console down.
 	mobile_def_debug_log(_adapter(m)->adapter, _debugLog);
-#if MOBILE_SOCKET_TRACE
 	mobile_def_sock_open(_adapter(m)->adapter, _loggingSockOpen);
 	mobile_def_sock_send(_adapter(m)->adapter, _loggingSockSend);
 	mobile_def_sock_recv(_adapter(m)->adapter, _loggingSockRecv);
-	_logNetworkState();
-#endif
 	return true;
 }
 
@@ -603,6 +614,7 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 	struct MobileAdapterGB* gb = _adapter(runner->mobile);
 
 	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state = s_showLog;
+	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_TRACE)->state = s_traceSockets;
 
 	if (!adapter) {
 		strlcpy(text->status, "Adapter not running", sizeof(text->status));
@@ -610,6 +622,7 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 		text->dns2[0] = '\0';
 		text->relay[0] = '\0';
 		text->token[0] = '\0';
+		text->tokenShown[0] = '\0';
 		strlcpy(text->p2pPort, "-", sizeof(text->p2pPort));
 		return;
 	}
@@ -655,6 +668,9 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 		for (i = 0; i < MOBILE_RELAY_TOKEN_SIZE; ++i) {
 			snprintf(&text->token[i * 2], 3, "%02x", token[i]);
 		}
+		snprintf(text->tokenShown, sizeof(text->tokenShown), "%.8s...", text->token);
+	} else {
+		strlcpy(text->tokenShown, "not set", sizeof(text->tokenShown));
 	}
 }
 
@@ -664,6 +680,15 @@ static void _applyToggles(struct mGUIRunner* runner, struct GUIMenu* menu) {
 	// teardown happens once the screen closes.
 	runner->mobileEnabled = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_ENABLE)->state;
 	s_showLog = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state;
+
+	// Switching tracing on says what the network looks like right away, rather
+	// than leaving that until whatever is being chased happens again.
+	bool trace = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_TRACE)->state;
+	if (trace && !s_traceSockets) {
+		s_traceSockets = true;
+		_logNetworkState();
+	}
+	s_traceSockets = trace;
 	if (runner->mobileEnabled && runner->core) {
 		_attach(runner);
 	}
@@ -793,6 +818,12 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Trace sockets",
+		.data = GUI_V_U(MOBILE_ITEM_TRACE),
+		.validStates = (const char*[]) { "Off", "On" },
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Adapter type",
 		.data = GUI_V_U(MOBILE_ITEM_TYPE),
 		.validStates = (const char*[]) { "Blue", "Yellow", "Green", "Red" },
@@ -831,7 +862,7 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Relay token",
 		.data = GUI_V_U(MOBILE_ITEM_TOKEN),
-		.validStates = (const char*[]) { text.token },
+		.validStates = (const char*[]) { text.tokenShown },
 		.nStates = 1
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {

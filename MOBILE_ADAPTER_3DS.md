@@ -172,7 +172,7 @@ emulated seconds, and the console is frame-limited).
 
 ## Building
 
-```
+```sh
 docker run --rm -v "$PWD":/home/mgba/src mgba/3ds
 ```
 
@@ -183,18 +183,12 @@ Produces `mgba.3dsx` and `mgba.cia`. The image carries devkitARM and CMake
 
 Normally the bottom screen carries only what the library itself reports, which
 is the right amount of detail for playing. When that is not enough — a session
-failing for reasons the library's account does not explain — there is a switch
-at the top of `src/feature/gui/gui-mobile.c`:
+failing for reasons the library's account does not explain — **Trace sockets**
+on the adapter screen turns on a line per open, per send and per read. Turning
+it on also reports the console's own address and whether a socket can be
+created at all, so the state of the network is on screen straight away:
 
-```c
-#define MOBILE_SOCKET_TRACE 0   // set to 1
-```
-
-Setting it to 1 stands mGBA's socket callbacks aside for ones that narrate, and
-adds a line per open, per send and per read, plus the console's own address and
-whether a socket can be created at all when an adapter is plugged in:
-
-```
+```text
 <mGBA> console is 192.168.10.120
 <mGBA> network ready
 <mGBA> conn 0 open udp ok, port 0
@@ -215,8 +209,15 @@ That is what those lines are for, roughly in the order they answer questions:
 - `got` from an address, and a failure anyway — the reply arrived and something
   above the socket rejected it. This is what the padding bug looked like.
 
-It costs a line of log per packet, so it is worth turning off again afterwards.
-Both settings are kept building; do not let the traced one rot.
+It is a runtime switch rather than a build option deliberately: rebuilding to
+answer a question is cheap on a desktop, where there is a log file anyway, and
+expensive when the thing misbehaving is a console across the room. Like
+enabling the adapter, it lasts only as long as the emulator runs.
+
+The callbacks it narrates through stand in for the core's own permanently, not
+only while tracing, so they have to stay a faithful copy of `sock_open`,
+`sock_send` and `sock_recv` in `src/core/mobile.c`. Changing those without
+changing these would be a quiet way to break the console builds only.
 
 ## Still open
 
