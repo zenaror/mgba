@@ -43,7 +43,9 @@ mLOG_DEFINE_CATEGORY(GUI_MOBILE, "Mobile Adapter", "gui.mobile");
 static char s_log[MOBILE_LOG_LINES][MOBILE_LOG_LEN];
 static size_t s_logNext;
 static size_t s_logCount;
-static bool s_showLog = true;
+// Off unless asked for: a working session has nothing to say that is worth
+// covering the bottom screen with while playing.
+static bool s_showLog = false;
 
 // Narrating every socket the adapter opens, sends on and reads from. Off by
 // default, because it is a line of log per packet; worth turning on from the

@@ -29,7 +29,8 @@ endif()
 
 if(USE_LIBMOBILE)
 		list(APPEND SOURCE_FILES
-			mobile.c)
+			mobile.c
+			mobile-auth.c)
 endif()
 
 if(ENABLE_SCRIPTING)

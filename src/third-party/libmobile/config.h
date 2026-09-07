@@ -39,9 +39,31 @@ struct mobile_adapter_config {
 
     // Authentication token used for relay connections
     unsigned char relay_token[MOBILE_RELAY_TOKEN_SIZE];
+
+    // Whether device_auth_key was successfully loaded from config storage
+    bool device_auth_key_init: 1;
+
+    // Per-account secret used to sign device-auth requests (see
+    //   mobile_func_update_device_auth), provisioned externally by writing
+    //   it into config storage (unlike relay_token, this is never negotiated
+    //   over the wire by the library itself).
+    unsigned char device_auth_key[MOBILE_DEVICE_AUTH_KEY_SIZE];
+
+    // Monotonically increasing counter, used to prevent replay of
+    //   device-auth requests. Never reused, even across a crash: storage
+    //   only ever records a reserved ceiling (see
+    //   mobile_config_device_auth_next()), not each individual value, to
+    //   bound how often it's rewritten on wear-limited flash.
+    uint64_t device_auth_counter;
+
+    // Highest counter value reserved (and persisted) so far. device_auth_counter
+    //   is only handed out up to this ceiling before storage needs to be
+    //   rewritten again to reserve a new batch.
+    uint64_t device_auth_counter_ceiling;
 };
 
 void mobile_config_init(struct mobile_adapter *adapter);
 void mobile_config_set_relay_token_internal(struct mobile_adapter *adapter, const unsigned char *token);
+bool mobile_config_device_auth_next(struct mobile_adapter *adapter, uint64_t *counter);
 
 #undef _Atomic  // "atomic.h"

@@ -46,6 +46,7 @@ void GBSIOMobileAdapterUpdate(struct GBSIOMobileAdapter* mobile) {
 		return;
 	}
 	mobile_loop(mobile->m.adapter);
+	MobileAdapterAuthUpdate(&mobile->m);
 }
 
 bool GBSIOMobileAdapterInit(struct GBSIODriver* driver) {
