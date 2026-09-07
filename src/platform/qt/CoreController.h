@@ -211,18 +211,7 @@ public slots:
 	void detachMobileAdapter();
 	void saveMobileAdapterConfig();
 	void importMobileAdapterConfig(const QString& filename);
-	void getMobileAdapterConfig(int* type, bool* unmetered, QString* dns1, QString* dns2, int* p2p_port, QString* relay, QString* token);
 	bool updateMobileAdapter(QString* statusText, QString* userNumber, QString* peerNumber);
-	void setMobileAdapterType(int type);
-	void setMobileAdapterUnmetered(bool unmetered);
-	void setMobileAdapterDns1(const Address& host, int port);
-	void clearMobileAdapterDns1();
-	void setMobileAdapterDns2(const Address& host, int port);
-	void clearMobileAdapterDns2();
-	void setMobileAdapterPort(int port);
-	void setMobileAdapterRelay(const Address& host, int port);
-	void clearMobileAdapterRelay();
-	void setMobileAdapterToken(const QString& qToken);
 	struct MobileAdapterGB* getMobileAdapter() { return platform() == mPLATFORM_GBA ? &m_mobile.m : &m_gbmobile.m; }
 #endif
 

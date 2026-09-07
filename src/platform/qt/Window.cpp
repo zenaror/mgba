@@ -912,6 +912,13 @@ void Window::gameStarted() {
 	attachWidget(m_display.get());
 	setFocus();
 
+#ifdef USE_LIBMOBILE
+	// Honour an adapter that was switched on before this game was loaded.
+	if (MobileAdapterView::wanted() && !m_controller->getMobileAdapter()->adapter) {
+		m_controller->attachMobileAdapter();
+	}
+#endif
+
 #ifndef Q_OS_MAC
 	if (isFullScreen()) {
 		showMenu(false);
@@ -1577,7 +1584,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef USE_LIBMOBILE
-	addGameAction(tr("Mobile Game Boy Adapter..."), "mbAdapter", openControllerTView<MobileAdapterView>(this), "emu");
+	// Deliberately not a game action: the adapter can be switched on and
+	// configured before a game is loaded, and is plugged in once one starts.
+	m_actions.addAction(tr("Mobile Game Boy Adapter..."), "mbAdapter", [this]() {
+		MobileAdapterView* view = new MobileAdapterView(m_controller, this);
+		if (m_controller) {
+			connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
+		}
+		openView(view);
+	}, "emu");
 #endif
 
 #ifdef M_CORE_GBA
