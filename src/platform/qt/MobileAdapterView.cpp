@@ -58,6 +58,82 @@ static int mobileConvertAddr(const QString& addr, Address *output, unsigned *por
 	return 1;
 }
 
+bool MobileAdapterView::s_wanted = false;
+
+static QString mobileAddrToString(const struct mobile_addr* addr, unsigned defaultPort) {
+	QString ret = "";
+	if (addr->type == MOBILE_ADDRTYPE_IPV6) {
+		const struct mobile_addr6* addr6 = (const struct mobile_addr6*) addr;
+		QHostAddress qaddress(addr6->host);
+		ret = qaddress.toString();
+		if (addr6->port != defaultPort) {
+			ret = QString('[') + ret + "]:" + QString::number(addr6->port);
+		}
+	} else if (addr->type == MOBILE_ADDRTYPE_IPV4) {
+		const struct mobile_addr4* addr4 = (const struct mobile_addr4*) addr;
+		QHostAddress qaddress(ntohl(*(unsigned*) addr4->host));
+		ret = qaddress.toString();
+		if (addr4->port != defaultPort) {
+			ret += QString(':') + QString::number(addr4->port);
+		}
+	}
+	return ret;
+}
+
+static QString mobileConfigPath() {
+	return ConfigController::configDir() + "/mobile_config.bin";
+}
+
+struct mobile_adapter* MobileAdapterView::adapter() {
+	if (m_controller) {
+		return m_controller->getMobileAdapter()->adapter;
+	}
+	return m_hasStandalone ? m_standalone.m.adapter : nullptr;
+}
+
+void MobileAdapterView::createStandalone() {
+	GBSIOMobileAdapterCreate(&m_standalone);
+
+	QFile fconfig(mobileConfigPath());
+	if (fconfig.open(QIODevice::ReadOnly)) {
+		fconfig.read((char*) m_standalone.m.config, MOBILE_CONFIG_SIZE);
+		fconfig.close();
+	}
+
+	m_standalone.m.adapter = MobileAdapterGBNew(&m_standalone.m);
+	if (!m_standalone.m.adapter) {
+		return;
+	}
+	// Deliberately not started: without a core there is no timing behind it.
+	mobile_config_load(m_standalone.m.adapter);
+	m_hasStandalone = true;
+}
+
+void MobileAdapterView::saveStandalone() {
+	if (!m_hasStandalone) {
+		return;
+	}
+	// Settings only reach the config blob when the library flushes them, which
+	// it would otherwise do from an emulation frame that is never going to run.
+	mobile_config_save(m_standalone.m.adapter);
+
+	QFile fconfig(mobileConfigPath());
+	if (fconfig.open(QIODevice::WriteOnly)) {
+		fconfig.write((char*) m_standalone.m.config, MOBILE_CONFIG_SIZE);
+		fconfig.close();
+	}
+}
+
+void MobileAdapterView::destroyStandalone() {
+	if (!m_hasStandalone) {
+		return;
+	}
+	saveStandalone();
+	free(m_standalone.m.adapter);
+	m_standalone.m.adapter = nullptr;
+	m_hasStandalone = false;
+}
+
 MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller, Window* window, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
@@ -79,8 +155,14 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 	connect(m_ui.copyToken, &QAbstractButton::clicked, this, &MobileAdapterView::copyToken);
 	connect(m_ui.importConfig, &QAbstractButton::clicked, this, &MobileAdapterView::importConfig);
 
-	connect(m_controller.get(), &CoreController::frameAvailable, this, &MobileAdapterView::advanceFrameCounter);
-	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
+	if (m_controller) {
+		connect(m_controller.get(), &CoreController::frameAvailable, this, &MobileAdapterView::advanceFrameCounter);
+		connect(m_controller.get(), &CoreController::stopping, this, &QWidget::close);
+	} else {
+		// Nothing is running, so there is no live status to report.
+		m_ui.statusText->setText(tr("No game loaded"));
+		m_ui.tabWidget->setCurrentWidget(m_ui.settingsTab);
+	}
 
 	QString versionText = QString("%1.%2.%3").arg(
 		QString::number(mobile_version_major),
@@ -88,23 +170,30 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 		QString::number(mobile_version_patch));
 	m_ui.versionText->setText(versionText);
 
-	// The checkbox reflects whether the adapter is actually attached right now.
 	// This state is intentionally not persisted: it always starts disabled for a
-	// fresh game session, and stays enabled only for as long as this session runs.
-	bool alreadyAttached = m_controller->getMobileAdapter()->adapter != nullptr;
-	m_ui.enableAdapter->setChecked(alreadyAttached);
+	// fresh session, and stays enabled only for as long as this session runs.
+	m_ui.enableAdapter->setChecked(s_wanted);
 	connect(m_ui.enableAdapter, &QAbstractButton::toggled, this, &MobileAdapterView::setAdapterEnabled);
 
-	// Attach temporarily (if not already attached) so the Status/Settings tabs have
-	// live data to show and edit, even if the adapter isn't enabled to keep running.
-	if (!alreadyAttached) {
-		m_controller->attachMobileAdapter();
+	// Bring an adapter up so the Status/Settings tabs have live data to show and
+	// edit, even if it isn't enabled to keep running afterwards. With no game
+	// loaded there is no serial port, so it can only be a config-editing one.
+	if (m_controller) {
+		if (!m_controller->getMobileAdapter()->adapter) {
+			m_controller->attachMobileAdapter();
+		}
+	} else {
+		createStandalone();
 	}
 
 	getConfig();
 }
 
 MobileAdapterView::~MobileAdapterView() {
+	if (!m_controller) {
+		destroyStandalone();
+		return;
+	}
 	// Only tear the adapter down if it isn't meant to keep running in the background;
 	// closing this window is no longer required to keep the adapter attached.
 	if (m_ui.enableAdapter->isChecked()) {
@@ -115,6 +204,11 @@ MobileAdapterView::~MobileAdapterView() {
 }
 
 void MobileAdapterView::setAdapterEnabled(bool enabled) {
+	s_wanted = enabled;
+	if (!m_controller) {
+		// The adapter gets plugged in for real once a game is loaded.
+		return;
+	}
 	if (enabled) {
 		if (!m_controller->getMobileAdapter()->adapter) {
 			m_controller->attachMobileAdapter();
@@ -125,63 +219,105 @@ void MobileAdapterView::setAdapterEnabled(bool enabled) {
 	}
 }
 
+// Turns typed text into an address, treating empty text as "none". Returns
+// false if something was typed but couldn't be read as an address.
+static bool parseMobileAddr(const QString& text, unsigned defaultPort, struct mobile_addr* out) {
+	unsigned port = defaultPort;
+	Address host;
+	int res = mobileConvertAddr(text, &host, &port);
+	if (res < 0) {
+		return false;
+	}
+
+	memset(out, 0, sizeof(*out));
+	if (!res) {
+		out->type = MOBILE_ADDRTYPE_NONE;
+	} else if (host.version == IPV6) {
+		struct mobile_addr6* addr6 = (struct mobile_addr6*) out;
+		addr6->type = MOBILE_ADDRTYPE_IPV6;
+		memcpy(&addr6->host, &host.ipv6, MOBILE_HOSTLEN_IPV6);
+		addr6->port = port;
+	} else {
+		struct mobile_addr4* addr4 = (struct mobile_addr4*) out;
+		addr4->type = MOBILE_ADDRTYPE_IPV4;
+		*(uint32_t*) &addr4->host = htonl(host.ipv4);
+		addr4->port = port;
+	}
+	return true;
+}
+
 void MobileAdapterView::setType(int type) {
-	m_controller->setMobileAdapterType(type);
-	getConfig();
+	withAdapter([type](struct mobile_adapter* adapter) {
+		enum mobile_adapter_device device;
+		bool unmetered;
+		mobile_config_get_device(adapter, &device, &unmetered);
+		mobile_config_set_device(adapter, (enum mobile_adapter_device) (MOBILE_ADAPTER_BLUE + type), unmetered);
+	});
 }
 
 void MobileAdapterView::setUnmetered(bool unmetered) {
-	m_controller->setMobileAdapterUnmetered(unmetered);
-	getConfig();
+	withAdapter([unmetered](struct mobile_adapter* adapter) {
+		enum mobile_adapter_device device;
+		bool tmp;
+		mobile_config_get_device(adapter, &device, &tmp);
+		mobile_config_set_device(adapter, device, unmetered);
+	});
+}
+
+void MobileAdapterView::setDns(int which, const QString& text) {
+	struct mobile_addr addr;
+	if (!parseMobileAddr(text, MOBILE_DNS_PORT, &addr)) {
+		getConfig();
+		return;
+	}
+	withAdapter([which, &addr](struct mobile_adapter* adapter) {
+		mobile_config_set_dns(adapter, &addr, (enum mobile_dns) which);
+	});
 }
 
 void MobileAdapterView::setDns1() {
-	unsigned port = MOBILE_DNS_PORT;
-	QString text = m_ui.setDns1->text();
-	Address addr;
-	int res = mobileConvertAddr(text, &addr, &port);
-	if (res == 1) {
-		m_controller->setMobileAdapterDns1(addr, port);
-	} else if (res == 0) {
-		m_controller->clearMobileAdapterDns1();
-	}
-	getConfig();
+	setDns(MOBILE_DNS1, m_ui.setDns1->text());
 }
 
 void MobileAdapterView::setDns2() {
-	unsigned port = MOBILE_DNS_PORT;
-	QString text = m_ui.setDns2->text();
-	Address addr;
-	int res = mobileConvertAddr(text, &addr, &port);
-	if (res == 1) {
-		m_controller->setMobileAdapterDns2(addr, port);
-	} else if (res == 0) {
-		m_controller->clearMobileAdapterDns2();
-	}
-	getConfig();
+	setDns(MOBILE_DNS2, m_ui.setDns2->text());
 }
 
 void MobileAdapterView::setPort(int port) {
-	m_controller->setMobileAdapterPort(port);
-	getConfig();
+	withAdapter([port](struct mobile_adapter* adapter) {
+		mobile_config_set_p2p_port(adapter, (unsigned) port);
+	});
 }
 
 void MobileAdapterView::setRelay() {
-	unsigned port = MOBILE_DEFAULT_RELAY_PORT;
-	QString text = m_ui.setRelay->text();
-	Address addr;
-	int res = mobileConvertAddr(text, &addr, &port);
-	if (res == 1) {
-		m_controller->setMobileAdapterRelay(addr, port);
-	} else if (res == 0) {
-		m_controller->clearMobileAdapterRelay();
+	struct mobile_addr addr;
+	if (!parseMobileAddr(m_ui.setRelay->text(), MOBILE_DEFAULT_RELAY_PORT, &addr)) {
+		getConfig();
+		return;
 	}
-	getConfig();
+	withAdapter([&addr](struct mobile_adapter* adapter) {
+		mobile_config_set_relay(adapter, &addr);
+	});
 }
 
 void MobileAdapterView::setToken() {
-	m_controller->setMobileAdapterToken(m_ui.setToken->text());
-	getConfig();
+	QString qToken = m_ui.setToken->text();
+	withAdapter([&qToken](struct mobile_adapter* adapter) {
+		if (qToken.size() != MOBILE_RELAY_TOKEN_SIZE * 2) {
+			mobile_config_set_relay_token(adapter, nullptr);
+			return;
+		}
+		unsigned char token[MOBILE_RELAY_TOKEN_SIZE];
+		for (int i = 0; i < MOBILE_RELAY_TOKEN_SIZE * 2; i += 2) {
+			bool ok = false;
+			token[i / 2] = qToken.mid(i, 2).toInt(&ok, 0x10);
+			if (!ok) {
+				mobile_config_set_relay_token(adapter, nullptr);
+				return;
+			}
+		}
+		mobile_config_set_relay_token(adapter, token);
+	});
 }
 
 void MobileAdapterView::copyToken(bool checked) {
@@ -197,23 +333,54 @@ void MobileAdapterView::importConfig(bool checked) {
 		return;
 	}
 
-	m_controller->importMobileAdapterConfig(filename);
+	if (m_controller) {
+		m_controller->importMobileAdapterConfig(filename);
+	} else if (m_hasStandalone) {
+		QFile fconfig(filename);
+		if (fconfig.open(QIODevice::ReadOnly)) {
+			fconfig.read((char*) m_standalone.m.config, MOBILE_CONFIG_SIZE);
+			fconfig.close();
+			mobile_config_load(m_standalone.m.adapter);
+		}
+	}
 	getConfig();
 }
 
 void MobileAdapterView::getConfig() {
-	int type;
+	CoreController::Interrupter interrupter;
+	if (m_controller) {
+		interrupter.interrupt(m_controller);
+	}
+	struct mobile_adapter* adapter = this->adapter();
+	if (!adapter) {
+		return;
+	}
+
+	enum mobile_adapter_device device;
 	bool unmetered;
-	QString dns1, dns2;
-	int port;
-	QString relay, token;
-	m_controller->getMobileAdapterConfig(&type, &unmetered, &dns1, &dns2, &port, &relay, &token);
-	m_ui.setType->setCurrentIndex(type);
+	mobile_config_get_device(adapter, &device, &unmetered);
+	m_ui.setType->setCurrentIndex((int) device - MOBILE_ADAPTER_BLUE);
 	m_ui.setUnmetered->setChecked(unmetered);
-	m_ui.setDns1->setText(dns1);
-	m_ui.setDns2->setText(dns2);
-	m_ui.setPort->setValue(port);
-	m_ui.setRelay->setText(relay);
+
+	struct mobile_addr addr;
+	mobile_config_get_dns(adapter, &addr, MOBILE_DNS1);
+	m_ui.setDns1->setText(mobileAddrToString(&addr, MOBILE_DNS_PORT));
+	mobile_config_get_dns(adapter, &addr, MOBILE_DNS2);
+	m_ui.setDns2->setText(mobileAddrToString(&addr, MOBILE_DNS_PORT));
+	mobile_config_get_relay(adapter, &addr);
+	m_ui.setRelay->setText(mobileAddrToString(&addr, MOBILE_DEFAULT_RELAY_PORT));
+
+	unsigned p2pPort;
+	mobile_config_get_p2p_port(adapter, &p2pPort);
+	m_ui.setPort->setValue(p2pPort);
+
+	QString token;
+	unsigned char tokenGet[MOBILE_RELAY_TOKEN_SIZE];
+	if (mobile_config_get_relay_token(adapter, tokenGet)) {
+		for (int i = 0; i < MOBILE_RELAY_TOKEN_SIZE; ++i) {
+			token += QString("%1").arg(tokenGet[i], 2, 0x10, QChar('0'));
+		}
+	}
 	m_ui.setToken->setText(token);
 }
 
