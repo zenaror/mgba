@@ -55,6 +55,93 @@ static void _debugLog(void* user, const char* line) {
 	mLOG(GUI_MOBILE, DEBUG, "%s", line);
 }
 
+ATTRIBUTE_FORMAT(printf, 1, 2)
+static void _logPrintf(const char* format, ...);
+
+// Stands in for the core's own callbacks to report what the adapter's sockets
+// actually do, which is otherwise invisible from here.
+static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
+	struct MobileAdapterGB* mobile = user;
+
+	mobile->socket[conn].socktype = type;
+
+	struct Address bindaddr = {0};
+	bindaddr.version = addrtype != MOBILE_ADDRTYPE_IPV6 ? IPV4 : IPV6;
+
+	Socket fd;
+	if (type != MOBILE_SOCKTYPE_UDP) {
+		fd = SocketOpenTCP(bindport, &bindaddr);
+	} else {
+		fd = SocketOpenUDP(bindport, &bindaddr);
+	}
+	if (SOCKET_FAILED(fd)) {
+		_logPrintf("<mGBA> conn %u open %s failed (%i)", conn,
+		           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", SocketError());
+	} else {
+		SocketSetBlocking(fd, false);
+		_logPrintf("<mGBA> conn %u open %s ok, port %u", conn,
+		           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", bindport);
+	}
+
+	mobile->socket[conn].fd = fd;
+	return !SOCKET_FAILED(fd);
+}
+
+static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr) {
+	struct MobileAdapterGB* mobile = user;
+
+	struct Address sendaddr = {0};
+	int destport = 0;
+	struct Address* destaddr = NULL;
+	if (addr && addr->type == MOBILE_ADDRTYPE_IPV4) {
+		const struct mobile_addr4* addr4 = (const struct mobile_addr4*) addr;
+		sendaddr.version = IPV4;
+		sendaddr.ipv4 = ntohl(*(const uint32_t*) &addr4->host);
+		destaddr = &sendaddr;
+		destport = addr4->port;
+	}
+
+	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destport, destaddr);
+	if (SOCKET_RESERROR(res)) {
+		_logPrintf("<mGBA> conn %u send failed (%i)", conn, SocketError());
+		return -1;
+	}
+	_logPrintf("<mGBA> conn %u sent %i to %u.%u.%u.%u:%i", conn, (int) res,
+	           (unsigned) ((sendaddr.ipv4 >> 24) & 0xFF), (unsigned) ((sendaddr.ipv4 >> 16) & 0xFF),
+	           (unsigned) ((sendaddr.ipv4 >> 8) & 0xFF), (unsigned) (sendaddr.ipv4 & 0xFF), destport);
+	return res;
+}
+
+static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
+	struct MobileAdapterGB* mobile = user;
+
+	struct Address srcaddr = {0};
+	int srcport = 0;
+	ssize_t res = SocketRecvFrom(mobile->socket[conn].fd, data, size, &srcport, &srcaddr);
+	if (SOCKET_RESERROR(res)) {
+		if (SocketWouldBlock()) {
+			return 0;
+		}
+		_logPrintf("<mGBA> conn %u read error %i", conn, SocketError());
+		return -1;
+	}
+
+	if (res > 0) {
+		_logPrintf("<mGBA> conn %u got %i from %u.%u.%u.%u:%i", conn, (int) res,
+		           (unsigned) ((srcaddr.ipv4 >> 24) & 0xFF), (unsigned) ((srcaddr.ipv4 >> 16) & 0xFF),
+		           (unsigned) ((srcaddr.ipv4 >> 8) & 0xFF), (unsigned) (srcaddr.ipv4 & 0xFF), srcport);
+	}
+
+	if (res > 0 && addr) {
+		struct mobile_addr4* addr4 = (struct mobile_addr4*) addr;
+		addr4->type = MOBILE_ADDRTYPE_IPV4;
+		*(uint32_t*) &addr4->host = htonl(srcaddr.ipv4);
+		addr4->port = srcport;
+	}
+
+	return (res || mobile->socket[conn].socktype == MOBILE_SOCKTYPE_UDP) ? res : -2;
+}
+
 // Oldest first, so index 0 is the start of what is still remembered.
 static const char* _logLine(size_t i) {
 	size_t oldest = s_logCount == MOBILE_LOG_LINES ? s_logNext : 0;
@@ -433,6 +520,9 @@ static bool _attach(struct mGUIRunner* runner) {
 	// Replaces the driver's own logger, which only ever reached a file nobody
 	// can read without powering the console down.
 	mobile_def_debug_log(_adapter(m)->adapter, _debugLog);
+	mobile_def_sock_open(_adapter(m)->adapter, _loggingSockOpen);
+	mobile_def_sock_send(_adapter(m)->adapter, _loggingSockSend);
+	mobile_def_sock_recv(_adapter(m)->adapter, _loggingSockRecv);
 	_logNetworkState();
 	return true;
 }
