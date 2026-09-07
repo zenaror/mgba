@@ -199,6 +199,16 @@ static void _probeDns(struct mobile_adapter* adapter) {
 			_logPrintf("<mGBA> DNS probe: read failed (%i)", SocketError());
 		}
 	}
+
+	// The adapter's own sockets are non-blocking, and everything hinges on a
+	// read finding nothing being told apart from a read going wrong.
+	SocketSetBlocking(sock, false);
+	uint8_t scratch[16];
+	struct Address idleFrom = {0};
+	int idlePort = 0;
+	ssize_t idle = SocketRecvFrom(sock, scratch, sizeof(scratch), &idlePort, &idleFrom);
+	_logPrintf("<mGBA> idle read: %i, errno %i, wouldblock %i", (int) idle, SocketError(),
+	           SocketWouldBlock() ? 1 : 0);
 	SocketClose(sock);
 }
 
@@ -220,6 +230,7 @@ enum mGUIMobileItem {
 	MOBILE_ITEM_ENABLE = 0,
 	MOBILE_ITEM_STATUS,
 	MOBILE_ITEM_SHOW_LOG,
+	MOBILE_ITEM_TEST_DNS,
 	MOBILE_ITEM_TYPE,
 	MOBILE_ITEM_UNMETERED,
 	MOBILE_ITEM_DNS1,
@@ -423,7 +434,6 @@ static bool _attach(struct mGUIRunner* runner) {
 	// can read without powering the console down.
 	mobile_def_debug_log(_adapter(m)->adapter, _debugLog);
 	_logNetworkState();
-	_probeDns(_adapter(m)->adapter);
 	return true;
 }
 
@@ -802,6 +812,10 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Test DNS server",
+		.data = GUI_V_U(MOBILE_ITEM_TEST_DNS)
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Adapter type",
 		.data = GUI_V_U(MOBILE_ITEM_TYPE),
 		.validStates = (const char*[]) { "Blue", "Yellow", "Green", "Red" },
@@ -904,6 +918,12 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 			break;
 		case MOBILE_ITEM_P2P_PORT:
 			_editPort(runner, text.p2pPort, sizeof(text.p2pPort));
+			break;
+		case MOBILE_ITEM_TEST_DNS:
+			if (_live(runner)) {
+				_logNetworkState();
+				_probeDns(_live(runner));
+			}
 			break;
 		case MOBILE_ITEM_CLOSE:
 			done = true;
