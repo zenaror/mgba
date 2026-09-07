@@ -289,7 +289,10 @@ void mGUIMobileAdapterAttach(struct mGUIRunner* runner) {
 }
 
 bool mGUIMobileAdapterHasLog(struct mGUIRunner* runner) {
-	return s_showLog && s_logCount && runner->mobile && runner->mobile->attached;
+	// Deliberately true before anything has been logged: the library only says
+	// something once a game talks to the adapter, and a blank screen until then
+	// is indistinguishable from the adapter not being plugged in at all.
+	return s_showLog && runner->mobile && runner->mobile->attached;
 }
 
 void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
@@ -297,20 +300,29 @@ void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 		return;
 	}
 	unsigned lineHeight = GUIFontHeight(runner->params.font);
-	if (!lineHeight || runner->params.height < lineHeight * 2) {
+	if (!lineHeight) {
+		return;
+	}
+	unsigned rows = runner->params.height / lineHeight;
+	if (rows < 3) {
 		return;
 	}
 
-	// Newest at the bottom, growing upwards, leaving the top line to the OSD.
-	size_t visible = runner->params.height / lineHeight - 1;
+	// Second row down: the framerate counter owns the first.
+	unsigned y = lineHeight * 2;
+	struct MobileAdapterGB* gb = _adapter(runner->mobile);
+	GUIFontPrintf(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xFFFFFFFF, "Mobile Adapter: %s",
+	              gb && gb->number[0][0] ? gb->number[0] : "waiting for game");
+
+	// Oldest first going down, so the newest line sits at the bottom.
+	size_t visible = rows - 2;
 	if (visible > s_logCount) {
 		visible = s_logCount;
 	}
-	unsigned y = runner->params.height;
 	size_t i;
 	for (i = 0; i < visible; ++i) {
-		GUIFontPrint(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xC0FFFFFF, _logLine(s_logCount - 1 - i));
-		y -= lineHeight;
+		y += lineHeight;
+		GUIFontPrint(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xC0FFFFFF, _logLine(s_logCount - visible + i));
 	}
 }
 
