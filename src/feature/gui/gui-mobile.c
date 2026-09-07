@@ -183,10 +183,18 @@ static void _probeDns(struct mobile_adapter* adapter) {
 		_logPrintf("<mGBA> DNS probe: no reply from %u.%u.%u.%u:%u",
 		           dns4->host[0], dns4->host[1], dns4->host[2], dns4->host[3], dns4->port);
 	} else {
+		// The library throws away a reply whose sender doesn't match the server
+		// it asked, so the address reported back matters as much as the data.
 		uint8_t reply[256];
-		ssize_t got = SocketRecv(sock, reply, sizeof(reply));
+		struct Address from = {0};
+		int fromPort = 0;
+		ssize_t got = SocketRecvFrom(sock, reply, sizeof(reply), &fromPort, &from);
 		if (got > 0) {
-			_logPrintf("<mGBA> DNS probe: replied, %i bytes", (int) got);
+			_logPrintf("<mGBA> DNS reply: %i bytes from %u.%u.%u.%u:%i", (int) got,
+			           (unsigned) ((from.ipv4 >> 24) & 0xFF), (unsigned) ((from.ipv4 >> 16) & 0xFF),
+			           (unsigned) ((from.ipv4 >> 8) & 0xFF), (unsigned) (from.ipv4 & 0xFF), fromPort);
+			_logPrintf("<mGBA> expected from: %u.%u.%u.%u:%u",
+			           dns4->host[0], dns4->host[1], dns4->host[2], dns4->host[3], dns4->port);
 		} else {
 			_logPrintf("<mGBA> DNS probe: read failed (%i)", SocketError());
 		}
