@@ -74,11 +74,16 @@ static void _logPrintf(const char* format, ...) {
 // Whether the console can actually reach the network is otherwise only visible
 // as the library failing much later, with nothing to say which part gave up.
 static void _logNetworkState(void) {
+	Socket test = SocketCreate(false, SOCK_DGRAM, IPPROTO_UDP);
+	if (SOCKET_FAILED(test)) {
+		_logPrintf("<mGBA> no network: socket() failed (%i)", SocketError());
+		return;
+	}
 	struct Address any = {0};
 	any.version = IPV4;
-	Socket test = SocketOpenUDP(0, &any);
-	if (SOCKET_FAILED(test)) {
-		_logPrintf("<mGBA> no network: socket failed (%i)", SocketError());
+	if (SocketOpen(test, 0, &any)) {
+		_logPrintf("<mGBA> no network: bind failed (%i)", SocketError());
+		SocketClose(test);
 		return;
 	}
 	SocketClose(test);
@@ -329,6 +334,11 @@ bool mGUIMobileAdapterHasLog(struct mGUIRunner* runner) {
 void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 	if (!mGUIMobileAdapterHasLog(runner)) {
 		return;
+	}
+	// Resetting the core tears the driver down and builds it again, which
+	// restores its own logger, so ours has to be put back.
+	if (_live(runner)) {
+		mobile_def_debug_log(_live(runner), _debugLog);
 	}
 	unsigned lineHeight = GUIFontHeight(runner->params.font);
 	if (!lineHeight) {
