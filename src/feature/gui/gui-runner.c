@@ -601,10 +601,18 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			if (runner->drawFrame) {
 				runner->params.drawStart();
 				runner->drawFrame(runner, false);
-				if (showOSD || drawFps) {
+#ifdef USE_LIBMOBILE
+				bool drawMobileLog = mGUIMobileAdapterHasLog(runner);
+#else
+				const bool drawMobileLog = false;
+#endif
+				if (showOSD || drawFps || drawMobileLog) {
 					if (runner->params.guiPrepare) {
 						runner->params.guiPrepare();
 					}
+#ifdef USE_LIBMOBILE
+					mGUIMobileAdapterDrawLog(runner);
+#endif
 					if (drawFps) {
 						GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_ALIGN_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
 					}
