@@ -12,6 +12,7 @@
 #include <mgba/core/config.h>
 #include <mgba/core/core.h>
 #include <mgba/core/mobile.h>
+#include <mgba-util/gui/font.h>
 #include <mgba-util/gui/menu.h>
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
@@ -30,6 +31,35 @@
 #define MOBILE_CONFIG_FILE "mobile_config.bin"
 #define ADDR_TEXT_LEN 64
 #define TOKEN_TEXT_LEN (MOBILE_RELAY_TOKEN_SIZE * 2 + 1)
+#define MOBILE_LOG_LINES 48
+#define MOBILE_LOG_LEN 96
+
+mLOG_DECLARE_CATEGORY(GUI_MOBILE);
+mLOG_DEFINE_CATEGORY(GUI_MOBILE, "Mobile Adapter", "gui.mobile");
+
+// What the library reported, kept for the session so a connection attempt can
+// be inspected afterwards. There is nowhere to watch a log scroll by on a
+// handheld, and reading one off the SD card means powering the console down.
+static char s_log[MOBILE_LOG_LINES][MOBILE_LOG_LEN];
+static size_t s_logNext;
+static size_t s_logCount;
+static bool s_showLog = true;
+
+static void _debugLog(void* user, const char* line) {
+	UNUSED(user);
+	strlcpy(s_log[s_logNext], line, MOBILE_LOG_LEN);
+	s_logNext = (s_logNext + 1) % MOBILE_LOG_LINES;
+	if (s_logCount < MOBILE_LOG_LINES) {
+		++s_logCount;
+	}
+	mLOG(GUI_MOBILE, DEBUG, "%s", line);
+}
+
+// Oldest first, so index 0 is the start of what is still remembered.
+static const char* _logLine(size_t i) {
+	size_t oldest = s_logCount == MOBILE_LOG_LINES ? s_logNext : 0;
+	return s_log[(oldest + i) % MOBILE_LOG_LINES];
+}
 
 struct mGUIMobileAdapter {
 #ifdef M_CORE_GB
@@ -48,6 +78,7 @@ struct mGUIMobileAdapter {
 enum mGUIMobileItem {
 	MOBILE_ITEM_ENABLE = 0,
 	MOBILE_ITEM_STATUS,
+	MOBILE_ITEM_SHOW_LOG,
 	MOBILE_ITEM_TYPE,
 	MOBILE_ITEM_UNMETERED,
 	MOBILE_ITEM_DNS1,
@@ -245,12 +276,42 @@ static bool _attach(struct mGUIRunner* runner) {
 	m->attached = _adapter(m)->adapter;
 	if (!m->attached) {
 		SocketSubsystemDeinit();
+		return false;
 	}
-	return m->attached;
+	// Replaces the driver's own logger, which only ever reached a file nobody
+	// can read without powering the console down.
+	mobile_def_debug_log(_adapter(m)->adapter, _debugLog);
+	return true;
 }
 
 void mGUIMobileAdapterAttach(struct mGUIRunner* runner) {
 	_attach(runner);
+}
+
+bool mGUIMobileAdapterHasLog(struct mGUIRunner* runner) {
+	return s_showLog && s_logCount && runner->mobile && runner->mobile->attached;
+}
+
+void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
+	if (!mGUIMobileAdapterHasLog(runner)) {
+		return;
+	}
+	unsigned lineHeight = GUIFontHeight(runner->params.font);
+	if (!lineHeight || runner->params.height < lineHeight * 2) {
+		return;
+	}
+
+	// Newest at the bottom, growing upwards, leaving the top line to the OSD.
+	size_t visible = runner->params.height / lineHeight - 1;
+	if (visible > s_logCount) {
+		visible = s_logCount;
+	}
+	unsigned y = runner->params.height;
+	size_t i;
+	for (i = 0; i < visible; ++i) {
+		GUIFontPrint(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xC0FFFFFF, _logLine(s_logCount - 1 - i));
+		y -= lineHeight;
+	}
 }
 
 void mGUIMobileAdapterDetach(struct mGUIRunner* runner) {
@@ -390,6 +451,8 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 	struct mobile_adapter* adapter = _live(runner);
 	struct MobileAdapterGB* gb = _adapter(runner->mobile);
 
+	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state = s_showLog;
+
 	if (!adapter) {
 		strlcpy(text->status, "Adapter not running", sizeof(text->status));
 		text->dns1[0] = '\0';
@@ -449,6 +512,7 @@ static void _applyToggles(struct mGUIRunner* runner, struct GUIMenu* menu) {
 	// screen is open so the settings below still have something to edit. The
 	// teardown happens once the screen closes.
 	runner->mobileEnabled = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_ENABLE)->state;
+	s_showLog = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state;
 	if (runner->mobileEnabled && runner->core) {
 		_attach(runner);
 	}
@@ -570,6 +634,12 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		.validStates = (const char*[]) { text.status },
 		.nStates = 1,
 		.readonly = true
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Log on bottom screen",
+		.data = GUI_V_U(MOBILE_ITEM_SHOW_LOG),
+		.validStates = (const char*[]) { "Off", "On" },
+		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Adapter type",
