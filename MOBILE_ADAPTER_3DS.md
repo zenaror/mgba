@@ -179,13 +179,49 @@ docker run --rm -v "$PWD":/home/mgba/src mgba/3ds
 Produces `mgba.3dsx` and `mgba.cia`. The image carries devkitARM and CMake
 3.31, comfortably past the 3.25 that libmobile asks for.
 
+## Tracing the sockets
+
+Normally the bottom screen carries only what the library itself reports, which
+is the right amount of detail for playing. When that is not enough — a session
+failing for reasons the library's account does not explain — there is a switch
+at the top of `src/feature/gui/gui-mobile.c`:
+
+```c
+#define MOBILE_SOCKET_TRACE 0   // set to 1
+```
+
+Setting it to 1 stands mGBA's socket callbacks aside for ones that narrate, and
+adds a line per open, per send and per read, plus the console's own address and
+whether a socket can be created at all when an adapter is plugged in:
+
+```
+<mGBA> console is 192.168.10.120
+<mGBA> network ready
+<mGBA> conn 0 open udp ok, port 0
+<mGBA> conn 0 sent 42 to 192.168.10.80:53
+<mGBA> conn 0 got 58 from 192.168.10.80:53
+```
+
+That is what those lines are for, roughly in the order they answer questions:
+
+- `console is 0.0.0.0` — the console never joined a network, and everything
+  after it will fail as a consequence rather than a cause.
+- `no network: socket() failed` or `bind failed` with an errno — the service
+  refused something before any traffic was attempted.
+- `open ... failed` — the adapter could not get a socket for a connection,
+  which the game only ever sees as a generic error.
+- `sent` without a matching `got` — the request left and nothing came back.
+  Worth checking against the server's own log before suspecting the console.
+- `got` from an address, and a failure anyway — the reply arrived and something
+  above the socket rejected it. This is what the padding bug looked like.
+
+It costs a line of log per packet, so it is worth turning off again afterwards.
+Both settings are kept building; do not let the traced one rot.
+
 ## Still open
 
 - Only the GB path has been exercised on hardware. The GBA link port attach is
   written and compiles but is untested.
-- The socket callbacks currently log every open, send and receive, which is
-  noisy in normal play. That instrumentation is worth trimming now that it has
-  done its job.
 - The on-screen log keeps 48 lines but only shows what fits. A scrollable view
   of the rest would help, since opening any menu hides the live log.
 - Nothing here is upstreamable as-is, but the socket fixes and the address
