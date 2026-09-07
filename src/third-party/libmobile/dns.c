@@ -244,12 +244,7 @@ int mobile_dns_request_recv(struct mobile_adapter *adapter, unsigned conn, const
     b->size = recv;
 
     // Verify sender, discard if incorrect
-    if (!mobile_addr_compare(addr_send, &addr_recv)) {
-        debug_prefix(adapter);
-        mobile_debug_print(adapter, PSTR("Discarded reply from wrong sender"));
-        mobile_debug_endl(adapter);
-        return 0;
-    }
+    if (!mobile_addr_compare(addr_send, &addr_recv)) return 0;
 
     unsigned offset;
     int ancount = dns_verify_response(b, &offset, host, host_len);
