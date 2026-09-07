@@ -97,6 +97,103 @@ static void _logNetworkState(void) {
 	_logPrintf("<mGBA> network ready");
 }
 
+// Writes a minimal A-record query for name into out, returning its length.
+static size_t _dnsQuery(const char* name, uint8_t* out, size_t outLength) {
+	if (outLength < 12 + strlen(name) + 6) {
+		return 0;
+	}
+	memset(out, 0, 12);
+	out[0] = 0x3D;  // Any id will do; nothing else is asking
+	out[2] = 0x01;  // Recursion desired
+	out[5] = 0x01;  // One question
+	size_t len = 12;
+
+	const char* label = name;
+	while (*label) {
+		const char* dot = strchr(label, '.');
+		size_t part = dot ? (size_t) (dot - label) : strlen(label);
+		if (!part || part > 63) {
+			return 0;
+		}
+		out[len++] = part;
+		memcpy(&out[len], label, part);
+		len += part;
+		label += dot ? part + 1 : part;
+	}
+	out[len++] = 0;
+	out[len++] = 0;
+	out[len++] = 1;  // A
+	out[len++] = 0;
+	out[len++] = 1;  // IN
+	return len;
+}
+
+// Asks the configured server for a name itself, so a failure points at the
+// step that broke rather than surfacing as a bare error code inside a game.
+static void _probeDns(struct mobile_adapter* adapter) {
+	struct mobile_addr dns;
+	mobile_config_get_dns(adapter, &dns, MOBILE_DNS1);
+	if (dns.type != MOBILE_ADDRTYPE_IPV4) {
+		_logPrintf("<mGBA> no IPv4 DNS server set, skipping probe");
+		return;
+	}
+	const struct mobile_addr4* dns4 = (const struct mobile_addr4*) &dns;
+
+	uint8_t query[128];
+	size_t len = _dnsQuery("pop.reon.dion.ne.jp", query, sizeof(query));
+	if (!len) {
+		return;
+	}
+
+	Socket sock = SocketCreate(false, SOCK_DGRAM, IPPROTO_UDP);
+	if (SOCKET_FAILED(sock)) {
+		_logPrintf("<mGBA> DNS probe: no socket (%i)", SocketError());
+		return;
+	}
+	struct Address any = {0};
+	any.version = IPV4;
+	if (SocketOpen(sock, 0, &any)) {
+		_logPrintf("<mGBA> DNS probe: bind failed (%i)", SocketError());
+		SocketClose(sock);
+		return;
+	}
+
+	struct Address to = {0};
+	to.version = IPV4;
+	to.ipv4 = ntohl(*(const uint32_t*) dns4->host);
+	if (SOCKET_RESERROR(SocketSendTo(sock, query, len, dns4->port, &to))) {
+		_logPrintf("<mGBA> DNS probe: send failed (%i)", SocketError());
+		SocketClose(sock);
+		return;
+	}
+
+	// How the adapter itself polls: a read set and an exception set together,
+	// which is the part a limited service is most likely to refuse.
+	Socket r2 = sock;
+	Socket e2 = sock;
+	if (SocketPoll(1, &r2, NULL, &e2, 0) < 0) {
+		_logPrintf("<mGBA> DNS probe: poll refuses an error set (%i)", SocketError());
+	}
+
+	Socket r = sock;
+	int ready = SocketPoll(1, &r, NULL, NULL, 2000);
+	if (ready < 0) {
+		_logPrintf("<mGBA> DNS probe: poll failed (%i)", SocketError());
+	} else if (!ready) {
+		_logPrintf("<mGBA> DNS probe: no reply from %u.%u.%u.%u:%u",
+		           dns4->host[0], dns4->host[1], dns4->host[2], dns4->host[3], dns4->port);
+	} else {
+		uint8_t reply[256];
+		ssize_t got = SocketRecv(sock, reply, sizeof(reply));
+		if (got > 0) {
+			_logPrintf("<mGBA> DNS probe: replied, %i bytes", (int) got);
+		} else {
+			_logPrintf("<mGBA> DNS probe: read failed (%i)", SocketError());
+		}
+	}
+	SocketClose(sock);
+}
+
 struct mGUIMobileAdapter {
 #ifdef M_CORE_GB
 	struct GBSIOMobileAdapter gb;
@@ -318,6 +415,7 @@ static bool _attach(struct mGUIRunner* runner) {
 	// can read without powering the console down.
 	mobile_def_debug_log(_adapter(m)->adapter, _debugLog);
 	_logNetworkState();
+	_probeDns(_adapter(m)->adapter);
 	return true;
 }
 
