@@ -143,12 +143,9 @@ static int sock_send(void* user, unsigned conn, const void* data, unsigned size,
 static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
-	Socket r = mobile->socket[conn].fd;
-	Socket e = mobile->socket[conn].fd;
-	if (SocketPoll(1, &r, NULL, &e, 0) <= 0) {
-		return 0;
-	}
-
+	// No polling first: the socket is non-blocking, so the read below already
+	// answers "has anything arrived" by itself, and it answers honestly on
+	// services whose polling does not.
 	struct Address srcaddr = {0};
 	int srcport = 0;
 	ssize_t res = SocketRecvFrom(mobile->socket[conn].fd, data, size, &srcport, &srcaddr);

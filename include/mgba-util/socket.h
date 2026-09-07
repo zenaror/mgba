@@ -210,6 +210,9 @@ static inline ssize_t SocketRecvFrom(Socket socket, void* buffer, size_t size, i
 		struct sockaddr_in6 sin6;
 #endif
 	} srcInfo;
+	// Callers read the source address back to decide whether to trust the
+	// packet, so it must never be whatever happened to be on the stack.
+	memset(&srcInfo, 0, sizeof(srcInfo));
 	socklen_t srcSize = sizeof(srcInfo);
 	if (!address) {
 		return SocketRecv(socket, buffer, size);
@@ -220,6 +223,10 @@ static inline ssize_t SocketRecvFrom(Socket socket, void* buffer, size_t size, i
 #else
 		res = recvfrom(socket, (char*) buffer, size, 0, &srcInfo.sa, &srcSize);
 #endif
+		if (res < 0) {
+			// Nothing was written to srcInfo, so there is no address to report
+			return res;
+		}
 		if (srcInfo.sa.sa_family != AF_INET6) {
 			*port = ntohs(srcInfo.sin.sin_port);
 			address->version = IPV4;
