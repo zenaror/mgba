@@ -13,9 +13,11 @@ name, and connects. Tested on a New 3DS XL against a local REON server.
 - A native configuration screen, since the Qt dialog obviously does not exist
   there: enable, adapter type, unmetered, DNS 1 and 2, P2P port, relay server,
   relay token and mail port redirection.
-- The library's own chatter on the bottom screen while a game runs.
+- The library's own chatter on the bottom screen while a game runs, off
+  until asked for.
 - Reaching that screen before a game is loaded, on the 3DS and on the desktop.
-- The vendored libmobile swapped for the `feature/custom-mail-port` fork.
+- The vendored libmobile swapped for the `full_server` fork, and the relay
+  reporting that comes with it.
 
 ## Two build gates, not one
 
@@ -179,11 +181,43 @@ docker run --rm -v "$PWD":/home/mgba/src mgba/3ds
 Produces `mgba.3dsx` and `mgba.cia`. The image carries devkitARM and CMake
 3.31, comfortably past the 3.25 that libmobile asks for.
 
+## Telling a relay about mail sessions
+
+Not 3DS-specific: this lives in `src/core/mobile-auth.c` and works wherever the
+adapter does.
+
+The library signs a note whenever a game starts or stops using mail, for a
+relay that wants telling out of band. Carrying it is all the frontend does. It
+cannot happen where the library asks — that call comes from inside the protocol
+loop and has to return at once — so a report is queued there and posted from
+the per-frame update, a step at a time: look the server up, connect, send, read
+the answer to its end.
+
+Reading the answer is not politeness. Hanging up as soon as the request is out
+looks to a server like a client that gave up, and shows up there as a 499 or a
+reset. Both other implementations of this hit that and fixed it the same way.
+
+The server is found by asking the DNS the adapter is configured with, not the
+machine's own resolver, because the name it answers to means nothing outside
+that DNS. There is deliberately no way to point this elsewhere, at runtime or
+at build time. A failed report is dropped rather than retried: nothing in the
+emulated session depends on it, and the game reopening mail produces another.
+
+Two things worth knowing before calling it broken:
+
+- **Nothing is reported until an account has a key.** The key arrives through
+  the library's own POP3 bootstrap, so a fresh account has to log in once with
+  a real user and password before any report is ever sent. Until then this is
+  silent by design, not failing.
+- **Quitting without the game ending its session skips the closing report.**
+  The server's own timeout covers that case; nothing here tries to catch it.
+
 ## Tracing the sockets
 
-Normally the bottom screen carries only what the library itself reports, which
-is the right amount of detail for playing. When that is not enough — a session
-failing for reasons the library's account does not explain — **Trace sockets**
+The bottom screen stays clear while playing. **Log on bottom screen** puts the
+library's own account of a session there, which is the first thing to reach for
+when one goes wrong. When that is not enough — a session failing for reasons
+the library's account does not explain — **Trace sockets**
 on the adapter screen turns on a line per open, per send and per read. Turning
 it on also reports the console's own address and whether a socket can be
 created at all, so the state of the network is on screen straight away:
@@ -225,5 +259,12 @@ changing these would be a quiet way to break the console builds only.
   written and compiles but is untested.
 - The on-screen log keeps 48 lines but only shows what fits. A scrollable view
   of the rest would help, since opening any menu hides the live log.
+- Receiving does not implement the contract's "is this connection still
+  alive" case, where the library passes no buffer and expects to be told
+  whether the remote has gone. Nothing in the library asks for it today, so
+  this costs nothing now; it would need a peeking read, which the socket layer
+  does not offer and which every platform spells differently. Answering "alive"
+  unconditionally would be worse than not answering, since it would hide a
+  disconnect that had really happened.
 - Nothing here is upstreamable as-is, but the socket fixes and the address
   comparison are bugs in their own right and worth reporting.

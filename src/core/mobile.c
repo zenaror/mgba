@@ -203,5 +203,8 @@ struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB *mobile) {
 	mobile_def_sock_recv(adapter, sock_recv);
 	mobile_def_update_number(adapter, update_number);
 
+	mobile->adapter = adapter;
+	MobileAdapterAuthInit(mobile);
+
 	return adapter;
 }

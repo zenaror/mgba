@@ -5,6 +5,7 @@
 
 #include "mobile.h"
 #include "atomic.h"
+#include "pop3_auth.h"
 
 enum mobile_command {
     MOBILE_COMMAND_NULL = 0xF,
@@ -67,6 +68,29 @@ struct mobile_adapter_commands {
     bool dns2_use;
     struct mobile_addr4 dns1;
     struct mobile_addr4 dns2;
+
+    // ISP login ID sent by the game in PPP Connect, kept around for the
+    //   lifetime of the internet session, to sign device-auth requests
+    //   (see device_auth.h). Not otherwise used by the emulated protocol.
+    unsigned char ppp_id[0x20];
+    unsigned char ppp_id_size;
+
+    // Tracks which of the connections above are known to be a POP3
+    //   connection (destination port 110), for the XAPOP/XPROVISION
+    //   interception in pop3_auth.h -- unrelated to device-auth below.
+    bool mail_conn[MOBILE_MAX_CONNECTIONS];
+
+    // Whether the device-auth authorize HTTP side channel has already
+    //   fired for the current PPP session (see command_tcp_connect_*() and
+    //   do_ppp_disconnect()): authorize fires once, on the first
+    //   successful connection to a mail port (25 or 110), and deauthorize
+    //   fires once, on PPP disconnect, covering the whole call regardless
+    //   of which mail protocol (or order) the game actually uses.
+    bool mail_authorized;
+
+    // Line-oriented USER/PASS interception state for the mail_conn
+    //   connection above, see pop3_auth.h.
+    struct mobile_pop3_auth pop3;
 };
 
 void mobile_commands_init(struct mobile_adapter *adapter);
