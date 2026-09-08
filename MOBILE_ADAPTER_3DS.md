@@ -243,6 +243,21 @@ Two things worth knowing before calling it broken:
   silent by design, not failing.
 - **Quitting without the game ending its session skips the closing report.**
   The server's own timeout covers that case; nothing here tries to catch it.
+  The library says so in the log when it happens, which is the only trace that
+  will ever exist here: the adapter is freed straight after it is stopped, so
+  the queued report goes with it and no later start can pick it up.
+
+This has been exercised end to end from the console: mail sent from a game,
+through the relay, to an address outside it. Worth recording what that took,
+because the failure it replaced was silent in the same way the DNS one was. A
+report is raised while a game is connected to a mail port, and the library
+would only send one while no session was in progress — so the opening report
+could never be sent at all, and the closing one overwrote it. A server saw
+only hangups, and refused to relay for a device it had never been told about.
+Nothing in the emulated session could show this: the game got a plain refusal
+from the mail server, with nothing to say why. It was found by noticing that
+the two kinds of report failed differently, which rules out the channel they
+share and leaves only the ordering.
 
 ## Tracing the sockets
 
@@ -287,10 +302,12 @@ changing these would be a quiet way to break the console builds only.
 
 ## Still open
 
-- Only the GB path has been exercised on hardware. The GBA link port attach is
-  written and compiles but is untested.
-- The on-screen log keeps 48 lines but only shows what fits. A scrollable view
-  of the rest would help, since opening any menu hides the live log.
+- Only the Game Boy core has been run against a game on a console. The attach
+  for the GBA core is written and compiles, but no GBA title has been played
+  through it, so nothing about that path is known to work beyond building.
+- The on-screen log keeps 48 lines and shows only what fits, and opening any
+  menu hides it. Scrolling the rest was considered and dropped: what matters
+  arrives at the end, which is the part that stays on screen.
 - Receiving does not implement the contract's "is this connection still
   alive" case, where the library passes no buffer and expects to be told
   whether the remote has gone. Nothing in the library asks for it today, so
@@ -303,5 +320,7 @@ changing these would be a quiet way to break the console builds only.
   since re-reading storage that a write has not reached yet would roll its
   replay counter backwards. Working around that from here would defeat what the
   refusal is for, so it stands; everything else in the file imports normally.
-- Nothing here is upstreamable as-is, but the socket fixes and the address
-  comparison are bugs in their own right and worth reporting.
+- Nothing here is upstreamable as-is, but the socket fixes are bugs in their
+  own right and worth reporting. The address comparison no longer belongs on
+  this list: it now lives in the library, so the copy here carries no local
+  patch at all.
