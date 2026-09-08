@@ -159,7 +159,7 @@ static inline ssize_t SocketSend(Socket socket, const void* buffer, size_t size)
 #endif
 }
 
-static inline ssize_t SocketSendTo(Socket socket, const void* buffer, size_t size, int port, const struct Address *address) {
+static inline ssize_t SocketSendTo(Socket socket, const void* buffer, size_t size, int port, const struct Address* address) {
 	bool useIPv6 = address && (address->version == IPV6);
 	union {
 		struct sockaddr sa;
@@ -202,7 +202,7 @@ static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
 #endif
 }
 
-static inline ssize_t SocketRecvFrom(Socket socket, void* buffer, size_t size, int *port, struct Address *address) {
+static inline ssize_t SocketRecvFrom(Socket socket, void* buffer, size_t size, int* port, struct Address* address) {
 	union {
 		struct sockaddr sa;
 		struct sockaddr_in sin;

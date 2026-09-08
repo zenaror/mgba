@@ -19,7 +19,7 @@
 
 using namespace QGBA;
 
-static int mobileConvertAddr(const QString& addr, Address *output, unsigned *port) {
+static int mobileConvertAddr(const QString& addr, Address* output, unsigned* port) {
 	QHostAddress qaddress;
 	if (addr.isEmpty()) {
 		return 0;
