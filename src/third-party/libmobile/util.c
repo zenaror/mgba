@@ -27,25 +27,27 @@ void mobile_addr_copy(struct mobile_addr *dest, const struct mobile_addr *src)
 }
 
 // Compare addresses <addr1> and <addr2> without reading out of their bounds.
+// Compares fields individually rather than memcmp()ing the whole struct:
+// on ABIs with short enums (e.g. ARM EABI, used by 3DS/RP2040 toolchains),
+// `enum mobile_addrtype` is 1 byte, leaving 3 bytes of padding before the
+// 4-byte-aligned `port` field. A raw memcmp() would read that padding,
+// making the comparison depend on whatever garbage happens to be there
+// instead of the actual address -- on platforms with 4-byte (int-sized)
+// enums, like x86, there's no such gap, which is why this went unnoticed.
 bool mobile_addr_compare(const struct mobile_addr *addr1, const struct mobile_addr *addr2)
 {
     if (addr1->type != addr2->type) return false;
-
-    // Comparing these byte for byte would take in the padding a compiler is
-    // free to leave after the type, which is three bytes wide wherever an enum
-    // is stored in one byte, and which nothing here ever sets. Two addresses
-    // that are the same in every field would then still fail to match.
     if (addr1->type == MOBILE_ADDRTYPE_IPV4) {
-        const struct mobile_addr4 *a1 = (const struct mobile_addr4 *)addr1;
-        const struct mobile_addr4 *a2 = (const struct mobile_addr4 *)addr2;
-        return a1->port == a2->port &&
-            memcmp(a1->host, a2->host, MOBILE_HOSTLEN_IPV4) == 0;
+        const struct mobile_addr4 *a = (const struct mobile_addr4 *)addr1;
+        const struct mobile_addr4 *b = (const struct mobile_addr4 *)addr2;
+        return a->port == b->port &&
+            memcmp(a->host, b->host, sizeof(a->host)) == 0;
     }
     if (addr1->type == MOBILE_ADDRTYPE_IPV6) {
-        const struct mobile_addr6 *a1 = (const struct mobile_addr6 *)addr1;
-        const struct mobile_addr6 *a2 = (const struct mobile_addr6 *)addr2;
-        return a1->port == a2->port &&
-            memcmp(a1->host, a2->host, MOBILE_HOSTLEN_IPV6) == 0;
+        const struct mobile_addr6 *a = (const struct mobile_addr6 *)addr1;
+        const struct mobile_addr6 *b = (const struct mobile_addr6 *)addr2;
+        return a->port == b->port &&
+            memcmp(a->host, b->host, sizeof(a->host)) == 0;
     }
     return false;
 }

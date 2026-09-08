@@ -218,7 +218,9 @@ enum mobile_action mobile_actions_get(struct mobile_adapter *adapter)
         actions |= MOBILE_ACTION_WRITE_CONFIG;
     }
 
-    // When we have time for it, attempt to fetch the user's number.
+    // When we have time for it, attempt to fetch the user's number. Unlike
+    //   device-auth below, this is purely informational background work, so
+    //   it stays restricted to idle time between sessions (!global.active).
     // Mutually exclusive with device-auth resolution below: both alias the
     //   same shared dns/relay socket buffer. Once active, a fetch is left to
     //   run to completion (device-auth won't preempt it -- see below), but a
@@ -235,10 +237,24 @@ enum mobile_action mobile_actions_get(struct mobile_adapter *adapter)
         actions |= MOBILE_ACTION_INIT_NUMBER;
     }
 
-    // Resolve/dispatch a queued device-auth event, when idle. See
-    //   MOBILE_ACTION_INIT_NUMBER above for why number_fetch is excluded.
+    // Resolve/dispatch a queued device-auth event. Deliberately NOT gated on
+    //   !global.active: authorize needs to land during the PPP session,
+    //   right after the game connects to a mail port and before it starts
+    //   the actual SMTP/POP3 exchange -- waiting for the session to end
+    //   entirely would make it structurally impossible to ever dispatch an
+    //   authorize before mail traffic happens (a real bug an earlier version
+    //   of this had: the pending authorize would sit untouched for the
+    //   entire session, then get overwritten by the deauthorize that fires
+    //   on disconnect, so the relay server would see 0 authorize and 1
+    //   deauthorize per session -- exactly what production logs showed).
+    // Safe to run mid-session because mobile_device_auth_handle() borrows a
+    //   connection slot through mobile_commands_connection_new() (see
+    //   commands.h) instead of a hardcoded one, so it can never collide with
+    //   a connection the game already has open, and simply waits its turn
+    //   (staying pending, not dropped) if both slots are taken.
+    // Still mutually exclusive with number_fetch above: both alias the same
+    //   shared dns/relay socket buffer for their own protocol state.
     if (adapter->device_auth.state != MOBILE_DEVICE_AUTH_IDLE || (
-                !adapter->global.active &&
                 !adapter->global.number_fetch_active &&
                 adapter->device_auth.pending)) {
         actions |= MOBILE_ACTION_DEVICE_AUTH;
@@ -384,6 +400,22 @@ void mobile_stop(struct mobile_adapter *adapter)
 
     mobile_reset(adapter);
     mobile_config_save(adapter);
+
+    // Ending the session above queues a device-auth deauthorize, but
+    //   global.start is already false, so mobile_actions_get() returns
+    //   nothing and there is no tick left in which to resolve and send it.
+    //   It stays queued rather than being discarded, so a later
+    //   mobile_start() still delivers it -- but for a frontend that stops
+    //   the library for good (closing the emulator, powering off), the
+    //   relay server never hears about this session ending and falls back
+    //   to expiring the authorization on its own. Worth seeing in the log,
+    //   since from the server's side it looks the same as a lost request.
+    if (adapter->device_auth.pending) {
+        debug_prefix(adapter);
+        mobile_debug_print(adapter,
+            PSTR("Stopped with a device-auth event still queued"));
+        mobile_debug_endl(adapter);
+    }
 }
 
 void mobile_init(struct mobile_adapter *adapter, void *user)

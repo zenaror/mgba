@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "mobile_data.h"
+#include "commands.h"
 #include "dns.h"
 #include "sha256.h"
 #include "util.h"
@@ -15,11 +16,6 @@
 //   port handling) independently.
 static const char device_auth_host[] = "device.auth.dion.ne.jp";
 #define DEVICE_AUTH_HOST_LEN (sizeof(device_auth_host) - 1)
-
-// Reuses the same connection slot as the relay number-fetch background
-//   task (mobile.c) -- see mobile_device_auth_handle()'s gating for why
-//   that's safe (mutually exclusive, both only run while idle).
-static const unsigned device_auth_conn = 0;
 
 // Longest possible "ppp_id|action|counter" message:
 //   0x20 (ppp_id) + 1 ('|') + 11 ("deauthorize") + 1 ('|') + 20 (2^64-1)
@@ -77,9 +73,32 @@ void mobile_device_auth_notify(struct mobile_adapter *adapter, enum mobile_devic
     if (!adapter->config.device_auth_key_init) return;
 
     struct mobile_adapter_device_auth *s = &adapter->device_auth;
+
+    // Say exactly what was lost and how far it got. This is the log that
+    //   disambiguates a relay server seeing "deauthorize with no authorize":
+    //   that used to mean only one thing (the authorize could never
+    //   dispatch at all), but since device-auth yields its connection slot
+    //   to the game it can also just mean the authorize kept losing the
+    //   slot to a busy game. Only the client-side log can tell those apart.
     if (s->pending) {
         debug_prefix(adapter);
-        mobile_debug_print(adapter, PSTR("Dropping event still resolving"));
+        if (s->pending_action == MOBILE_DEVICE_AUTH_AUTHORIZE) {
+            if (s->state == MOBILE_DEVICE_AUTH_IDLE) {
+                mobile_debug_print(adapter,
+                    PSTR("Replacing authorize that never got a turn to resolve"));
+            } else {
+                mobile_debug_print(adapter,
+                    PSTR("Replacing authorize still resolving"));
+            }
+        } else {
+            if (s->state == MOBILE_DEVICE_AUTH_IDLE) {
+                mobile_debug_print(adapter,
+                    PSTR("Replacing deauthorize that never got a turn to resolve"));
+            } else {
+                mobile_debug_print(adapter,
+                    PSTR("Replacing deauthorize still resolving"));
+            }
+        }
         mobile_debug_endl(adapter);
     }
 
@@ -126,9 +145,15 @@ static void device_auth_sign_and_dispatch(struct mobile_adapter *adapter, const 
 }
 
 // Starts (or restarts, for the next fallback candidate) resolution at
-//   addr_id. Returns false if there's nothing left to try, or the socket/
-//   query couldn't be set up -- either way the caller must give up.
-static bool device_auth_resolve_start(struct mobile_adapter *adapter, unsigned char addr_id)
+//   addr_id, borrowing a connection slot via mobile_commands_connection_new()
+//   -- the same accounting the game's own connections use, so this can
+//   never collide with one it already has open.
+// Returns 1 if resolution started (state moved to RESOLVE_SEND); 0 if every
+//   candidate address is set, but no connection slot is free right now (the
+//   caller must leave the event pending and retry later, NOT give up); -1
+//   if there's no address left to try, or the socket/query couldn't be set
+//   up (the caller must give up).
+static int device_auth_resolve_start(struct mobile_adapter *adapter, unsigned char addr_id)
 {
     struct mobile_adapter_device_auth *s = &adapter->device_auth;
 
@@ -137,19 +162,25 @@ static bool device_auth_resolve_start(struct mobile_adapter *adapter, unsigned c
         addr_send = device_auth_get_addr(adapter, addr_id);
         if (addr_send->type != MOBILE_ADDRTYPE_NONE) break;
     }
-    if (addr_id >= 4) return false;
+    if (addr_id >= 4) return -1;
+
+    int conn = mobile_commands_connection_new(adapter);
+    if (conn < 0) return 0;
 
     mobile_addr_copy(&s->addr, addr_send);
     s->addr_id = addr_id;
 
-    if (!mobile_cb_sock_open(adapter, device_auth_conn, MOBILE_SOCKTYPE_UDP,
+    if (!mobile_cb_sock_open(adapter, (unsigned)conn, MOBILE_SOCKTYPE_UDP,
             s->addr.type, 0)) {
-        return false;
+        return -1;
     }
     if (!mobile_dns_request_build(adapter, device_auth_host, DEVICE_AUTH_HOST_LEN)) {
-        mobile_cb_sock_close(adapter, device_auth_conn);
-        return false;
+        mobile_cb_sock_close(adapter, (unsigned)conn);
+        return -1;
     }
+
+    adapter->commands.connections[conn] = true;
+    s->conn = (unsigned char)conn;
 
     debug_prefix(adapter);
     mobile_debug_print(adapter, PSTR("Resolving "));
@@ -158,7 +189,35 @@ static bool device_auth_resolve_start(struct mobile_adapter *adapter, unsigned c
 
     mobile_cb_time_latch(adapter, MOBILE_TIMER_COMMAND);
     s->state = MOBILE_DEVICE_AUTH_RESOLVE_SEND;
-    return true;
+    return 1;
+}
+
+// Closes and releases the connection slot the current attempt was using.
+static void device_auth_release_conn(struct mobile_adapter *adapter)
+{
+    struct mobile_adapter_device_auth *s = &adapter->device_auth;
+    mobile_cb_sock_close(adapter, s->conn);
+    adapter->commands.connections[s->conn] = false;
+}
+
+void mobile_device_auth_cancel(struct mobile_adapter *adapter)
+{
+    struct mobile_adapter_device_auth *s = &adapter->device_auth;
+
+    // Nothing in flight means nothing to give back. This is also what makes
+    //   it safe for device_auth_resolve_start() to go through
+    //   mobile_commands_connection_new(), which calls this: it only ever
+    //   does so with state == IDLE, so it can never cancel itself.
+    if (s->state == MOBILE_DEVICE_AUTH_IDLE) return;
+
+    debug_prefix(adapter);
+    mobile_debug_print(adapter, PSTR("Yielding connection to the game"));
+    mobile_debug_endl(adapter);
+
+    device_auth_release_conn(adapter);
+    s->state = MOBILE_DEVICE_AUTH_IDLE;
+    // pending is deliberately left set: the event is retried once a slot
+    //   frees up again, rather than being lost.
 }
 
 void mobile_device_auth_handle(struct mobile_adapter *adapter)
@@ -168,7 +227,9 @@ void mobile_device_auth_handle(struct mobile_adapter *adapter)
     if (s->state == MOBILE_DEVICE_AUTH_IDLE) {
         if (!s->pending) return;
 
-        if (!device_auth_resolve_start(adapter, 0)) {
+        int rc = device_auth_resolve_start(adapter, 0);
+        if (rc == 0) return;  // No connection slot free right now, retry later
+        if (rc < 0) {
             debug_prefix(adapter);
             mobile_debug_print(adapter, PSTR("No DNS server available, dropping"));
             mobile_debug_endl(adapter);
@@ -179,7 +240,7 @@ void mobile_device_auth_handle(struct mobile_adapter *adapter)
     }
 
     if (s->state == MOBILE_DEVICE_AUTH_RESOLVE_SEND) {
-        int rc = mobile_dns_request_send(adapter, device_auth_conn, &s->addr);
+        int rc = mobile_dns_request_send(adapter, s->conn, &s->addr);
         if (rc == 0) {
             if (mobile_cb_time_check_ms(adapter, MOBILE_TIMER_COMMAND, 3000)) rc = -1;
             else return;
@@ -188,7 +249,7 @@ void mobile_device_auth_handle(struct mobile_adapter *adapter)
             debug_prefix(adapter);
             mobile_debug_print(adapter, PSTR("Failed to send query, dropping"));
             mobile_debug_endl(adapter);
-            mobile_cb_sock_close(adapter, device_auth_conn);
+            device_auth_release_conn(adapter);
             s->state = MOBILE_DEVICE_AUTH_IDLE;
             s->pending = false;
             return;
@@ -200,19 +261,26 @@ void mobile_device_auth_handle(struct mobile_adapter *adapter)
 
     if (s->state == MOBILE_DEVICE_AUTH_RESOLVE_RECV) {
         unsigned char ip[MOBILE_HOSTLEN_IPV4] = {0};
-        int rc = mobile_dns_request_recv(adapter, device_auth_conn, &s->addr,
+        int rc = mobile_dns_request_recv(adapter, s->conn, &s->addr,
             device_auth_host, DEVICE_AUTH_HOST_LEN, ip);
         if (rc == 0 && !mobile_cb_time_check_ms(adapter, MOBILE_TIMER_COMMAND, 3000)) {
             return;
         }
 
-        mobile_cb_sock_close(adapter, device_auth_conn);
+        device_auth_release_conn(adapter);
         s->state = MOBILE_DEVICE_AUTH_IDLE;
 
         if (rc <= 0) {
             // Same fallback the game's own DNS_REQUEST uses: if DNS1 (ids
-            //   0-1) just failed, try DNS2 (ids 2-3) before giving up.
-            if (s->addr_id < 2 && device_auth_resolve_start(adapter, 2)) return;
+            //   0-1) just failed, try DNS2 (ids 2-3) before giving up. If no
+            //   connection slot is free for that attempt right now (rc2==0),
+            //   stay pending -- state is already IDLE, so the next tick
+            //   retries cleanly from addr_id 0 (a harmless extra DNS1 round
+            //   trip at worst).
+            if (s->addr_id < 2) {
+                int rc2 = device_auth_resolve_start(adapter, 2);
+                if (rc2 != -1) return;
+            }
 
             debug_prefix(adapter);
             mobile_debug_print(adapter, PSTR("Resolution failed, dropping"));

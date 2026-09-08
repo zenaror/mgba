@@ -13,9 +13,24 @@ struct mobile_adapter;
 //   hardcoded independently by every frontend. This means notify() can't
 //   fire the callback synchronously: resolution takes real ticks, so it's
 //   queued and driven from mobile_device_auth_handle(), called once per
-//   idle tick (see mobile.c), same as the existing relay number-fetch
-//   background task, and mutually exclusive with it -- both alias the same
-//   shared dns/relay socket buffer.
+//   idle tick (see mobile.c).
+//
+// Authorize is meant to land *during* the PPP session, right after the game
+//   connects to a mail port and before it starts the actual SMTP/POP3
+//   exchange -- that's the entire point of a "please authorize this device
+//   before it's about to send/fetch mail" side channel. So, unlike the
+//   relay number-fetch background task, resolution is NOT restricted to
+//   idle time between sessions: it runs as soon as a connection slot is
+//   actually free, via mobile_commands_connection_new() (see commands.h)
+//   -- the same accounting the game's own connections use, so this can
+//   never collide with (or steal) a connection the game already has open.
+//   With only MOBILE_MAX_CONNECTIONS slots, that means device-auth may
+//   have to wait a tick or two for one to free up; it stays pending, not
+//   dropped, until it gets a turn.
+// It IS still mutually exclusive with the number-fetch background task
+//   (see mobile.c): both alias the same shared dns/relay socket buffer for
+//   their own protocol state, which number-fetch is allowed to hold onto
+//   for its whole (idle-only) run.
 enum mobile_device_auth_state {
     MOBILE_DEVICE_AUTH_IDLE,
     MOBILE_DEVICE_AUTH_RESOLVE_SEND,
@@ -44,6 +59,13 @@ struct mobile_adapter_device_auth {
     //   and either can be a working path to the same result.
     unsigned char addr_id;
     struct mobile_addr addr;
+
+    // The connection slot borrowed from mobile_commands_connection_new()
+    //   for the current attempt (valid only while state != IDLE), held for
+    //   the whole attempt including any DNS1->DNS2 fallback, and released
+    //   (adapter->commands.connections[conn] = false) the moment it's no
+    //   longer needed -- success, failure, or timeout.
+    unsigned char conn;
 };
 
 void mobile_device_auth_init(struct mobile_adapter *adapter);
@@ -59,3 +81,13 @@ void mobile_device_auth_notify(struct mobile_adapter *adapter, enum mobile_devic
 //   shares the same socket buffer as the relay number-fetch background
 //   task and the game's own DNS/relay commands.
 void mobile_device_auth_handle(struct mobile_adapter *adapter);
+
+// Aborts an in-flight resolution, freeing the connection slot it borrowed,
+//   and leaves the event pending so it's retried later. A no-op if nothing
+//   is in flight.
+// Called when the game itself needs a connection slot and none is free
+//   (see mobile_commands_connection_new()): the emulated protocol always
+//   wins, since a game must never see a connection error caused by a side
+//   channel it can't even observe. Same idea as
+//   mobile_number_fetch_cancel().
+void mobile_device_auth_cancel(struct mobile_adapter *adapter);

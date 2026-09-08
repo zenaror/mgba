@@ -273,6 +273,17 @@ void mobile_def_sock_open(struct mobile_adapter *adapter, mobile_func_sock_open 
 // Closing a socket that hasn't been opened is undefined and may produce an
 // error or terminate the program, libmobile shall never do this.
 //
+// This may be called at any point, including on a socket with an operation
+// still in flight (a send that hasn't completed, or a receive that's still
+// being waited on), and not only at predictable points such as the end of a
+// session: the device-auth side channel resolves addresses in the background
+// and gives its socket back as soon as the game needs the connection slot.
+// The socket must therefore be left fully torn down, with no registration
+// still pointing at it. In particular, if the underlying stack has separate
+// calls to deregister callbacks and to free the socket, deregister first --
+// freeing first and then deregistering writes into freed memory, which tends
+// to go unnoticed while closes only ever happen at quiet moments.
+//
 // Parameters:
 // - conn: Socket number
 typedef void (*mobile_func_sock_close)(void *user, unsigned conn);
@@ -376,6 +387,24 @@ void mobile_def_sock_send(struct mobile_adapter *adapter, mobile_func_sock_send 
 // maximum amount of data to be stored in the buffer pointed to by the <data>
 // parameter. If there isn't enough data, returning less is OK.
 //
+// Note <size> caps what may be written to <data>, but nothing caps what the
+// network hands the implementation: a UDP datagram may be arbitrarily large,
+// up to the link's MTU and beyond once IP reassembly is involved, and its
+// size is chosen by the remote. An implementation that stages incoming data
+// in a buffer of its own must clamp against that buffer, not trust the
+// received length -- the remote that answers is not necessarily the DNS
+// server that was asked. Every UDP socket libmobile currently opens is for
+// a DNS lookup (the game's own DNS_REQUEST, and the device-auth side
+// channel), so in practice these datagrams are small; UDP_CONNECT, which
+// would let the game pick an arbitrary remote, is not implemented.
+//
+// On a UDP socket, a datagram larger than <size> must be truncated, with the
+// remainder discarded: a single datagram may never be split across
+// consecutive calls, since libmobile parses each result as one whole message
+// and would otherwise read the tail of one datagram as the start of the next.
+// On a TCP socket the opposite holds, as usual for a stream -- returning less
+// than is available is fine, and the rest is picked up by later calls.
+//
 // If the <addr> parameter is non-NULL, and at least one byte has been
 // received, the <struct mobile_addr> buffer pointed to by it must be filled
 // with the appropriate address. This buffer is big enough to hold the biggest
@@ -453,7 +482,17 @@ void mobile_def_update_number(struct mobile_adapter *adapter, mobile_func_update
 //   byte string that is NOT null-terminated
 // - ppp_id_size: length of ppp_id, at most 0x20
 // - counter: value that must be included, as its decimal representation
-//   without leading zeros, in the message that was signed to produce <sig>
+//   without leading zeros, in the message that was signed to produce <sig>.
+//   It is strictly increasing and never reused, so a server may reject any
+//   value it has already seen -- but it is NOT contiguous, and a verifier
+//   must accept gaps. To avoid rewriting config storage on every single
+//   request (which would wear out flash on embedded targets), values are
+//   handed out from a batch reserved ahead of time, and only the reserved
+//   ceiling is persisted; on the next power-up the unused remainder of that
+//   batch is skipped rather than reissued. Losing power mid-batch therefore
+//   jumps the counter forward, by up to the batch size. A verifier that
+//   requires the next value to be exactly one higher will reject every
+//   request made after a power cycle
 // - sig: raw MOBILE_DEVICE_AUTH_SIG_SIZE-byte HMAC-SHA256 signature, that a
 //   cooperating server can verify to trust this request
 // - addr_ipv4: the device-auth server's resolved address, MOBILE_HOSTLEN_IPV4
