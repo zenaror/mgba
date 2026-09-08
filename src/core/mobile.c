@@ -184,7 +184,7 @@ static void update_number(void* user, enum mobile_number type, const char* numbe
 	mobile->status_update = true;
 }
 
-struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB *mobile) {
+struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile) {
 	struct mobile_adapter* adapter = mobile_new(mobile);
 	if (!adapter) {
 		return NULL;

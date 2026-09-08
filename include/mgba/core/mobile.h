@@ -9,9 +9,9 @@ CXX_GUARD_START
 #include <mobile.h>
 
 struct MobileAdapterGB {
-	void *p;
+	void* p;
 
-	struct mobile_adapter *adapter;
+	struct mobile_adapter* adapter;
 	uint8_t config[MOBILE_CONFIG_SIZE];
 	struct {
 		Socket fd;
@@ -22,7 +22,7 @@ struct MobileAdapterGB {
 	bool status_update;
 };
 
-struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB *mobile);
+struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile);
 
 CXX_GUARD_END
 
