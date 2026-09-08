@@ -218,12 +218,30 @@ enum mobile_action mobile_actions_get(struct mobile_adapter *adapter)
         actions |= MOBILE_ACTION_WRITE_CONFIG;
     }
 
-    // When we have time for it, attempt to fetch the user's number
+    // When we have time for it, attempt to fetch the user's number.
+    // Mutually exclusive with device-auth resolution below: both alias the
+    //   same shared dns/relay socket buffer. Once active, a fetch is left to
+    //   run to completion (device-auth won't preempt it -- see below), but a
+    //   fetch must never start fresh while a device-auth event is pending:
+    //   that event represents real, time-sensitive mail-relay authorization
+    //   and shouldn't be forced to wait out an entire fetch attempt just
+    //   because both happened to become eligible on the same tick.
     if (adapter->global.number_fetch_active || (
                 !adapter->global.active &&
+                adapter->device_auth.state == MOBILE_DEVICE_AUTH_IDLE &&
+                !adapter->device_auth.pending &&
                 adapter->global.number_fetch_retries &&
                 adapter->config.relay.type != MOBILE_ADDRTYPE_NONE)) {
         actions |= MOBILE_ACTION_INIT_NUMBER;
+    }
+
+    // Resolve/dispatch a queued device-auth event, when idle. See
+    //   MOBILE_ACTION_INIT_NUMBER above for why number_fetch is excluded.
+    if (adapter->device_auth.state != MOBILE_DEVICE_AUTH_IDLE || (
+                !adapter->global.active &&
+                !adapter->global.number_fetch_active &&
+                adapter->device_auth.pending)) {
+        actions |= MOBILE_ACTION_DEVICE_AUTH;
     }
 
     return actions;
@@ -297,6 +315,12 @@ void mobile_actions_process(struct mobile_adapter *adapter, enum mobile_action a
     // Use free time to initialize the phone number
     if (actions & MOBILE_ACTION_INIT_NUMBER) {
         number_fetch_handle(adapter);
+        return;
+    }
+
+    // Use free time to resolve/dispatch a queued device-auth event
+    if (actions & MOBILE_ACTION_DEVICE_AUTH) {
+        mobile_device_auth_handle(adapter);
         return;
     }
 }
@@ -373,6 +397,7 @@ void mobile_init(struct mobile_adapter *adapter, void *user)
     mobile_commands_init(adapter);
     mobile_serial_init(adapter);
     mobile_dns_init(adapter);
+    mobile_device_auth_init(adapter);
 }
 
 #define VER_MAJOR 0

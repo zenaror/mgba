@@ -218,6 +218,7 @@ struct mGUIMobileAdapter {
 enum mGUIMobileItem {
 	MOBILE_ITEM_ENABLE = 0,
 	MOBILE_ITEM_STATUS,
+	MOBILE_ITEM_RELAY_REPORTS,
 	MOBILE_ITEM_SHOW_LOG,
 	MOBILE_ITEM_TRACE,
 	MOBILE_ITEM_TYPE,
@@ -234,6 +235,7 @@ enum mGUIMobileItem {
 
 struct mGUIMobileText {
 	char status[64];
+	char reports[64];
 	char dns1[ADDR_TEXT_LEN];
 	char dns2[ADDR_TEXT_LEN];
 	char p2pPort[8];
@@ -442,6 +444,28 @@ bool mGUIMobileAdapterHasLog(struct mGUIRunner* runner) {
 	return s_showLog && runner->mobile && runner->mobile->attached;
 }
 
+// The side channel reports on its own schedule, so the only way to line one up
+// against a server's log is to say so the moment it happens.
+static void _noteRelayReports(struct mGUIRunner* runner) {
+	static unsigned seen;
+	struct MobileAdapterGB* gb = _adapter(runner->mobile);
+	if (!gb) {
+		return;
+	}
+	unsigned done = gb->auth.reported + gb->auth.failed;
+	if (done == seen) {
+		return;
+	}
+	seen = done;
+	_logPrintf("<mGBA> relay: %s", gb->auth.last);
+}
+
+void mGUIMobileAdapterPoll(struct mGUIRunner* runner) {
+	if (runner->mobile && runner->mobile->attached) {
+		_noteRelayReports(runner);
+	}
+}
+
 void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 	if (!mGUIMobileAdapterHasLog(runner)) {
 		return;
@@ -620,6 +644,7 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 
 	if (!adapter) {
 		strlcpy(text->status, "Adapter not running", sizeof(text->status));
+		strlcpy(text->reports, "-", sizeof(text->reports));
 		text->dns1[0] = '\0';
 		text->dns2[0] = '\0';
 		text->relay[0] = '\0';
@@ -639,6 +664,14 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 		}
 	} else {
 		strlcpy(text->status, "Idle", sizeof(text->status));
+	}
+
+	const struct MobileAdapterAuth* auth = &gb->auth;
+	if (!auth->reported && !auth->failed && !auth->last[0]) {
+		strlcpy(text->reports, "none yet", sizeof(text->reports));
+	} else {
+		snprintf(text->reports, sizeof(text->reports), "%u ok, %u failed: %s",
+		         auth->reported, auth->failed, auth->last);
 	}
 
 	enum mobile_adapter_device device;
@@ -706,12 +739,13 @@ static void _applyToggles(struct mGUIRunner* runner, struct GUIMenu* menu) {
 	mobile_config_set_alt_mail(adapter, GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_ALT_MAIL)->state);
 }
 
-static bool _editText(struct mGUIRunner* runner, const char* title, char* buffer, size_t bufferLength) {
+static bool _editText(struct mGUIRunner* runner, const char* title, char* buffer, size_t bufferLength, bool numeric) {
 	if (!runner->params.getText) {
 		return false;
 	}
 	struct GUIKeyboardParams keyboard;
 	GUIKeyboardParamsInit(&keyboard);
+	keyboard.numeric = numeric;
 	strlcpy(keyboard.title, title, sizeof(keyboard.title));
 	strlcpy(keyboard.result, buffer, sizeof(keyboard.result));
 	keyboard.maxLen = bufferLength - 1;
@@ -724,7 +758,7 @@ static bool _editText(struct mGUIRunner* runner, const char* title, char* buffer
 
 static void _editAddr(struct mGUIRunner* runner, const char* title, char* buffer, size_t bufferLength, int which) {
 	struct mobile_adapter* adapter = _live(runner);
-	if (!adapter || !_editText(runner, title, buffer, bufferLength)) {
+	if (!adapter || !_editText(runner, title, buffer, bufferLength, true)) {
 		return;
 	}
 
@@ -752,7 +786,7 @@ static void _editAddr(struct mGUIRunner* runner, const char* title, char* buffer
 
 static void _editToken(struct mGUIRunner* runner, char* buffer, size_t bufferLength) {
 	struct mobile_adapter* adapter = _live(runner);
-	if (!adapter || !_editText(runner, "Relay token (32 hex digits, empty to clear)", buffer, bufferLength)) {
+	if (!adapter || !_editText(runner, "Relay token (32 hex digits, empty to clear)", buffer, bufferLength, false)) {
 		return;
 	}
 
@@ -776,7 +810,7 @@ static void _editToken(struct mGUIRunner* runner, char* buffer, size_t bufferLen
 
 static void _editPort(struct mGUIRunner* runner, char* buffer, size_t bufferLength) {
 	struct mobile_adapter* adapter = _live(runner);
-	if (!adapter || !_editText(runner, "P2P port", buffer, bufferLength)) {
+	if (!adapter || !_editText(runner, "P2P port", buffer, bufferLength, true)) {
 		return;
 	}
 
@@ -810,6 +844,13 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		.title = "Status",
 		.data = GUI_V_U(MOBILE_ITEM_STATUS),
 		.validStates = (const char*[]) { text.status },
+		.nStates = 1,
+		.readonly = true
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Relay reports",
+		.data = GUI_V_U(MOBILE_ITEM_RELAY_REPORTS),
+		.validStates = (const char*[]) { text.reports },
 		.nStates = 1,
 		.readonly = true
 	};

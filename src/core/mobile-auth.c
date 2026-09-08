@@ -11,9 +11,8 @@
 mLOG_DECLARE_CATEGORY(MOBILE_AUTH);
 mLOG_DEFINE_CATEGORY(MOBILE_AUTH, "Mobile Adapter auth", "mobile.auth");
 
-// Where a cooperating relay listens. Deliberately not configurable, and not
-// overridable at build time either: every implementation of this reports to
-// the same name, and the adapter's own DNS decides what that name means.
+// The name behind this address, and the DNS it is looked up against, are the
+// library's business; all that reaches here is where to send the report.
 #define MOBILE_AUTH_HOST "device.auth.dion.ne.jp"
 #define MOBILE_AUTH_PATH "/api/adapter/device-auth"
 #define MOBILE_AUTH_PORT 80
@@ -21,9 +20,6 @@ mLOG_DEFINE_CATEGORY(MOBILE_AUTH, "Mobile Adapter auth", "mobile.auth");
 // Driven once per emulated frame, so these are roughly ten and three seconds.
 #define MOBILE_AUTH_TIMEOUT_TICKS 600
 #define MOBILE_AUTH_DRAIN_TICKS 180
-#define MOBILE_AUTH_DNS_TICKS 180
-
-#define MOBILE_AUTH_DNS_TRIES 2
 
 static void _authClose(struct MobileAdapterAuth* auth) {
 	if (!SOCKET_FAILED(auth->fd)) {
@@ -48,7 +44,7 @@ static void _authDrop(struct MobileAdapterAuth* auth) {
 	_authPop(auth);
 }
 
-static void _authNotify(void* user, enum mobile_device_auth_action action, const unsigned char* ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char* sig) {
+static void _authNotify(void* user, enum mobile_device_auth_action action, const unsigned char* ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char* sig, const unsigned char* addr_ipv4) {
 	struct MobileAdapterGB* mobile = user;
 	struct MobileAdapterAuth* auth = &mobile->auth;
 
@@ -69,6 +65,11 @@ static void _authNotify(void* user, enum mobile_device_auth_action action, const
 	memcpy(event->pppId, ppp_id, ppp_id_size);
 	event->pppIdSize = ppp_id_size;
 	memcpy(event->sig, sig, MOBILE_DEVICE_AUTH_SIG_SIZE);
+	snprintf(auth->last, sizeof(auth->last), "%s queued, #%" PRIu64,
+	    action == MOBILE_DEVICE_AUTH_AUTHORIZE ? "authorize" : "deauthorize", counter);
+	event->address.version = IPV4;
+	event->address.ipv4 = (addr_ipv4[0] << 24) | (addr_ipv4[1] << 16) |
+	                      (addr_ipv4[2] << 8) | addr_ipv4[3];
 	++auth->queued;
 }
 
@@ -77,147 +78,6 @@ void MobileAdapterAuthInit(struct MobileAdapterGB* mobile) {
 	memset(auth, 0, sizeof(*auth));
 	auth->fd = INVALID_SOCKET;
 	mobile_def_update_device_auth(mobile->adapter, _authNotify);
-}
-
-// Writes an A-record query for name into out, returning its length, or 0 if it
-// would not fit.
-static size_t _dnsQuery(const char* name, uint16_t id, uint8_t* out, size_t outLength) {
-	size_t needed = 12 + strlen(name) + 2 + 4;
-	if (outLength < needed) {
-		return 0;
-	}
-	memset(out, 0, 12);
-	out[0] = id >> 8;
-	out[1] = id & 0xFF;
-	out[2] = 0x01;  // Recursion desired
-	out[5] = 0x01;  // One question
-	size_t len = 12;
-
-	const char* label = name;
-	while (*label) {
-		const char* dot = strchr(label, '.');
-		size_t part = dot ? (size_t) (dot - label) : strlen(label);
-		if (!part || part > 63) {
-			return 0;
-		}
-		out[len++] = part;
-		memcpy(&out[len], label, part);
-		len += part;
-		label += dot ? part + 1 : part;
-	}
-	out[len++] = 0;
-	out[len++] = 0;
-	out[len++] = 1;  // A
-	out[len++] = 0;
-	out[len++] = 1;  // IN
-	return len;
-}
-
-// Steps over one name, which may end in a pointer to an earlier one.
-static bool _dnsSkipName(const uint8_t* reply, size_t size, size_t* offset) {
-	while (*offset < size) {
-		uint8_t len = reply[*offset];
-		if (!len) {
-			++*offset;
-			return true;
-		}
-		if ((len & 0xC0) == 0xC0) {
-			*offset += 2;
-			return *offset <= size;
-		}
-		if (len > 63) {
-			return false;
-		}
-		*offset += len + 1;
-	}
-	return false;
-}
-
-// Pulls the first A record out of a reply to the query that id identifies.
-static bool _dnsParse(const uint8_t* reply, size_t size, uint16_t id, struct Address* out) {
-	if (size < 12) {
-		return false;
-	}
-	if (((reply[0] << 8) | reply[1]) != id) {
-		return false;
-	}
-	if (!(reply[2] & 0x80) || (reply[3] & 0x0F)) {
-		return false;
-	}
-	unsigned questions = (reply[4] << 8) | reply[5];
-	unsigned answers = (reply[6] << 8) | reply[7];
-	if (!answers) {
-		return false;
-	}
-
-	size_t offset = 12;
-	unsigned i;
-	for (i = 0; i < questions; ++i) {
-		if (!_dnsSkipName(reply, size, &offset)) {
-			return false;
-		}
-		offset += 4;
-	}
-
-	for (i = 0; i < answers; ++i) {
-		if (!_dnsSkipName(reply, size, &offset) || offset + 10 > size) {
-			return false;
-		}
-		unsigned type = (reply[offset] << 8) | reply[offset + 1];
-		unsigned class = (reply[offset + 2] << 8) | reply[offset + 3];
-		unsigned length = (reply[offset + 8] << 8) | reply[offset + 9];
-		offset += 10;
-		if (offset + length > size) {
-			return false;
-		}
-		if (type == 1 && class == 1 && length == 4) {
-			out->version = IPV4;
-			out->ipv4 = (reply[offset] << 24) | (reply[offset + 1] << 16) |
-			            (reply[offset + 2] << 8) | reply[offset + 3];
-			return true;
-		}
-		offset += length;
-	}
-	return false;
-}
-
-static bool _authSendQuery(struct MobileAdapterGB* mobile) {
-	struct MobileAdapterAuth* auth = &mobile->auth;
-
-	struct mobile_addr dns;
-	mobile_config_get_dns(mobile->adapter, &dns, auth->dnsAttempt ? MOBILE_DNS2 : MOBILE_DNS1);
-	if (dns.type != MOBILE_ADDRTYPE_IPV4) {
-		return false;
-	}
-	const struct mobile_addr4* dns4 = (const struct mobile_addr4*) &dns;
-
-	auth->dnsId = 0x4d47 + auth->dnsAttempt;
-	uint8_t query[128];
-	size_t len = _dnsQuery(MOBILE_AUTH_HOST, auth->dnsId, query, sizeof(query));
-	if (!len) {
-		return false;
-	}
-
-	struct Address any = {0};
-	any.version = IPV4;
-	Socket sock = SocketOpenUDP(0, &any);
-	if (SOCKET_FAILED(sock)) {
-		return false;
-	}
-	SocketSetBlocking(sock, false);
-
-	struct Address to = {0};
-	to.version = IPV4;
-	to.ipv4 = ntohl(*(const uint32_t*) dns4->host);
-	if (SOCKET_RESERROR(SocketSendTo(sock, query, len, dns4->port, &to))) {
-		SocketClose(sock);
-		return false;
-	}
-
-	auth->fd = sock;
-	auth->state = MOBILE_AUTH_RESOLVING;
-	auth->ticks = 0;
-	return true;
 }
 
 static bool _authBuildRequest(struct MobileAdapterAuth* auth, const struct MobileAdapterAuthEvent* event) {
@@ -247,20 +107,6 @@ static bool _authBuildRequest(struct MobileAdapterAuth* auth, const struct Mobil
 	return true;
 }
 
-static bool _authConnect(struct MobileAdapterAuth* auth) {
-	auth->fd = SocketConnectTCP(MOBILE_AUTH_PORT, &auth->address);
-	if (SOCKET_FAILED(auth->fd)) {
-		// The address is the first thing to doubt once it cannot be reached.
-		auth->resolved = false;
-		mLOG(MOBILE_AUTH, WARN, "Could not reach the authorization server");
-		return false;
-	}
-	SocketSetBlocking(auth->fd, false);
-	auth->state = MOBILE_AUTH_CONNECTING;
-	auth->ticks = 0;
-	return true;
-}
-
 void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile) {
 	struct MobileAdapterAuth* auth = &mobile->auth;
 
@@ -272,52 +118,30 @@ void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile) {
 			_authPop(auth);
 			return;
 		}
-		if (auth->resolved) {
-			if (!_authConnect(auth)) {
-				_authDrop(auth);
-			}
+		auth->fd = SocketConnectTCP(MOBILE_AUTH_PORT, &auth->queue[0].address);
+		if (SOCKET_FAILED(auth->fd)) {
+			// Nothing to be done about it: this is a side channel, and the
+			// emulated session neither knows nor cares that it failed.
+			mLOG(MOBILE_AUTH, WARN, "Could not reach the authorization server");
+			++auth->failed;
+			strlcpy(auth->last, "unreachable", sizeof(auth->last));
+			_authDrop(auth);
 			return;
 		}
-		auth->dnsAttempt = 0;
-		if (!_authSendQuery(mobile)) {
-			mLOG(MOBILE_AUTH, WARN, "No usable DNS server to find the authorization server");
-			_authDrop(auth);
-		}
+		SocketSetBlocking(auth->fd, false);
+		auth->state = MOBILE_AUTH_CONNECTING;
+		auth->ticks = 0;
 		return;
 	}
 
 	++auth->ticks;
 
 	switch (auth->state) {
-	case MOBILE_AUTH_RESOLVING: {
-		uint8_t reply[512];
-		ssize_t res = SocketRecv(auth->fd, reply, sizeof(reply));
-		if (res > 0 && _dnsParse(reply, res, auth->dnsId, &auth->address)) {
-			auth->resolved = true;
-			SocketClose(auth->fd);
-			auth->fd = INVALID_SOCKET;
-			if (!_authConnect(auth)) {
-				_authDrop(auth);
-			}
-			return;
-		}
-		if (auth->ticks < MOBILE_AUTH_DNS_TICKS) {
-			return;
-		}
-		// Whatever came back was not an answer to this, so try the other server
-		SocketClose(auth->fd);
-		auth->fd = INVALID_SOCKET;
-		++auth->dnsAttempt;
-		if (auth->dnsAttempt >= MOBILE_AUTH_DNS_TRIES || !_authSendQuery(mobile)) {
-			mLOG(MOBILE_AUTH, WARN, "Could not look up the authorization server");
-			_authDrop(auth);
-		}
-		return;
-	}
 	case MOBILE_AUTH_CONNECTING: {
 		if (auth->ticks > MOBILE_AUTH_TIMEOUT_TICKS) {
 			mLOG(MOBILE_AUTH, WARN, "Report timed out connecting");
-			auth->resolved = false;
+			++auth->failed;
+			strlcpy(auth->last, "timed out connecting", sizeof(auth->last));
 			_authDrop(auth);
 			return;
 		}
@@ -332,6 +156,8 @@ void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile) {
 	case MOBILE_AUTH_SENDING: {
 		if (auth->ticks > MOBILE_AUTH_TIMEOUT_TICKS) {
 			mLOG(MOBILE_AUTH, WARN, "Report timed out sending");
+			++auth->failed;
+			strlcpy(auth->last, "timed out sending", sizeof(auth->last));
 			_authDrop(auth);
 			return;
 		}
@@ -342,6 +168,8 @@ void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile) {
 					return;
 				}
 				mLOG(MOBILE_AUTH, WARN, "Report could not be sent");
+				++auth->failed;
+				strlcpy(auth->last, "send failed", sizeof(auth->last));
 				_authDrop(auth);
 				return;
 			}
@@ -370,6 +198,10 @@ void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile) {
 				return;
 			}
 			// Either the server closed cleanly or the read failed; done either way
+			++auth->reported;
+			snprintf(auth->last, sizeof(auth->last), "%s sent, #%" PRIu64,
+			    auth->queue[0].action == MOBILE_DEVICE_AUTH_AUTHORIZE ? "authorize" : "deauthorize",
+			    auth->queue[0].counter);
 			_authDrop(auth);
 			return;
 		}
