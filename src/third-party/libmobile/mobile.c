@@ -404,12 +404,15 @@ void mobile_stop(struct mobile_adapter *adapter)
     // Ending the session above queues a device-auth deauthorize, but
     //   global.start is already false, so mobile_actions_get() returns
     //   nothing and there is no tick left in which to resolve and send it.
-    //   It stays queued rather than being discarded, so a later
-    //   mobile_start() still delivers it -- but for a frontend that stops
-    //   the library for good (closing the emulator, powering off), the
-    //   relay server never hears about this session ending and falls back
-    //   to expiring the authorization on its own. Worth seeing in the log,
-    //   since from the server's side it looks the same as a lost request.
+    //   Assume it is lost: the relay server never hears that this session
+    //   ended, and falls back to expiring the authorization on its own.
+    //   The event is left queued rather than discarded, so a frontend that
+    //   keeps this adapter around and calls mobile_start() again does still
+    //   deliver it -- but that is the exception, not something to count on.
+    //   Stopping for good is the normal case, and freeing the adapter right
+    //   after stopping (as frontends do) takes the queued event with it.
+    // Worth seeing in the log either way, since from the server's side an
+    //   event that was never dispatched looks the same as a lost request.
     if (adapter->device_auth.pending) {
         debug_prefix(adapter);
         mobile_debug_print(adapter,
