@@ -120,12 +120,16 @@ static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype typ
 		fd = SocketOpenUDP(bindport, &bindaddr);
 	}
 	if (SOCKET_FAILED(fd)) {
-		if (s_traceSockets) _logPrintf("<mGBA> conn %u open %s failed (%i)", conn,
-		           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", SocketError());
+		if (s_traceSockets) {
+			_logPrintf("<mGBA> conn %u open %s failed (%i)", conn,
+			           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", SocketError());
+		}
 	} else {
 		SocketSetBlocking(fd, false);
-		if (s_traceSockets) _logPrintf("<mGBA> conn %u open %s ok, port %u", conn,
-		           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", bindport);
+		if (s_traceSockets) {
+			_logPrintf("<mGBA> conn %u open %s ok, port %u", conn,
+			           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", bindport);
+		}
 	}
 
 	mobile->socket[conn].fd = fd;
@@ -155,12 +159,16 @@ static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigne
 
 	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destport, destaddr);
 	if (SOCKET_RESERROR(res)) {
-		if (s_traceSockets) _logPrintf("<mGBA> conn %u send failed (%i)", conn, SocketError());
+		if (s_traceSockets) {
+			_logPrintf("<mGBA> conn %u send failed (%i)", conn, SocketError());
+		}
 		return -1;
 	}
-	if (s_traceSockets) _logPrintf("<mGBA> conn %u sent %i to %u.%u.%u.%u:%i", conn, (int) res,
-	           (unsigned) ((sendaddr.ipv4 >> 24) & 0xFF), (unsigned) ((sendaddr.ipv4 >> 16) & 0xFF),
-	           (unsigned) ((sendaddr.ipv4 >> 8) & 0xFF), (unsigned) (sendaddr.ipv4 & 0xFF), destport);
+	if (s_traceSockets) {
+		_logPrintf("<mGBA> conn %u sent %i to %u.%u.%u.%u:%i", conn, (int) res,
+		           (unsigned) ((sendaddr.ipv4 >> 24) & 0xFF), (unsigned) ((sendaddr.ipv4 >> 16) & 0xFF),
+		           (unsigned) ((sendaddr.ipv4 >> 8) & 0xFF), (unsigned) (sendaddr.ipv4 & 0xFF), destport);
+	}
 	return res;
 }
 
@@ -174,7 +182,9 @@ static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size
 		if (SocketWouldBlock()) {
 			return 0;
 		}
-		if (s_traceSockets) _logPrintf("<mGBA> conn %u read error %i", conn, SocketError());
+		if (s_traceSockets) {
+			_logPrintf("<mGBA> conn %u read error %i", conn, SocketError());
+		}
 		return -1;
 	}
 
