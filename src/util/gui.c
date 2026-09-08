@@ -78,4 +78,5 @@ void GUIKeyboardParamsInit(struct GUIKeyboardParams* keyboard) {
 	memset(keyboard->result, 0, sizeof(keyboard->result));
 	keyboard->maxLen = sizeof(keyboard->result);
 	keyboard->multiline = false;
+	keyboard->numeric = false;
 }

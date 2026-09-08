@@ -17,7 +17,6 @@ CXX_GUARD_START
 
 enum MobileAdapterAuthState {
 	MOBILE_AUTH_IDLE = 0,
-	MOBILE_AUTH_RESOLVING,
 	MOBILE_AUTH_CONNECTING,
 	MOBILE_AUTH_SENDING,
 	MOBILE_AUTH_DRAINING
@@ -29,19 +28,21 @@ struct MobileAdapterAuthEvent {
 	unsigned pppIdSize;
 	uint64_t counter;
 	unsigned char sig[MOBILE_DEVICE_AUTH_SIG_SIZE];
+	// Where to report it, resolved by the library against the DNS the adapter
+	// is configured with, so this never has to know the name behind it.
+	struct Address address;
 };
 
 struct MobileAdapterAuth {
-	// The server only answers to the name the adapter's own DNS knows it by,
-	// so it is looked up the same way a game's host would be, and kept until a
-	// connection to it fails.
-	struct Address address;
-	bool resolved;
-	unsigned dnsAttempt;
-	uint16_t dnsId;
-
 	struct MobileAdapterAuthEvent queue[MOBILE_AUTH_QUEUE_LEN];
 	unsigned queued;
+
+	// What the side channel has been up to, for a frontend to show. There is
+	// otherwise no way to tell a report that was sent from one that was never
+	// asked for, which are the same silence from outside.
+	unsigned reported;
+	unsigned failed;
+	char last[48];
 
 	enum MobileAdapterAuthState state;
 	Socket fd;

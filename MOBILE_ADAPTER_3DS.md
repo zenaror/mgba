@@ -150,7 +150,15 @@ desktop build was never affected and why this only appeared on hardware.
 
 Fixed by comparing `port` and `host` directly. This is in vendored libmobile
 and is not 3DS-specific — any ARM or otherwise short-enum target has it, so
-Wii, Switch and Vita would hit it too.
+Wii, Switch and Vita would hit it too, as would anything else running that
+library on ARM.
+
+**This fix lives only here, and every update to the library has silently
+removed it.** It has been carried across twice already. Nothing about losing it
+is loud: the build stays clean and every lookup simply fails, exactly as it did
+before it was found. Whoever next pulls that library should check
+`mobile_addr_compare()` first, and it would be better placed upstream than
+guarded by whoever remembers.
 
 ## What made the difference when debugging
 
@@ -174,12 +182,31 @@ emulated seconds, and the console is frame-limited).
 
 ## Building
 
+Each image carries its own recipe as its default command — the toolchain file
+it needs, and whether to build shared or static. Run it with nothing after the
+image name and let it do that. Writing the `cmake` line by hand instead works
+by luck on some targets and fails confusingly on others: doing it for Windows
+produced a build that went looking for a `libmgba.so`, because the recipe that
+was skipped is where `BUILD_SHARED=OFF` lives.
+
 ```sh
-docker run --rm -v "$PWD":/home/mgba/src mgba/3ds
+docker run --rm -v "$PWD":/home/mgba/src mgba/3ds            # mgba.3dsx, mgba.cia
+docker run --rm -v "$PWD":/home/mgba/src mgba/ubuntu:noble   # mgba-qt, mgba, libs
+docker run --rm -v "$PWD":/home/mgba/src \
+  -e CMAKE_FLAGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" mgba/windows:w64
 ```
 
-Produces `mgba.3dsx` and `mgba.cia`. The image carries devkitARM and CMake
-3.31, comfortably past the 3.25 that libmobile asks for.
+Each writes its own `build-*` directory, and `$CMAKE_FLAGS` is passed through
+to the configure step.
+
+The flag Windows needs is not about anything here: that image ships CMake
+4.2.3, which dropped support for `cmake_minimum_required` below 3.5, and the
+vendored zlib still asks for 2.4.4. Without it the configure step fails before
+compiling a line. The Linux image is on 3.28 and does not care; the 3DS image
+is on 3.31, comfortably past the 3.25 libmobile itself asks for.
+
+Windows links statically, so the executable needs nothing beside it, and comes
+out around 100MB until `x86_64-w64-mingw32-strip` takes it down to about 40.
 
 ## Telling a relay about mail sessions
 
@@ -187,21 +214,26 @@ Not 3DS-specific: this lives in `src/core/mobile-auth.c` and works wherever the
 adapter does.
 
 The library signs a note whenever a game starts or stops using mail, for a
-relay that wants telling out of band. Carrying it is all the frontend does. It
-cannot happen where the library asks — that call comes from inside the protocol
-loop and has to return at once — so a report is queued there and posted from
-the per-frame update, a step at a time: look the server up, connect, send, read
-the answer to its end.
+relay that wants telling out of band, and hands over the address to send it to
+along with it. Carrying it there is all the frontend does: a report is queued
+as it arrives and posted from the per-frame update, a step at a time — connect,
+send, read the answer to its end — so nothing waits on a socket.
 
 Reading the answer is not politeness. Hanging up as soon as the request is out
 looks to a server like a client that gave up, and shows up there as a 499 or a
 reset. Both other implementations of this hit that and fixed it the same way.
 
-The server is found by asking the DNS the adapter is configured with, not the
-machine's own resolver, because the name it answers to means nothing outside
-that DNS. There is deliberately no way to point this elsewhere, at runtime or
-at build time. A failed report is dropped rather than retried: nothing in the
-emulated session depends on it, and the game reopening mail produces another.
+Finding the server is the library's business, not this file's. It resolves the
+name against the same DNS a game's own lookups go through, on whatever port
+that is configured with, and there is deliberately no way to point it elsewhere
+from here. An earlier version of this did its own lookup; that is gone.
+
+A failed report is dropped rather than retried: nothing in the emulated session
+depends on it, and the game reopening mail produces another.
+
+The socket used for this is its own. Never reach for one of the connection
+slots the library hands out, even one that looks free — it may be about to
+belong to a game.
 
 Two things worth knowing before calling it broken:
 
@@ -266,5 +298,10 @@ changing these would be a quiet way to break the console builds only.
   does not offer and which every platform spells differently. Answering "alive"
   unconditionally would be worse than not answering, since it would hide a
   disconnect that had really happened.
+- Loading a config file over a running adapter does not replace a device-auth
+  key that is already in memory. The library refuses to reload one on purpose,
+  since re-reading storage that a write has not reached yet would roll its
+  replay counter backwards. Working around that from here would defeat what the
+  refusal is for, so it stands; everything else in the file imports normally.
 - Nothing here is upstreamable as-is, but the socket fixes and the address
   comparison are bugs in their own right and worth reporting.

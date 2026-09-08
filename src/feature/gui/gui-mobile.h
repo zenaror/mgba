@@ -16,6 +16,10 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner);
 void mGUIMobileAdapterAttach(struct mGUIRunner* runner);
 void mGUIMobileAdapterDetach(struct mGUIRunner* runner);
 
+// Notices anything the side channel did since the last call, so it lands in
+// the log as it happens rather than only in the adapter screen.
+void mGUIMobileAdapterPoll(struct mGUIRunner* runner);
+
 // Whether there is adapter chatter worth putting on screen, and the drawing of
 // it. Must be called with the GUI surface already prepared.
 bool mGUIMobileAdapterHasLog(struct mGUIRunner* runner);

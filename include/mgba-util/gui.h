@@ -81,6 +81,10 @@ struct GUIKeyboardParams {
 	char result[MAX_KEYBOARD_LEN];
 	size_t maxLen;
 	bool multiline;
+	// A hint that only digits, dots and colons can be meant, which a platform
+	// offering a number pad can take up. Ignored where there is only one
+	// keyboard to show.
+	bool numeric;
 };
 
 struct GUIKey {

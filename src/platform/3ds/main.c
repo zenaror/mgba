@@ -808,8 +808,13 @@ static void _audioRateChanged(struct mAVStream* stream, unsigned sampleRate) {
 
 static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 	SwkbdState swkbd;
-	swkbdInit(&swkbd, SWKBD_TYPE_NORMAL, 2, keyboard->maxLen);
+	swkbdInit(&swkbd, keyboard->numeric ? SWKBD_TYPE_NUMPAD : SWKBD_TYPE_NORMAL, 2, keyboard->maxLen);
 	swkbdSetInitialText(&swkbd, keyboard->result);
+	if (keyboard->numeric) {
+		// The two keys either side of zero are ours to name; an address needs
+		// a dot, and giving a port its colon saves paging to another keyboard.
+		swkbdSetNumpadKeys(&swkbd, '.', ':');
+	}
 	if (keyboard->multiline) {
 		swkbdSetFeatures(&swkbd, SWKBD_MULTILINE);
 	}
