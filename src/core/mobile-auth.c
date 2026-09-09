@@ -94,7 +94,7 @@ static bool _authBuildRequest(struct MobileAdapterAuth* auth, const struct Mobil
 	}
 
 	int written = snprintf(auth->request, sizeof(auth->request),
-	    "GET " MOBILE_AUTH_PATH "?pppId=%s&action=%s&counter=%" PRIu64 "&sig=%s HTTP/1.1\r\n"
+	    "GET " MOBILE_AUTH_PATH "?ppp_id=%s&action=%s&counter=%" PRIu64 "&sig=%s HTTP/1.1\r\n"
 	    "Host: " MOBILE_AUTH_HOST "\r\n"
 	    "Connection: close\r\n"
 	    "\r\n",

@@ -50,6 +50,18 @@ Wanting the adapter is remembered in `runner->mobileEnabled` for as long as the
 emulator runs and never reaches disk, so it always starts off. The adapter's
 own settings persist to `mobile_config.bin` as before.
 
+Anything the library writes into that config while a game runs reaches the card
+within a frame, not when the adapter is put away. It has to: the library
+reserves its relay-report counters in batches and hands the new ceiling over at
+once, and a console is switched off mid-game far more often than it is shut
+down cleanly. A ceiling that only reached the card when the adapter screen
+closed was lost with the power, and the next session then replayed counters the
+server had already accepted — which it refuses, so mail to the outside came back
+with a bare 554 while every report claimed success. Found the hard way, from
+the server's signatures matching the previous day's byte for byte. The per-frame
+poll that does this writing (and puts relay reports in the log as they happen)
+had been defined without ever being called; both were dead until this.
+
 With no game there is no serial port to attach to, so that screen builds an
 adapter that is never started, purely to read and edit the stored config.
 Starting one calls into emulation timing that does not exist yet.

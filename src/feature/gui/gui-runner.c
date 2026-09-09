@@ -598,6 +598,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			}
 			runner->core->setKeys(runner->core, keys);
 			runner->core->runFrame(runner->core);
+#ifdef USE_LIBMOBILE
+			// Whatever the adapter did during that frame -- a report sent, a
+			// config change to be written out -- is noticed here, once per frame.
+			mGUIMobileAdapterPoll(runner);
+#endif
 			if (runner->drawFrame) {
 				runner->params.drawStart();
 				runner->drawFrame(runner, false);

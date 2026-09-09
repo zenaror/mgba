@@ -70,6 +70,12 @@ struct MobileAdapterGB {
 	int serial;
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
 	bool statusUpdate;
+	// Set whenever the library writes into config, and cleared by whoever
+	// carries config to storage. The library hands over a device-auth counter
+	// ceiling the moment it reserves one; if that only reached storage when the
+	// adapter was put away, powering off mid-game would replay counters the
+	// server has already seen, and it refuses those.
+	bool configDirty;
 	struct MobileAdapterAuth auth;
 };
 

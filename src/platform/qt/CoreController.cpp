@@ -130,6 +130,17 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		}
 		++controller->m_autosaveCounter;
 
+#ifdef USE_LIBMOBILE
+		// The library hands over config changes, device-auth counter reservations
+		// included, from inside the emulation loop; writing them out only when the
+		// adapter is put away loses them to a crash or a kill, and the server then
+		// sees counters it has already refused. The write has to interrupt this
+		// thread, so it is asked for from the other side.
+		if (controller->getMobileAdapter()->configDirty) {
+			QMetaObject::invokeMethod(controller, "saveMobileAdapterConfig");
+		}
+#endif
+
 		controller->finishFrame();
 	};
 
@@ -1164,6 +1175,7 @@ void CoreController::saveMobileAdapterConfig() {
 	if (fconfig.open(QIODevice::WriteOnly)) {
 		fconfig.write((char*) getMobileAdapter()->config, MOBILE_CONFIG_SIZE);
 		fconfig.close();
+		getMobileAdapter()->configDirty = false;
 	}
 }
 
