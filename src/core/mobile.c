@@ -27,7 +27,12 @@ static bool _configRead(void* user, void* dest, uintptr_t offset, size_t size) {
 static bool _configWrite(void* user, const void* src, uintptr_t offset, size_t size) {
 	struct MobileAdapterGB* mobile = user;
 
-	memcpy(mobile->config + offset, src, size);
+	// Only a change is worth a trip to storage: the library rewrites whole
+	// sections it has not touched, and a card has only so many writes in it.
+	if (memcmp(mobile->config + offset, src, size) != 0) {
+		memcpy(mobile->config + offset, src, size);
+		mobile->configDirty = true;
+	}
 	return true;
 }
 

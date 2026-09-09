@@ -326,6 +326,7 @@ static void _saveConfig(struct mGUIMobileAdapter* m) {
 	}
 	vf->write(vf, _adapter(m)->config, MOBILE_CONFIG_SIZE);
 	vf->close(vf);
+	_adapter(m)->configDirty = false;
 }
 
 static bool _alloc(struct mGUIRunner* runner) {
@@ -475,6 +476,14 @@ static void _noteRelayReports(struct mGUIRunner* runner) {
 void mGUIMobileAdapterPoll(struct mGUIRunner* runner) {
 	if (runner->mobile && runner->mobile->attached) {
 		_noteRelayReports(runner);
+		// Whatever the library just wrote goes to the card now, not when this
+		// adapter is put away: a console is switched off mid-game far more often
+		// than it is shut down cleanly, and a lost device-auth counter reservation
+		// means every report of the next session is one the server has already
+		// refused.
+		if (_adapter(runner->mobile)->configDirty) {
+			_saveConfig(runner->mobile);
+		}
 	}
 }
 
