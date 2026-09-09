@@ -31,7 +31,8 @@ static bool _configWrite(void* user, const void* src, uintptr_t offset, size_t s
 	return true;
 }
 
-static bool _sockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
+static bool _sockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype,
+                      unsigned bindport) {
 	struct MobileAdapterGB* mobile = user;
 
 	Socket fd;
