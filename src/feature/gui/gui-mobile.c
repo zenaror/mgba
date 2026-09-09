@@ -28,6 +28,12 @@
 
 #include <mobile_inet.h>
 
+#ifdef __3DS__
+#include <3ds/services/soc.h>
+#elif defined(PSP2)
+#include <psp2/net/net.h>
+#endif
+
 #define MOBILE_CONFIG_FILE "mobile_config.bin"
 #define ADDR_TEXT_LEN 64
 #define TOKEN_TEXT_LEN (MOBILE_RELAY_TOKEN_SIZE * 2 + 1)
@@ -104,6 +110,31 @@ static void _logNetworkState(void) {
 	SocketClose(test);
 	_logPrintf("<mGBA> network ready");
 }
+
+#if defined(__3DS__) || defined(PSP2)
+// A console has one radio, and its address is the most stable thing about it:
+// it survives the config being copied, wiped or downloaded again, which is
+// the whole point of naming devices. The library only ever hashes these
+// bytes, so they are handed over exactly as the system reports them.
+static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
+	UNUSED(user);
+#ifdef __3DS__
+	// Six octets, however the service chooses to lay them out.
+	socklen_t len = size < 24 ? size : 24;
+	if (SOCU_GetNetworkOpt(SOL_CONFIG, NETOPT_MAC_ADDRESS, data, &len) != 0) {
+		return 0;
+	}
+	return len;
+#else
+	SceNetEtherAddr addr;
+	if (size < sizeof(addr.data) || sceNetGetMacAddress(&addr, 0) < 0) {
+		return 0;
+	}
+	memcpy(data, addr.data, sizeof(addr.data));
+	return sizeof(addr.data);
+#endif
+}
+#endif
 
 // Stand in for the core's own callbacks to report what the adapter's sockets
 // actually do, which is otherwise invisible from a console.
@@ -443,6 +474,9 @@ static bool _attach(struct mGUIRunner* runner) {
 	mobile_def_sock_open(_adapter(m)->adapter, _loggingSockOpen);
 	mobile_def_sock_send(_adapter(m)->adapter, _loggingSockSend);
 	mobile_def_sock_recv(_adapter(m)->adapter, _loggingSockRecv);
+#if defined(__3DS__) || defined(PSP2)
+	mobile_def_device_identity(_adapter(m)->adapter, _deviceIdentity);
+#endif
 	return true;
 }
 

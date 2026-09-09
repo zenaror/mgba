@@ -101,9 +101,14 @@ IMPL void mobile_impl_update_number(A_UNUSED void *user, A_UNUSED enum mobile_nu
     return;
 }
 
-IMPL void mobile_impl_update_device_auth(A_UNUSED void *user, A_UNUSED enum mobile_device_auth_action action, A_UNUSED const unsigned char *ppp_id, A_UNUSED unsigned ppp_id_size, A_UNUSED uint64_t counter, A_UNUSED const unsigned char *sig, A_UNUSED const unsigned char *addr_ipv4)
+IMPL void mobile_impl_update_device_auth(A_UNUSED void *user, A_UNUSED enum mobile_device_auth_action action, A_UNUSED const unsigned char *ppp_id, A_UNUSED unsigned ppp_id_size, A_UNUSED uint64_t counter, A_UNUSED const unsigned char *sig, A_UNUSED const unsigned char *addr_ipv4, A_UNUSED const char *device)
 {
     return;
+}
+
+IMPL unsigned mobile_impl_device_identity(A_UNUSED void *user, A_UNUSED void *data, A_UNUSED unsigned size)
+{
+    return 0;
 }
 #endif
 
@@ -127,6 +132,7 @@ void mobile_callback_init(struct mobile_adapter *adapter)
     adapter->callback.sock_recv = mobile_impl_sock_recv;
     adapter->callback.update_number = mobile_impl_update_number;
     adapter->callback.update_device_auth = mobile_impl_update_device_auth;
+    adapter->callback.device_identity = mobile_impl_device_identity;
 #endif
 }
 
@@ -153,4 +159,5 @@ def(sock_send)
 def(sock_recv)
 def(update_number)
 def(update_device_auth)
+def(device_identity)
 #endif

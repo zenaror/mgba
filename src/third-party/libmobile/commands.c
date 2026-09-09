@@ -1196,6 +1196,14 @@ static int dns_request_start(struct mobile_adapter *adapter, struct mobile_packe
     if (addr_id >= 4) return -1;
     mobile_addr_copy(&b->processing_addr, addr_send);
 
+    // The query is built into adapter->buffer.dns, of which there is exactly
+    //   one, shared with the device-auth side channel's own lookups. Building
+    //   here while device-auth is mid-resolution would overwrite the query it
+    //   is waiting on a reply for -- its id included -- so it would then
+    //   reject its own answer. Same rule as the connection slot: the game's
+    //   request wins, device-auth stays queued and tries again after.
+    mobile_device_auth_cancel(adapter);
+
     // Open connection and build the query (sending is a separate,
     //   retried step -- see command_dns_request_send())
     if (!mobile_cb_sock_open(adapter, conn, MOBILE_SOCKTYPE_UDP,
