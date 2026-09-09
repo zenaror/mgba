@@ -105,7 +105,8 @@ static void _logNetworkState(void) {
 
 // Stand in for the core's own callbacks to report what the adapter's sockets
 // actually do, which is otherwise invisible from a console.
-static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
+static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype,
+                             unsigned bindport) {
 	struct MobileAdapterGB* mobile = user;
 
 	mobile->socket[conn].socktype = type;
@@ -136,7 +137,8 @@ static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype typ
 	return !SOCKET_FAILED(fd);
 }
 
-static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr) {
+static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigned size,
+                            const struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
 	struct Address sendaddr = {0};

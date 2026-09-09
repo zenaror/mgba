@@ -150,11 +150,13 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 	QRegularExpressionValidator vToken(reToken, m_ui.setToken);
 	m_ui.setToken->setValidator(&vToken);
 
-	connect(m_ui.setType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MobileAdapterView::setType);
+	connect(m_ui.setType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+	        this, &MobileAdapterView::setType);
 	connect(m_ui.setUnmetered, &QAbstractButton::toggled, this, &MobileAdapterView::setUnmetered);
 	connect(m_ui.setDns1, &QLineEdit::editingFinished, this, &MobileAdapterView::setDns1);
 	connect(m_ui.setDns2, &QLineEdit::editingFinished, this, &MobileAdapterView::setDns2);
-	connect(m_ui.setPort, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &MobileAdapterView::setPort);
+	connect(m_ui.setPort, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+	        this, &MobileAdapterView::setPort);
 	connect(m_ui.setRelay, &QLineEdit::editingFinished, this, &MobileAdapterView::setRelay);
 	connect(m_ui.setToken, &QLineEdit::editingFinished, this, &MobileAdapterView::setToken);
 	connect(m_ui.copyToken, &QAbstractButton::clicked, this, &MobileAdapterView::copyToken);
