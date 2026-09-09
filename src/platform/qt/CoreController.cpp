@@ -1193,8 +1193,8 @@ bool CoreController::updateMobileAdapter(QString* statusText, QString* userNumbe
 		return false;
 	}
 
-	if (getMobileAdapter()->status_update) {
-		getMobileAdapter()->status_update = false;
+	if (getMobileAdapter()->statusUpdate) {
+		getMobileAdapter()->statusUpdate = false;
 		char (* number)[MOBILE_MAX_NUMBER_SIZE + 1] = getMobileAdapter()->number;
 		*userNumber = QString(number[0]);
 		*peerNumber = QString(number[1]);
