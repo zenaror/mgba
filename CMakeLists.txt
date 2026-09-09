@@ -1159,6 +1159,13 @@ endif()
 if(EXTRA_LICENSES)
 	install(FILES ${EXTRA_LICENSES} DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses COMPONENT ${BINARY_NAME})
 endif()
+if(USE_LIBMOBILE)
+	# libmobile is LGPL and linked in statically, so its license, and the GPL
+	# the LGPL supplements, have to travel with the binaries. Taken from the
+	# vendored copy itself so the text can never drift from the code.
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/libmobile/COPYING.LESSER DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses RENAME libmobile.txt COMPONENT ${BINARY_NAME})
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/libmobile/COPYING DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses RENAME libmobile-gpl.txt COMPONENT ${BINARY_NAME})
+endif()
 
 file(GLOB READMES ${CMAKE_CURRENT_SOURCE_DIR}/README*.md)
 
