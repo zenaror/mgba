@@ -1,3 +1,8 @@
+/* Copyright (c) 2013-2026 Jeffrey Pfau
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef MOBILE_H
 #define MOBILE_H
 
@@ -54,9 +59,9 @@ struct MobileAdapterAuth {
 };
 
 struct MobileAdapterGB {
-	void *p;
+	void* p;
 
-	struct mobile_adapter *adapter;
+	struct mobile_adapter* adapter;
 	uint8_t config[MOBILE_CONFIG_SIZE];
 	struct {
 		Socket fd;
@@ -64,18 +69,18 @@ struct MobileAdapterGB {
 	} socket[MOBILE_MAX_CONNECTIONS];
 	int serial;
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
-	bool status_update;
+	bool statusUpdate;
 	struct MobileAdapterAuth auth;
 };
 
-struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB *mobile);
+struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile);
 
 // Wires the side channel up to an adapter. Called for you when one is made.
-void MobileAdapterAuthInit(struct MobileAdapterGB *mobile);
+void MobileAdapterAuthInit(struct MobileAdapterGB* mobile);
 
 // Moves a pending report along by one step. Must be called regularly, and
 // never blocks.
-void MobileAdapterAuthUpdate(struct MobileAdapterGB *mobile);
+void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile);
 
 CXX_GUARD_END
 

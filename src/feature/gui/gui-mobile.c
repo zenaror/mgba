@@ -40,33 +40,33 @@ mLOG_DEFINE_CATEGORY(GUI_MOBILE, "Mobile Adapter", "gui.mobile");
 // What the library reported, kept for the session so a connection attempt can
 // be inspected afterwards. There is nowhere to watch a log scroll by on a
 // handheld, and reading one off the SD card means powering the console down.
-static char s_log[MOBILE_LOG_LINES][MOBILE_LOG_LEN];
-static size_t s_logNext;
-static size_t s_logCount;
+static char _log[MOBILE_LOG_LINES][MOBILE_LOG_LEN];
+static size_t _logNext;
+static size_t _logCount;
 // Off unless asked for: a working session has nothing to say that is worth
 // covering the bottom screen with while playing.
-static bool s_showLog = false;
+static bool _showLog = false;
 
 // Narrating every socket the adapter opens, sends on and reads from. Off by
 // default, because it is a line of log per packet; worth turning on from the
 // adapter screen when a session fails for reasons the library does not explain,
 // which on a console is the only way to see any of this.
-static bool s_traceSockets = false;
+static bool _traceSockets = false;
 
 static void _debugLog(void* user, const char* line) {
 	UNUSED(user);
-	strlcpy(s_log[s_logNext], line, MOBILE_LOG_LEN);
-	s_logNext = (s_logNext + 1) % MOBILE_LOG_LINES;
-	if (s_logCount < MOBILE_LOG_LINES) {
-		++s_logCount;
+	strlcpy(_log[_logNext], line, MOBILE_LOG_LEN);
+	_logNext = (_logNext + 1) % MOBILE_LOG_LINES;
+	if (_logCount < MOBILE_LOG_LINES) {
+		++_logCount;
 	}
 	mLOG(GUI_MOBILE, DEBUG, "%s", line);
 }
 
 // Oldest first, so index 0 is the start of what is still remembered.
 static const char* _logLine(size_t i) {
-	size_t oldest = s_logCount == MOBILE_LOG_LINES ? s_logNext : 0;
-	return s_log[(oldest + i) % MOBILE_LOG_LINES];
+	size_t oldest = _logCount == MOBILE_LOG_LINES ? _logNext : 0;
+	return _log[(oldest + i) % MOBILE_LOG_LINES];
 }
 
 ATTRIBUTE_FORMAT(printf, 1, 2)
@@ -107,7 +107,8 @@ static void _logNetworkState(void) {
 
 // Stand in for the core's own callbacks to report what the adapter's sockets
 // actually do, which is otherwise invisible from a console.
-static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
+static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype,
+                             unsigned bindport) {
 	struct MobileAdapterGB* mobile = user;
 
 	mobile->socket[conn].socktype = type;
@@ -122,19 +123,24 @@ static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype typ
 		fd = SocketOpenUDP(bindport, &bindaddr);
 	}
 	if (SOCKET_FAILED(fd)) {
-		if (s_traceSockets) _logPrintf("<mGBA> conn %u open %s failed (%i)", conn,
-		           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", SocketError());
+		if (_traceSockets) {
+			_logPrintf("<mGBA> conn %u open %s failed (%i)", conn,
+			           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", SocketError());
+		}
 	} else {
 		SocketSetBlocking(fd, false);
-		if (s_traceSockets) _logPrintf("<mGBA> conn %u open %s ok, port %u", conn,
-		           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", bindport);
+		if (_traceSockets) {
+			_logPrintf("<mGBA> conn %u open %s ok, port %u", conn,
+			           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", bindport);
+		}
 	}
 
 	mobile->socket[conn].fd = fd;
 	return !SOCKET_FAILED(fd);
 }
 
-static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr) {
+static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigned size,
+                            const struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
 	struct Address sendaddr = {0};
@@ -157,12 +163,16 @@ static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigne
 
 	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destport, destaddr);
 	if (SOCKET_RESERROR(res)) {
-		if (s_traceSockets) _logPrintf("<mGBA> conn %u send failed (%i)", conn, SocketError());
+		if (_traceSockets) {
+			_logPrintf("<mGBA> conn %u send failed (%i)", conn, SocketError());
+		}
 		return -1;
 	}
-	if (s_traceSockets) _logPrintf("<mGBA> conn %u sent %i to %u.%u.%u.%u:%i", conn, (int) res,
-	           (unsigned) ((sendaddr.ipv4 >> 24) & 0xFF), (unsigned) ((sendaddr.ipv4 >> 16) & 0xFF),
-	           (unsigned) ((sendaddr.ipv4 >> 8) & 0xFF), (unsigned) (sendaddr.ipv4 & 0xFF), destport);
+	if (_traceSockets) {
+		_logPrintf("<mGBA> conn %u sent %i to %u.%u.%u.%u:%i", conn, (int) res,
+		           (unsigned) ((sendaddr.ipv4 >> 24) & 0xFF), (unsigned) ((sendaddr.ipv4 >> 16) & 0xFF),
+		           (unsigned) ((sendaddr.ipv4 >> 8) & 0xFF), (unsigned) (sendaddr.ipv4 & 0xFF), destport);
+	}
 	return res;
 }
 
@@ -176,11 +186,13 @@ static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size
 		if (SocketWouldBlock()) {
 			return 0;
 		}
-		if (s_traceSockets) _logPrintf("<mGBA> conn %u read error %i", conn, SocketError());
+		if (_traceSockets) {
+			_logPrintf("<mGBA> conn %u read error %i", conn, SocketError());
+		}
 		return -1;
 	}
 
-	if (res > 0 && s_traceSockets) {
+	if (res > 0 && _traceSockets) {
 		_logPrintf("<mGBA> conn %u got %i from %u.%u.%u.%u:%i", conn, (int) res,
 		           (unsigned) ((srcaddr.ipv4 >> 24) & 0xFF), (unsigned) ((srcaddr.ipv4 >> 16) & 0xFF),
 		           (unsigned) ((srcaddr.ipv4 >> 8) & 0xFF), (unsigned) (srcaddr.ipv4 & 0xFF), srcport);
@@ -441,7 +453,7 @@ bool mGUIMobileAdapterHasLog(struct mGUIRunner* runner) {
 	// Deliberately true before anything has been logged: the library only says
 	// something once a game talks to the adapter, and a blank screen until then
 	// is indistinguishable from the adapter not being plugged in at all.
-	return s_showLog && runner->mobile && runner->mobile->attached;
+	return _showLog && runner->mobile && runner->mobile->attached;
 }
 
 // The side channel reports on its own schedule, so the only way to line one up
@@ -492,13 +504,13 @@ void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 
 	// Oldest first going down, so the newest line sits at the bottom.
 	size_t visible = rows - 2;
-	if (visible > s_logCount) {
-		visible = s_logCount;
+	if (visible > _logCount) {
+		visible = _logCount;
 	}
 	size_t i;
 	for (i = 0; i < visible; ++i) {
 		y += lineHeight;
-		GUIFontPrint(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xC0FFFFFF, _logLine(s_logCount - visible + i));
+		GUIFontPrint(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xC0FFFFFF, _logLine(_logCount - visible + i));
 	}
 }
 
@@ -639,8 +651,8 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 	struct mobile_adapter* adapter = _live(runner);
 	struct MobileAdapterGB* gb = _adapter(runner->mobile);
 
-	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state = s_showLog;
-	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_TRACE)->state = s_traceSockets;
+	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state = _showLog;
+	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_TRACE)->state = _traceSockets;
 
 	if (!adapter) {
 		strlcpy(text->status, "Adapter not running", sizeof(text->status));
@@ -714,16 +726,16 @@ static void _applyToggles(struct mGUIRunner* runner, struct GUIMenu* menu) {
 	// screen is open so the settings below still have something to edit. The
 	// teardown happens once the screen closes.
 	runner->mobileEnabled = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_ENABLE)->state;
-	s_showLog = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state;
+	_showLog = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state;
 
 	// Switching tracing on says what the network looks like right away, rather
 	// than leaving that until whatever is being chased happens again.
 	bool trace = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_TRACE)->state;
-	if (trace && !s_traceSockets) {
-		s_traceSockets = true;
+	if (trace && !_traceSockets) {
+		_traceSockets = true;
 		_logNetworkState();
 	}
-	s_traceSockets = trace;
+	_traceSockets = trace;
 	if (runner->mobileEnabled && runner->core) {
 		_attach(runner);
 	}
