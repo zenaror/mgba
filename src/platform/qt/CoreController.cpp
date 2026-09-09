@@ -1197,12 +1197,18 @@ void CoreController::importMobileAdapterConfig(const QString& filename) {
 }
 
 bool CoreController::updateMobileAdapter(QString* statusText, QString* userNumber, QString* peerNumber) {
-	UNUSED(statusText);
-
 	Interrupter interrupter(this);
 	struct mobile_adapter* adapter = getMobileAdapter()->adapter;
 	if (!adapter) {
 		return false;
+	}
+
+	// Only a verified answer from the server says the device is blocked; with
+	// no answer, or a good one, there is nothing to warn about.
+	if (mobile_device_auth_block_state(adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
+		*statusText = tr("Blocked on the site");
+	} else {
+		*statusText = tr("Running");
 	}
 
 	if (getMobileAdapter()->statusUpdate) {

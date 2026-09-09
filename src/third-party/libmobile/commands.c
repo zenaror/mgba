@@ -315,6 +315,16 @@ static struct mobile_packet *command_tel_begin(struct mobile_adapter *adapter, s
 
     // If the relay is enabled, start the connection
     if (adapter->config.relay.type != MOBILE_ADDRTYPE_NONE) {
+        // Blocked on the server this session: the relay would refuse the
+        //   handshake anyway, so fail the same way a failed connection
+        //   does. Only reaches here once the block is already known, i.e.
+        //   after an ISP login in this session; a session that is P2P from
+        //   the start has no way to know, and is refused by the relay
+        //   itself (see relay_handshake_build()).
+        if (mobile_device_auth_block_state(adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
+            return error_packet(packet, 3);
+        }
+
         mobile_addr_copy(&b->processing_addr, &adapter->config.relay);
         mobile_relay_init(adapter);
 
@@ -473,6 +483,11 @@ static struct mobile_packet *command_wait_call_begin(struct mobile_adapter *adap
     s->state = MOBILE_CONNECTION_WAIT_TIMEOUT;
 
     if (adapter->config.relay.type != MOBILE_ADDRTYPE_NONE) {
+        // As for TEL: a device the server has blocked doesn't wait for calls.
+        if (mobile_device_auth_block_state(adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
+            return error_packet(packet, 0);
+        }
+
         mobile_addr_copy(&b->processing_addr, &adapter->config.relay);
         mobile_relay_init(adapter);
 
@@ -979,6 +994,13 @@ static struct mobile_packet *command_tcp_connect_begin(struct mobile_adapter *ad
     }
     if (packet->length < 6) return error_packet(packet, 3);
 
+    // The account's owner blocked this device on the server: the same
+    //   "connection failed" the game gets with no network, so its own
+    //   error screen shows. See mobile_device_auth_block_state().
+    if (mobile_device_auth_block_state(adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
+        return error_packet(packet, 3);
+    }
+
     int conn = mobile_commands_connection_new(adapter);
     if (conn < 0) return error_packet(packet, 0);
 
@@ -1251,6 +1273,11 @@ static struct mobile_packet *command_dns_request_begin(struct mobile_adapter *ad
         memcpy(packet->data, ip, sizeof(ip));
         packet->length = 4;
         return packet;
+    }
+
+    // As for TCP_CONNECT: a blocked device gets the ordinary lookup failure.
+    if (mobile_device_auth_block_state(adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
+        return error_packet(packet, 2);
     }
 
     int conn = mobile_commands_connection_new(adapter);

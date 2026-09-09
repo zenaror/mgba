@@ -100,6 +100,16 @@ enum mobile_dns {
     MOBILE_DNS2
 };
 
+// What the server has said, this session, about this device being blocked.
+//   Three states rather than a bool because "not blocked" is a claim that
+//   needs a verified answer behind it; absent one, the honest state is
+//   "don't know", and a frontend should show nothing rather than reassure.
+enum mobile_device_auth_block_state {
+    MOBILE_DEVICE_AUTH_BLOCK_UNKNOWN,   // no verified answer yet this session
+    MOBILE_DEVICE_AUTH_BLOCK_NO,        // server answered: not blocked
+    MOBILE_DEVICE_AUTH_BLOCK_YES        // server answered: blocked
+};
+
 struct mobile_addr4 {
     enum mobile_addrtype type;
     unsigned port;
@@ -623,10 +633,17 @@ void mobile_def_device_identity(struct mobile_adapter *adapter, mobile_func_devi
 // Parameters:
 // - addr_ipv4: the server's resolved address, MOBILE_HOSTLEN_IPV4 bytes
 // - ppp_id, ppp_id_size: as in mobile_func_update_device_auth
+// - counter: value to send with the query, exactly as for an authorization
+//   (decimal, no leading zeros), and covered by <sig>. The server echoes it
+//   inside its signed answer, which is what lets the library tell a fresh
+//   answer from a recorded one being replayed at it. It is taken from the
+//   same sequence as authorization counters and never reused, so it is
+//   fresh even when nothing else about this device has changed -- which is
+//   precisely the situation of a device the server has blocked.
 // - sig: raw MOBILE_DEVICE_AUTH_SIG_SIZE-byte signature over this query
 // - device: this device's id, or NULL -- as in mobile_func_update_device_auth
-typedef bool (*mobile_func_device_auth_query)(void *user, const unsigned char *addr_ipv4, const unsigned char *ppp_id, unsigned ppp_id_size, const unsigned char *sig, const char *device);
-bool mobile_impl_device_auth_query(void *user, const unsigned char *addr_ipv4, const unsigned char *ppp_id, unsigned ppp_id_size, const unsigned char *sig, const char *device);
+typedef bool (*mobile_func_device_auth_query)(void *user, const unsigned char *addr_ipv4, const unsigned char *ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char *sig, const char *device);
+bool mobile_impl_device_auth_query(void *user, const unsigned char *addr_ipv4, const unsigned char *ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char *sig, const char *device);
 void mobile_def_device_auth_query(struct mobile_adapter *adapter, mobile_func_device_auth_query func);
 
 // mobile_device_auth_query_result - Deliver the answer to a device-auth query
@@ -638,8 +655,12 @@ void mobile_def_device_auth_query(struct mobile_adapter *adapter, mobile_func_de
 //
 // The library authenticates the answer before acting on it and ignores
 // anything it cannot verify, so an unauthenticated transport is acceptable
-// here. This matters: the answer sets a counter, and a forged one high
-// enough would strand this device forever.
+// here. This matters twice over: the answer sets a counter, and a forged one
+// high enough would strand this device forever; and the answer may say the
+// server has blocked this device, on which the library refuses to bring up
+// the network for the session -- a signal anyone able to answer in the
+// server's place could otherwise use to deny service. See
+// mobile_device_auth_is_blocked().
 //
 // Safe to call at any time, including from a network callback of your own.
 //
@@ -664,6 +685,45 @@ void mobile_device_auth_query_result(struct mobile_adapter *adapter, const void 
 // - adapter: Library state
 // - buf: buffer of at least MOBILE_DEVICE_ID_STR_SIZE bytes
 bool mobile_device_auth_get_id(struct mobile_adapter *adapter, char *buf);
+
+// mobile_device_auth_block_state - Whether the server has blocked this device
+//
+// Reports what the server said, this session, when asked for the counter:
+// that this device is blocked -- something an account's owner does from the
+// server's device list, to stop one of their own devices using the account
+// -- or that it isn't, or nothing verifiable yet. Once it is YES, for the
+// rest of the session the library refuses to open connections or resolve
+// names on the game's behalf, so the game fails the way it does with no
+// network. Show the reason where the game's own error screen would
+// otherwise leave the user blaming their Wi-Fi.
+//
+// Fails open, deliberately. Only a signed answer that verifies, and that
+// echoes this session's own query, can produce YES; a missing answer, a
+// transport failure, a wrong status, a malformed or unverifiable body, all
+// leave UNKNOWN, which behaves exactly like NO. Anything else would let
+// someone unable to forge a "blocked" answer get the same effect by merely
+// dropping packets -- indistinguishable, to the user, from bad Wi-Fi. For
+// the same reason UNKNOWN is a state of its own and not folded into NO:
+// "not blocked" is a claim, and without an answer behind it the honest
+// thing for a frontend to show is nothing.
+//
+// This is cooperative by construction: the config storage carries the
+// account's credentials, so a device set on using them can. The server-side
+// answer to that is changing the password, not this. What this provides is
+// the owner's own devices honouring their wish, promptly and without
+// touching each one.
+//
+// Never persisted, and re-learned every session: unblocking on the server
+// takes effect on the device's next session with no action there. That also
+// bounds what a recorded "blocked" answer replayed at the device can do --
+// nothing beyond the sessions during which the replay is actually happening,
+// and only if it survives the freshness check described under
+// mobile_func_device_auth_query.
+//
+// Returns: the block state for this session
+// Parameters:
+// - adapter: Library state
+enum mobile_device_auth_block_state mobile_device_auth_block_state(struct mobile_adapter *adapter);
 
 // mobile_device_auth_get_pairing_code - This device's id, for a person
 //

@@ -119,11 +119,22 @@ static void _logNetworkState(void) {
 static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
 	UNUSED(user);
 #ifdef __3DS__
-	// Six octets, however the service chooses to lay them out.
-	socklen_t len = size < 24 ? size : 24;
-	if (SOCU_GetNetworkOpt(SOL_CONFIG, NETOPT_MAC_ADDRESS, data, &len) != 0) {
+	// Exactly six octets: the service is asked for the size it is used to
+	// being asked for, and says how many it wrote.
+	unsigned char mac[6];
+	socklen_t len = sizeof(mac);
+	int res = SOCU_GetNetworkOpt(SOL_CONFIG, NETOPT_MAC_ADDRESS, mac, &len);
+	if (res != 0 || len == 0 || len > sizeof(mac) || size < len) {
+		// The library asks again at every use until it works, so only a
+		// change is news.
+		static int lastRes;
+		if (res != lastRes) {
+			_logPrintf("<mGBA> no MAC address: %08X, %u bytes", (unsigned) res, (unsigned) len);
+			lastRes = res;
+		}
 		return 0;
 	}
+	memcpy(data, mac, len);
 	return len;
 #else
 	SceNetEtherAddr addr;
@@ -368,6 +379,25 @@ static bool _alloc(struct mGUIRunner* runner) {
 
 // Without a game there is no serial port to plug into, but the stored settings
 // can still be read and edited through an adapter that is never started.
+// Everything this frontend puts on an adapter over what the core gave it.
+// Hung on the driver as its setup hook rather than done once at attach,
+// because resetting the core tears the adapter down and builds it afresh
+// with the core's own callbacks — and the new one tends to land at the
+// old one's address, so watching the pointer for a change misses it.
+static void _setup(struct MobileAdapterGB* gb) {
+	struct mobile_adapter* adapter = gb->adapter;
+	// Replaces the driver's own logger, which only ever reached a file nobody
+	// can read without powering the console down.
+	mobile_def_debug_log(adapter, _debugLog);
+	mobile_def_sock_open(adapter, _loggingSockOpen);
+	mobile_def_sock_send(adapter, _loggingSockSend);
+	mobile_def_sock_recv(adapter, _loggingSockRecv);
+#if defined(__3DS__) || defined(PSP2)
+	// Same name as the core registers with, since it is part of the id.
+	mobile_def_device_identity(adapter, _deviceIdentity, "mgba");
+#endif
+}
+
 static bool _attach(struct mGUIRunner* runner) {
 	if (!runner->core) {
 		return false;
@@ -401,8 +431,10 @@ static bool _attach(struct mGUIRunner* runner) {
 	SocketSubsystemInit();
 
 	// The config blob has to be in place before the driver is initialized,
-	// since starting the adapter is what parses it.
+	// since starting the adapter is what parses it; and so has the setup
+	// hook, since initializing the driver is what first calls it.
 	_loadConfig(m);
+	_adapter(m)->setup = _setup;
 
 	switch (m->platform) {
 #ifdef M_CORE_GBA
@@ -424,16 +456,6 @@ static bool _attach(struct mGUIRunner* runner) {
 		SocketSubsystemDeinit();
 		return false;
 	}
-	// Replaces the driver's own logger, which only ever reached a file nobody
-	// can read without powering the console down.
-	mobile_def_debug_log(_adapter(m)->adapter, _debugLog);
-	mobile_def_sock_open(_adapter(m)->adapter, _loggingSockOpen);
-	mobile_def_sock_send(_adapter(m)->adapter, _loggingSockSend);
-	mobile_def_sock_recv(_adapter(m)->adapter, _loggingSockRecv);
-#if defined(__3DS__) || defined(PSP2)
-	// Same name as the core registers with, since it is part of the id.
-	mobile_def_device_identity(_adapter(m)->adapter, _deviceIdentity, "mgba");
-#endif
 	return true;
 }
 
@@ -464,8 +486,32 @@ static void _noteRelayReports(struct mGUIRunner* runner) {
 	_logPrintf("<mGBA> relay: %s", gb->auth.last);
 }
 
+#if defined(__3DS__) || defined(PSP2)
+// The radio's address is not always there to be read the moment the network
+// stack comes up: the console associates with its access point in its own
+// time, and the first session after a boot asks before it has. The library
+// asks again at every use until it gets one, so nothing has to be done about
+// that here; but the moment it does is worth a line in the log, and asking
+// once a second is the price of noticing it.
+static void _announceIdentity(struct mGUIRunner* runner) {
+	static bool announced;
+	static unsigned wait;
+	if (announced || wait++ % 60) {
+		return;
+	}
+	char code[MOBILE_PAIRING_CODE_LEN];
+	if (MobileAdapterGBPairingCode(_adapter(runner->mobile), code, sizeof(code))) {
+		_logPrintf("<mGBA> this device is %s", code);
+		announced = true;
+	}
+}
+#endif
+
 void mGUIMobileAdapterPoll(struct mGUIRunner* runner) {
 	if (runner->mobile && runner->mobile->attached) {
+#if defined(__3DS__) || defined(PSP2)
+		_announceIdentity(runner);
+#endif
 		_noteRelayReports(runner);
 		// Whatever the library just wrote goes to the card now, not when this
 		// adapter is put away: a console is switched off mid-game far more often
@@ -481,11 +527,6 @@ void mGUIMobileAdapterPoll(struct mGUIRunner* runner) {
 void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 	if (!mGUIMobileAdapterHasLog(runner)) {
 		return;
-	}
-	// Resetting the core tears the driver down and builds it again, which
-	// restores its own logger, so ours has to be put back.
-	if (_live(runner)) {
-		mobile_def_debug_log(_live(runner), _debugLog);
 	}
 	unsigned lineHeight = GUIFontHeight(runner->params.font);
 	if (!lineHeight) {
@@ -506,8 +547,13 @@ void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 	if (!gb || !MobileAdapterGBPairingCode(gb, pairing, sizeof(pairing))) {
 		strlcpy(pairing, "-", sizeof(pairing));
 	}
-	GUIFontPrintf(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xFFFFFFFF, "Mobile Adapter: %s  [%s]",
-	              gb && gb->number[0][0] ? gb->number[0] : "waiting for game", pairing);
+	const char* state = "waiting for game";
+	if (gb && gb->adapter && mobile_device_auth_block_state(gb->adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
+		state = "blocked on the site";
+	} else if (gb && gb->number[0][0]) {
+		state = gb->number[0];
+	}
+	GUIFontPrintf(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xFFFFFFFF, "Mobile Adapter: %s  [%s]", state, pairing);
 
 	// Oldest first going down, so the newest line sits at the bottom.
 	size_t visible = rows - 2;
@@ -670,7 +716,11 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 		return;
 	}
 
-	if (gb->number[0][0]) {
+	if (mobile_device_auth_block_state(adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
+		// Said only on a verified answer from the server, and said in place of
+		// everything else: nothing below it is going to work.
+		strlcpy(text->status, "Blocked on the site", sizeof(text->status));
+	} else if (gb->number[0][0]) {
 		snprintf(text->status, sizeof(text->status), "Line %s", gb->number[0]);
 		if (gb->number[1][0]) {
 			size_t used = strlen(text->status);

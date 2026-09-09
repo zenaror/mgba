@@ -98,7 +98,7 @@ static void _authNotify(void* user, enum mobile_device_auth_action action, const
 }
 
 static bool _authQuery(void* user, const unsigned char* addrIpv4, const unsigned char* pppId, unsigned pppIdSize,
-                       const unsigned char* sig, const char* device) {
+                       uint64_t counter, const unsigned char* sig, const char* device) {
 	struct MobileAdapterGB* mobile = user;
 	struct MobileAdapterAuth* auth = &mobile->auth;
 
@@ -107,6 +107,9 @@ static bool _authQuery(void* user, const unsigned char* addrIpv4, const unsigned
 		return false;
 	}
 	event->query = true;
+	// Consumed by this query, so the server's echo of it is fresh even on a
+	// device that never sends anything else.
+	event->counter = counter;
 	strlcpy(auth->last, "counter asked", sizeof(auth->last));
 	return true;
 }
@@ -145,11 +148,11 @@ static bool _authBuildRequest(struct MobileAdapterAuth* auth, const struct Mobil
 		// library byte for byte, and a 1.0 client is never sent it in chunks,
 		// so it is exactly what follows the headers.
 		written = snprintf(auth->request, sizeof(auth->request),
-		    "GET " MOBILE_AUTH_PATH "?ppp_id=%s%s&action=query&sig=%s HTTP/1.0\r\n"
+		    "GET " MOBILE_AUTH_PATH "?ppp_id=%s%s&action=query&counter=%" PRIu64 "&sig=%s HTTP/1.0\r\n"
 		    "Host: " MOBILE_AUTH_HOST "\r\n"
 		    "Connection: close\r\n"
 		    "\r\n",
-		    pppId, device, sig);
+		    pppId, device, event->counter, sig);
 	} else {
 		written = snprintf(auth->request, sizeof(auth->request),
 		    "GET " MOBILE_AUTH_PATH "?ppp_id=%s%s&action=%s&counter=%" PRIu64 "&sig=%s HTTP/1.1\r\n"
@@ -168,20 +171,33 @@ static bool _authBuildRequest(struct MobileAdapterAuth* auth, const struct Mobil
 	return true;
 }
 
-// Picks the body out of a query's reply, if the server said it was one.
-// Nothing here judges what the body says; the library does that.
-static bool _authReplyBody(const struct MobileAdapterAuth* auth, const char** body, unsigned* size) {
+// The status code of a reply, or 0 for anything that does not start like one.
+static int _authReplyStatus(const struct MobileAdapterAuth* auth) {
 	if (auth->responseSize < sizeof("HTTP/1.0 200") - 1) {
-		return false;
+		return 0;
 	}
 	if (memcmp(auth->response, "HTTP/1.", sizeof("HTTP/1.") - 1) != 0) {
-		return false;
+		return 0;
 	}
 	const char* status = memchr(auth->response, ' ', auth->responseSize);
 	if (!status || (size_t) (status - auth->response) + 4 > auth->responseSize) {
-		return false;
+		return 0;
 	}
-	if (memcmp(status, " 200", 4) != 0) {
+	int code = 0;
+	unsigned i;
+	for (i = 1; i < 4; ++i) {
+		if (status[i] < '0' || status[i] > '9') {
+			return 0;
+		}
+		code = code * 10 + (status[i] - '0');
+	}
+	return code;
+}
+
+// Picks the body out of a query's reply, if the server said it was one.
+// Nothing here judges what the body says; the library does that.
+static bool _authReplyBody(const struct MobileAdapterAuth* auth, const char** body, unsigned* size) {
+	if (_authReplyStatus(auth) != 200) {
 		return false;
 	}
 	size_t i;
@@ -224,10 +240,23 @@ static void _authDone(struct MobileAdapterGB* mobile) {
 		_authDrop(mobile, body, size);
 		return;
 	}
-	++auth->reported;
-	snprintf(auth->last, sizeof(auth->last), "%s sent, #%" PRIu64,
-	    auth->queue[0].action == MOBILE_DEVICE_AUTH_AUTHORIZE ? "authorize" : "deauthorize",
-	    auth->queue[0].counter);
+	// A report's reply is read only for its verdict: a refusal is worth
+	// telling apart from a network failure, and a refusal of a device the
+	// site has blocked from one the server merely did not like.
+	const char* what = auth->queue[0].action == MOBILE_DEVICE_AUTH_AUTHORIZE ? "authorize" : "deauthorize";
+	int status = _authReplyStatus(auth);
+	if (status == 403 && mobile_device_auth_block_state(mobile->adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
+		mLOG(MOBILE_AUTH, WARN, "Report refused: this device is blocked on the site");
+		++auth->failed;
+		strlcpy(auth->last, "refused, device blocked", sizeof(auth->last));
+	} else if (status && status != 200) {
+		mLOG(MOBILE_AUTH, WARN, "Report refused with status %i", status);
+		++auth->failed;
+		snprintf(auth->last, sizeof(auth->last), "%s refused (%i), #%" PRIu64, what, status, auth->queue[0].counter);
+	} else {
+		++auth->reported;
+		snprintf(auth->last, sizeof(auth->last), "%s sent, #%" PRIu64, what, auth->queue[0].counter);
+	}
 	_authDrop(mobile, NULL, 0);
 }
 
@@ -295,7 +324,7 @@ void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile) {
 	case MOBILE_AUTH_DRAINING: {
 		// Hanging up before the server has finished writing looks to it like a
 		// client that gave up, so the reply is read to its end. A report needs
-		// nothing it says; a query keeps it for the library.
+		// only its status line; a query keeps the whole of it for the library.
 		if (auth->ticks > MOBILE_AUTH_DRAIN_TICKS) {
 			_authFail(mobile, "timed out reading");
 			return;
@@ -304,14 +333,16 @@ void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile) {
 			char chunk[256];
 			ssize_t res = SocketRecv(auth->fd, chunk, sizeof(chunk));
 			if (res > 0) {
-				if (auth->queue[0].query) {
-					if (auth->responseSize + res > sizeof(auth->response)) {
+				size_t room = sizeof(auth->response) - auth->responseSize;
+				if ((size_t) res > room) {
+					if (auth->queue[0].query) {
 						_authFail(mobile, "answered at length");
 						return;
 					}
-					memcpy(&auth->response[auth->responseSize], chunk, res);
-					auth->responseSize += res;
+					res = room;
 				}
+				memcpy(&auth->response[auth->responseSize], chunk, res);
+				auth->responseSize += res;
 				continue;
 			}
 			if (SOCKET_RESERROR(res) && SocketWouldBlock()) {
