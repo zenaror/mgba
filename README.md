@@ -6,9 +6,10 @@ mGBA
 > libmobile (LGPL-3.0, vendored under `src/third-party/libmobile`), on the
 > desktop and on the 3DS; see [MOBILE_ADAPTER_3DS.md](MOBILE_ADAPTER_3DS.md)
 > for what was done and how it works. Everything below this notice is
-> upstream's own README. For the official emulator go to
-> [mgba.io](https://mgba.io/), and please do not report problems with this
-> fork there.
+> upstream's own README. This fork lives at
+> [github.com/zenaror/mgba](https://github.com/zenaror/mgba): report problems
+> with it there, not to the mGBA project. For the official emulator go to
+> [mgba.io](https://mgba.io/).
 
 mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack. It also supports Game Boy and Game Boy Color games.
 
