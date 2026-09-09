@@ -192,7 +192,7 @@ To build on Windows for development, using MSYS2 is recommended. Follow the inst
 
 Check out the source code by running this command:
 
-	git clone https://github.com/mgba-emu/mgba.git
+	git clone https://github.com/zenaror/mgba.git
 
 Then finally build it by running these commands:
 
@@ -215,7 +215,7 @@ You will also need to install Qt. Unfortunately due to Qt being owned and run by
 
     vcpkg install qt5-base qt5-multimedia
 
-Next, open Visual Studio, select Clone Repository, and enter `https://github.com/mgba-emu/mgba.git`. When Visual Studio is done cloning, go to File > CMake and open the CMakeLists.txt file at the root of the checked out repository. From there, mGBA can be developed in Visual Studio similarly to other Visual Studio CMake projects.
+Next, open Visual Studio, select Clone Repository, and enter `https://github.com/zenaror/mgba.git`. When Visual Studio is done cloning, go to File > CMake and open the CMakeLists.txt file at the root of the checked out repository. From there, mGBA can be developed in Visual Studio similarly to other Visual Studio CMake projects.
 
 #### Toolchain building
 
