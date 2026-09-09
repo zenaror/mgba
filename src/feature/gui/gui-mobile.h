@@ -16,6 +16,10 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner);
 void mGUIMobileAdapterAttach(struct mGUIRunner* runner);
 void mGUIMobileAdapterDetach(struct mGUIRunner* runner);
 
+// Notices anything the adapter did during the frame that only this side can
+// act on, such as a config change that needs writing out. Once per frame.
+void mGUIMobileAdapterPoll(struct mGUIRunner* runner);
+
 // Whether there is adapter chatter worth putting on screen, and the drawing of
 // it. Must be called with the GUI surface already prepared.
 bool mGUIMobileAdapterHasLog(struct mGUIRunner* runner);

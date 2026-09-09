@@ -322,6 +322,7 @@ static void _saveConfig(struct mGUIMobileAdapter* m) {
 	}
 	vf->write(vf, _adapter(m)->config, MOBILE_CONFIG_SIZE);
 	vf->close(vf);
+	_adapter(m)->configDirty = false;
 }
 
 static bool _alloc(struct mGUIRunner* runner) {
@@ -443,6 +444,16 @@ static bool _attach(struct mGUIRunner* runner) {
 
 void mGUIMobileAdapterAttach(struct mGUIRunner* runner) {
 	_attach(runner);
+}
+
+void mGUIMobileAdapterPoll(struct mGUIRunner* runner) {
+	// Whatever the library just wrote goes to the card now, not when this
+	// adapter is put away: a console is switched off mid-game far more often
+	// than it is shut down cleanly, and anything the library changed in the
+	// meantime would be lost with it.
+	if (runner->mobile && runner->mobile->attached && _adapter(runner->mobile)->configDirty) {
+		_saveConfig(runner->mobile);
+	}
 }
 
 bool mGUIMobileAdapterHasLog(struct mGUIRunner* runner) {

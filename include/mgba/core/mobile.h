@@ -25,6 +25,10 @@ struct MobileAdapterGB {
 	int serial;
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
 	bool statusUpdate;
+	// Set whenever the library writes into config, and cleared by whoever
+	// carries config to storage, so nothing the library changed is lost when
+	// the console is switched off before the adapter is put away.
+	bool configDirty;
 };
 
 struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile);
