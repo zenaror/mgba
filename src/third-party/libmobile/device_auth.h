@@ -69,6 +69,11 @@ struct mobile_adapter_device_auth {
     char device_id[MOBILE_DEVICE_ID_STR_SIZE];
     bool device_id_init;
 
+    // Name of the frontend, mixed into the device id so two frontends on one
+    //   machine, which the operating system identifies identically, don't
+    //   derive the same one. Empty means no identity is claimed at all.
+    char impl_name[MOBILE_IMPL_NAME_MAX_SIZE + 1];
+
     // The server's address, resolved once as soon as there is a key and a
     //   DNS server to ask, then kept in memory for as long as this adapter
     //   lives -- never written to config storage. Same idea as negotiating
@@ -78,6 +83,12 @@ struct mobile_adapter_device_auth {
     //   mid-session.
     unsigned char addr_ipv4[MOBILE_HOSTLEN_IPV4];
     bool addr_resolved;
+
+    // Set once a lookup made purely to get ahead has failed, so it isn't
+    //   retried every idle tick forever. Cleared when a session starts,
+    //   which is both a reason to try again and the moment a DNS server the
+    //   game supplied becomes available.
+    bool addr_failed;
 
     // A counter query is wanted for this session, or has been handed to the
     //   frontend and is waiting on mobile_device_auth_query_result().
@@ -97,6 +108,11 @@ void mobile_device_auth_init(struct mobile_adapter *adapter);
 // Starts a new session: drops the cached server address, so it is resolved
 //   again, and asks for a counter query before anything is authorized.
 void mobile_device_auth_session_start(struct mobile_adapter *adapter);
+
+// Stores the frontend's name for the device id derivation. Set through
+//   mobile_def_device_identity(), which takes it alongside the callback so
+//   the two cannot be registered apart.
+void mobile_device_auth_set_impl_name(struct mobile_adapter *adapter, const char *impl_name);
 
 // Queues a device-auth event for signing and dispatch through
 //   mobile_func_update_device_auth, once the server's address has been

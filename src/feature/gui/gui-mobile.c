@@ -262,6 +262,7 @@ enum mGUIMobileItem {
 	MOBILE_ITEM_ENABLE = 0,
 	MOBILE_ITEM_STATUS,
 	MOBILE_ITEM_RELAY_REPORTS,
+	MOBILE_ITEM_PAIRING,
 	MOBILE_ITEM_SHOW_LOG,
 	MOBILE_ITEM_TRACE,
 	MOBILE_ITEM_TYPE,
@@ -279,6 +280,7 @@ enum mGUIMobileItem {
 struct mGUIMobileText {
 	char status[64];
 	char reports[64];
+	char pairing[16];
 	char dns1[ADDR_TEXT_LEN];
 	char dns2[ADDR_TEXT_LEN];
 	char p2pPort[8];
@@ -393,6 +395,12 @@ static bool _attachConfigOnly(struct mGUIRunner* runner) {
 		return false;
 	}
 	mobile_config_load(gb->adapter);
+#if defined(__3DS__) || defined(PSP2)
+	// Never goes online, but the pairing code shown on this screen is derived
+	// from the radio's address, and asking for that needs the network stack.
+	SocketSubsystemInit();
+	mobile_def_device_identity(gb->adapter, _deviceIdentity, "mgba");
+#endif
 	m->configOnly = true;
 	return true;
 }
@@ -407,6 +415,9 @@ static void _detachConfigOnly(struct mGUIRunner* runner) {
 	free(gb->adapter);
 	gb->adapter = NULL;
 	m->configOnly = false;
+#if defined(__3DS__) || defined(PSP2)
+	SocketSubsystemDeinit();
+#endif
 }
 
 static bool _attach(struct mGUIRunner* runner) {
@@ -475,7 +486,8 @@ static bool _attach(struct mGUIRunner* runner) {
 	mobile_def_sock_send(_adapter(m)->adapter, _loggingSockSend);
 	mobile_def_sock_recv(_adapter(m)->adapter, _loggingSockRecv);
 #if defined(__3DS__) || defined(PSP2)
-	mobile_def_device_identity(_adapter(m)->adapter, _deviceIdentity);
+	// Same name as the core registers with, since it is part of the id.
+	mobile_def_device_identity(_adapter(m)->adapter, _deviceIdentity, "mgba");
 #endif
 	return true;
 }
@@ -542,8 +554,15 @@ void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 	// Second row down: the framerate counter owns the first.
 	unsigned y = lineHeight * 2;
 	struct MobileAdapterGB* gb = _adapter(runner->mobile);
-	GUIFontPrintf(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xFFFFFFFF, "Mobile Adapter: %s",
-	              gb && gb->number[0][0] ? gb->number[0] : "waiting for game");
+	// The pairing code goes on the same line so it is in view whenever the
+	// log is, which is where someone matching this console against the
+	// account's device list will be looking.
+	char pairing[MOBILE_PAIRING_CODE_LEN];
+	if (!gb || !MobileAdapterGBPairingCode(gb, pairing, sizeof(pairing))) {
+		strlcpy(pairing, "-", sizeof(pairing));
+	}
+	GUIFontPrintf(runner->params.font, 0, y, GUI_ALIGN_LEFT, 0xFFFFFFFF, "Mobile Adapter: %s  [%s]",
+	              gb && gb->number[0][0] ? gb->number[0] : "waiting for game", pairing);
 
 	// Oldest first going down, so the newest line sits at the bottom.
 	size_t visible = rows - 2;
@@ -700,6 +719,7 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 	if (!adapter) {
 		strlcpy(text->status, "Adapter not running", sizeof(text->status));
 		strlcpy(text->reports, "-", sizeof(text->reports));
+		strlcpy(text->pairing, "-", sizeof(text->pairing));
 		text->dns1[0] = '\0';
 		text->dns2[0] = '\0';
 		text->relay[0] = '\0';
@@ -727,6 +747,10 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 	} else {
 		snprintf(text->reports, sizeof(text->reports), "%u ok, %u failed: %s",
 		         auth->reported, auth->failed, auth->last);
+	}
+
+	if (!MobileAdapterGBPairingCode(gb, text->pairing, sizeof(text->pairing))) {
+		strlcpy(text->pairing, "unavailable", sizeof(text->pairing));
 	}
 
 	enum mobile_adapter_device device;
@@ -906,6 +930,13 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		.title = "Relay reports",
 		.data = GUI_V_U(MOBILE_ITEM_RELAY_REPORTS),
 		.validStates = (const char*[]) { text.reports },
+		.nStates = 1,
+		.readonly = true
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Pairing code",
+		.data = GUI_V_U(MOBILE_ITEM_PAIRING),
+		.validStates = (const char*[]) { text.pairing },
 		.nStates = 1,
 		.readonly = true
 	};

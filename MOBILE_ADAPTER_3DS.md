@@ -69,8 +69,10 @@ by which one copied it. The console answers with its radio's MAC address
 (`SOCU_GetNetworkOpt` with `NETOPT_MAC_ADDRESS`; `sceNetGetMacAddress` on the
 Vita), which survives the config being wiped or downloaded again; the desktop
 core answers with the machine id, or the host and user name failing that. The
-library hashes it, and only the hash is ever sent, as the `device` field of the
-report. With no callback there is no field, and the server files the report
+library hashes it together with the frontend's name — `"mgba"`, a literal
+agreed with the other implementations, since libmobile-bgb on the same PC
+would otherwise read the same machine id and become the same device — and
+only the hash is ever sent, as the `device` field of the report. With no callback there is no field, and the server files the report
 under the account's one unnamed device, which is where every build before this
 one sat.
 
