@@ -44,7 +44,9 @@ static void _authDrop(struct MobileAdapterAuth* auth) {
 	_authPop(auth);
 }
 
-static void _authNotify(void* user, enum mobile_device_auth_action action, const unsigned char* ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char* sig, const unsigned char* addr_ipv4) {
+static void _authNotify(void* user, enum mobile_device_auth_action action, const unsigned char* pppId,
+                        unsigned pppIdSize, uint64_t counter, const unsigned char* sig,
+                        const unsigned char* addrIpv4) {
 	struct MobileAdapterGB* mobile = user;
 	struct MobileAdapterAuth* auth = &mobile->auth;
 
@@ -59,17 +61,17 @@ static void _authNotify(void* user, enum mobile_device_auth_action action, const
 	memset(event, 0, sizeof(*event));
 	event->action = action;
 	event->counter = counter;
-	if (ppp_id_size > sizeof(event->pppId)) {
-		ppp_id_size = sizeof(event->pppId);
+	if (pppIdSize > sizeof(event->pppId)) {
+		pppIdSize = sizeof(event->pppId);
 	}
-	memcpy(event->pppId, ppp_id, ppp_id_size);
-	event->pppIdSize = ppp_id_size;
+	memcpy(event->pppId, pppId, pppIdSize);
+	event->pppIdSize = pppIdSize;
 	memcpy(event->sig, sig, MOBILE_DEVICE_AUTH_SIG_SIZE);
 	snprintf(auth->last, sizeof(auth->last), "%s queued, #%" PRIu64,
 	    action == MOBILE_DEVICE_AUTH_AUTHORIZE ? "authorize" : "deauthorize", counter);
 	event->address.version = IPV4;
-	event->address.ipv4 = (addr_ipv4[0] << 24) | (addr_ipv4[1] << 16) |
-	                      (addr_ipv4[2] << 8) | addr_ipv4[3];
+	event->address.ipv4 = (addrIpv4[0] << 24) | (addrIpv4[1] << 16) |
+	                      (addrIpv4[2] << 8) | addrIpv4[3];
 	++auth->queued;
 }
 
@@ -92,7 +94,7 @@ static bool _authBuildRequest(struct MobileAdapterAuth* auth, const struct Mobil
 	}
 
 	int written = snprintf(auth->request, sizeof(auth->request),
-	    "GET " MOBILE_AUTH_PATH "?ppp_id=%s&action=%s&counter=%" PRIu64 "&sig=%s HTTP/1.1\r\n"
+	    "GET " MOBILE_AUTH_PATH "?pppId=%s&action=%s&counter=%" PRIu64 "&sig=%s HTTP/1.1\r\n"
 	    "Host: " MOBILE_AUTH_HOST "\r\n"
 	    "Connection: close\r\n"
 	    "\r\n",
@@ -188,7 +190,7 @@ void MobileAdapterAuthUpdate(struct MobileAdapterGB* mobile) {
 			_authDrop(auth);
 			return;
 		}
-		for (;;) {
+		while (true) {
 			char discard[256];
 			ssize_t res = SocketRecv(auth->fd, discard, sizeof(discard));
 			if (res > 0) {

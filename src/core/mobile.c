@@ -1,32 +1,38 @@
+/* Copyright (c) 2013-2026 Jeffrey Pfau
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/mobile.h>
 
-static void serial_disable(void* user) {
+static void _serialDisable(void* user) {
 	struct MobileAdapterGB* mobile = user;
 
 	mobile->serial = 0;
 }
 
-static void serial_enable(void* user, bool mode_32bit) {
+static void _serialEnable(void* user, bool mode32Bit) {
 	struct MobileAdapterGB* mobile = user;
 
-	mobile->serial = mode_32bit ? 4 : 1;
+	mobile->serial = mode32Bit ? 4 : 1;
 }
 
-static bool config_read(void* user, void* dest, uintptr_t offset, size_t size) {
+static bool _configRead(void* user, void* dest, uintptr_t offset, size_t size) {
 	struct MobileAdapterGB* mobile = user;
 
 	memcpy(dest, mobile->config + offset, size);
 	return true;
 }
 
-static bool config_write(void* user, const void* src, uintptr_t offset, size_t size) {
+static bool _configWrite(void* user, const void* src, uintptr_t offset, size_t size) {
 	struct MobileAdapterGB* mobile = user;
 
 	memcpy(mobile->config + offset, src, size);
 	return true;
 }
 
-static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
+static bool _sockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype,
+                      unsigned bindport) {
 	struct MobileAdapterGB* mobile = user;
 
 	Socket fd;
@@ -53,7 +59,7 @@ static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum
 	return !SOCKET_FAILED(fd);
 }
 
-static void sock_close(void* user, unsigned conn) {
+static void _sockClose(void* user, unsigned conn) {
 	struct MobileAdapterGB* mobile = user;
 
 	if (!SOCKET_FAILED(mobile->socket[conn].fd)) {
@@ -63,7 +69,7 @@ static void sock_close(void* user, unsigned conn) {
 	mobile->socket[conn].socktype = 0;
 }
 
-static int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr) {
+static int _sockConnect(void* user, unsigned conn, const struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
 	Socket fd = mobile->socket[conn].fd;
@@ -94,13 +100,13 @@ static int sock_connect(void* user, unsigned conn, const struct mobile_addr* add
 	return SocketIsConnecting() ? 0 : -1;
 }
 
-static bool sock_listen(void* user, unsigned conn) {
+static bool _sockListen(void* user, unsigned conn) {
 	struct MobileAdapterGB* mobile = user;
 
 	return !SOCKET_RESERROR(SocketListen(mobile->socket[conn].fd, 1));
 }
 
-static bool sock_accept(void* user, unsigned conn) {
+static bool _sockAccept(void* user, unsigned conn) {
 	struct MobileAdapterGB* mobile = user;
 
 	Socket fd = SocketAccept(mobile->socket[conn].fd, NULL);
@@ -113,7 +119,7 @@ static bool sock_accept(void* user, unsigned conn) {
 	return !SOCKET_FAILED(fd);
 }
 
-static int sock_send(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr) {
+static int _sockSend(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
 	struct Address sendaddr;
@@ -140,7 +146,7 @@ static int sock_send(void* user, unsigned conn, const void* data, unsigned size,
 	return !SOCKET_RESERROR(res) ? res : -1;
 }
 
-static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
+static int _sockRecv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
 	// No polling first: the socket is non-blocking, so the read below already
@@ -155,12 +161,12 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 
 	if (res > 0 && addr) {
 		if (srcaddr.version == IPV6) {
-			struct mobile_addr6 *addr6 = (struct mobile_addr6*) addr;
+			struct mobile_addr6* addr6 = (struct mobile_addr6*) addr;
 			addr6->type = MOBILE_ADDRTYPE_IPV6;
 			memcpy(&addr6->host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
 			addr6->port = srcport;
 		} else {
-			struct mobile_addr4 *addr4 = (struct mobile_addr4*) addr;
+			struct mobile_addr4* addr4 = (struct mobile_addr4*) addr;
 			addr4->type = MOBILE_ADDRTYPE_IPV4;
 			*(uint32_t*) &addr4->host = htonl(srcaddr.ipv4);
 			addr4->port = srcport;
@@ -170,7 +176,7 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 	return (res || (mobile->socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
 }
 
-static void update_number(void* user, enum mobile_number type, const char* number) {
+static void _updateNumber(void* user, enum mobile_number type, const char* number) {
 	struct MobileAdapterGB* mobile = user;
 
 	char* dest = mobile->number[type];
@@ -181,27 +187,27 @@ static void update_number(void* user, enum mobile_number type, const char* numbe
 		dest[0] = '\0';
 	}
 
-	mobile->status_update = true;
+	mobile->statusUpdate = true;
 }
 
-struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB *mobile) {
+struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile) {
 	struct mobile_adapter* adapter = mobile_new(mobile);
 	if (!adapter) {
 		return NULL;
 	}
 
-	mobile_def_serial_disable(adapter, serial_disable);
-	mobile_def_serial_enable(adapter, serial_enable);
-	mobile_def_config_read(adapter, config_read);
-	mobile_def_config_write(adapter, config_write);
-	mobile_def_sock_open(adapter, sock_open);
-	mobile_def_sock_close(adapter, sock_close);
-	mobile_def_sock_connect(adapter, sock_connect);
-	mobile_def_sock_listen(adapter, sock_listen);
-	mobile_def_sock_accept(adapter, sock_accept);
-	mobile_def_sock_send(adapter, sock_send);
-	mobile_def_sock_recv(adapter, sock_recv);
-	mobile_def_update_number(adapter, update_number);
+	mobile_def_serial_disable(adapter, _serialDisable);
+	mobile_def_serial_enable(adapter, _serialEnable);
+	mobile_def_config_read(adapter, _configRead);
+	mobile_def_config_write(adapter, _configWrite);
+	mobile_def_sock_open(adapter, _sockOpen);
+	mobile_def_sock_close(adapter, _sockClose);
+	mobile_def_sock_connect(adapter, _sockConnect);
+	mobile_def_sock_listen(adapter, _sockListen);
+	mobile_def_sock_accept(adapter, _sockAccept);
+	mobile_def_sock_send(adapter, _sockSend);
+	mobile_def_sock_recv(adapter, _sockRecv);
+	mobile_def_update_number(adapter, _updateNumber);
 
 	mobile->adapter = adapter;
 	MobileAdapterAuthInit(mobile);
