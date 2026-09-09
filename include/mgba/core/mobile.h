@@ -21,6 +21,10 @@ CXX_GUARD_START
 #define MOBILE_AUTH_REQUEST_LEN 320
 // Sixteen hex digits, as the library names a device.
 #define MOBILE_AUTH_DEVICE_LEN 16
+// Room for a counter query's reply: headers plus a body of at most a
+// twenty-digit counter, a space and a signature. Anything longer is not the
+// answer being waited for.
+#define MOBILE_AUTH_RESPONSE_LEN 1024
 
 enum MobileAdapterAuthState {
 	MOBILE_AUTH_IDLE = 0,
@@ -30,6 +34,11 @@ enum MobileAdapterAuthState {
 };
 
 struct MobileAdapterAuthEvent {
+	// A query asks the server where this device's counter stands instead of
+	// reporting anything; it carries no counter, and its reply goes back to
+	// the library, which is the only thing that can tell a real answer from
+	// a forged one. Then action is meaningless.
+	bool query;
 	enum mobile_device_auth_action action;
 	unsigned char pppId[MOBILE_MAX_NUMBER_SIZE];
 	unsigned pppIdSize;
@@ -53,6 +62,9 @@ struct MobileAdapterAuth {
 	// asked for, which are the same silence from outside.
 	unsigned reported;
 	unsigned failed;
+	// Counter queries that came to an end, answered or not; they are not
+	// reports and are not counted as such, but last says how each one went.
+	unsigned queried;
 	char last[48];
 
 	enum MobileAdapterAuthState state;
@@ -60,6 +72,9 @@ struct MobileAdapterAuth {
 	char request[MOBILE_AUTH_REQUEST_LEN];
 	size_t requestSize;
 	size_t sent;
+	// The reply, kept only for a query; a report's reply is drained unread.
+	char response[MOBILE_AUTH_RESPONSE_LEN];
+	size_t responseSize;
 	// Counted in calls rather than seconds; this is driven once per frame.
 	unsigned ticks;
 };

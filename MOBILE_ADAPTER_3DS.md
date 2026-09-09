@@ -74,6 +74,17 @@ report. With no callback there is no field, and the server files the report
 under the account's one unnamed device, which is where every build before this
 one sat.
 
+A device that has lost its counter anyway — a config restored from a backup,
+say — no longer has to be power-cycled until its batches overtake the server.
+Once per session, before anything is authorized, the library asks the server
+where the counter stands, through the same side channel: a query carries no
+counter, and the reply (`<counter> <signature>`) goes back to the library byte
+for byte, which verifies the signature and only ever moves its counter forward.
+The query is asked as an HTTP/1.0 client so that the body can never arrive
+chunked. The adapter screen shows it as "counter asked", then "counter
+answered" or "counter unanswered"; an unanswered query costs only the
+recovery, the counter still advances on its own.
+
 With no game there is no serial port to attach to, so that screen builds an
 adapter that is never started, purely to read and edit the stored config.
 Starting one calls into emulation timing that does not exist yet.

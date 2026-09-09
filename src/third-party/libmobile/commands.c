@@ -934,6 +934,11 @@ static struct mobile_packet *command_ppp_connect(struct mobile_adapter *adapter,
     s->dns2_use = 0;
     s->state = MOBILE_CONNECTION_INTERNET;
 
+    // Online now, and the ppp_id above is what device-auth signs with: ask
+    //   the server where our counter stands before anything needs
+    //   authorizing, rather than finding out from a rejection later.
+    mobile_device_auth_session_start(adapter);
+
     // Return 3 IP addresses, the phone's IP, and the chosen DNS servers.
     static const unsigned char ip_local[] = {127, 0, 0, 1};
     memcpy(packet->data + 0, ip_local, MOBILE_HOSTLEN_IPV4);  // Phone's IP

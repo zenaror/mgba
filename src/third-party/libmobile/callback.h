@@ -34,6 +34,7 @@ struct mobile_adapter_callback {
     mobile_func_update_number update_number;
     mobile_func_update_device_auth update_device_auth;
     mobile_func_device_identity device_identity;
+    mobile_func_device_auth_query device_auth_query;
 #endif
 };
 void mobile_callback_init(struct mobile_adapter *adapter);
@@ -67,3 +68,4 @@ void mobile_callback_init(struct mobile_adapter *adapter);
 #define mobile_cb_update_number(...) _mobile_cb(update_number, __VA_ARGS__)
 #define mobile_cb_update_device_auth(...) _mobile_cb(update_device_auth, __VA_ARGS__)
 #define mobile_cb_device_identity(...) _mobile_cb(device_identity, __VA_ARGS__)
+#define mobile_cb_device_auth_query(...) _mobile_cb(device_auth_query, __VA_ARGS__)

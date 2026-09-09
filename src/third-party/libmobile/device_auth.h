@@ -69,6 +69,21 @@ struct mobile_adapter_device_auth {
     char device_id[MOBILE_DEVICE_ID_STR_SIZE];
     bool device_id_init;
 
+    // The server's address, resolved once as soon as there is a key and a
+    //   DNS server to ask, then kept in memory for as long as this adapter
+    //   lives -- never written to config storage. Same idea as negotiating
+    //   the relay token up front: by the time an event needs sending, the
+    //   address is already known, so nothing puts a DNS round trip in front
+    //   of an authorize, and nothing contends for the shared DNS buffer
+    //   mid-session.
+    unsigned char addr_ipv4[MOBILE_HOSTLEN_IPV4];
+    bool addr_resolved;
+
+    // A counter query is wanted for this session, or has been handed to the
+    //   frontend and is waiting on mobile_device_auth_query_result().
+    bool query_pending;
+    bool query_inflight;
+
     // The connection slot borrowed from mobile_commands_connection_new()
     //   for the current attempt (valid only while state != IDLE), held for
     //   the whole attempt including any DNS1->DNS2 fallback, and released
@@ -78,6 +93,10 @@ struct mobile_adapter_device_auth {
 };
 
 void mobile_device_auth_init(struct mobile_adapter *adapter);
+
+// Starts a new session: drops the cached server address, so it is resolved
+//   again, and asks for a counter query before anything is authorized.
+void mobile_device_auth_session_start(struct mobile_adapter *adapter);
 
 // Queues a device-auth event for signing and dispatch through
 //   mobile_func_update_device_auth, once the server's address has been
