@@ -499,7 +499,7 @@ static void _noteRelayReports(struct mGUIRunner* runner) {
 	if (!gb) {
 		return;
 	}
-	unsigned done = gb->auth.reported + gb->auth.failed;
+	unsigned done = gb->auth.reported + gb->auth.failed + gb->auth.queried;
 	if (done == seen) {
 		return;
 	}

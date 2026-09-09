@@ -562,6 +562,54 @@ typedef unsigned (*mobile_func_device_identity)(void *user, void *data, unsigned
 unsigned mobile_impl_device_identity(void *user, void *data, unsigned size);
 void mobile_def_device_identity(struct mobile_adapter *adapter, mobile_func_device_identity func);
 
+// mobile_func_device_auth_query - Ask the server what counter it last took
+//
+// Companion to mobile_func_update_device_auth, for the same side channel and
+// the same server, but read-only: it asks what counter value that server has
+// most recently accepted from this device, so a device that has lost or
+// rewound its own counter can resume from the right place instead of having
+// every request rejected until it happens to catch up.
+//
+// Fired once per session, before any authorization event. Implement it the
+// same way as mobile_func_update_device_auth -- same address, same style of
+// request, with an action naming a query rather than an authorization -- and
+// hand the server's answer back through mobile_device_auth_query_result().
+// Like every callback here it must not block: start the request, return, and
+// deliver the answer whenever it arrives.
+//
+// Leaving this unset is supported and costs only the recovery path; the
+// counter still advances normally on its own.
+//
+// Returns: true if the request was started, false if it couldn't be
+// Parameters:
+// - addr_ipv4: the server's resolved address, MOBILE_HOSTLEN_IPV4 bytes
+// - ppp_id, ppp_id_size: as in mobile_func_update_device_auth
+// - sig: raw MOBILE_DEVICE_AUTH_SIG_SIZE-byte signature over this query
+// - device: this device's id, or NULL -- as in mobile_func_update_device_auth
+typedef bool (*mobile_func_device_auth_query)(void *user, const unsigned char *addr_ipv4, const unsigned char *ppp_id, unsigned ppp_id_size, const unsigned char *sig, const char *device);
+bool mobile_impl_device_auth_query(void *user, const unsigned char *addr_ipv4, const unsigned char *ppp_id, unsigned ppp_id_size, const unsigned char *sig, const char *device);
+void mobile_def_device_auth_query(struct mobile_adapter *adapter, mobile_func_device_auth_query func);
+
+// mobile_device_auth_query_result - Deliver the answer to a device-auth query
+//
+// Call this once for every mobile_func_device_auth_query() that returned
+// true, with the server's response body exactly as received, and nothing
+// else -- no terminator, no trimming. Pass NULL to report that the request
+// failed; the library then simply carries on with the counter it has.
+//
+// The library authenticates the answer before acting on it and ignores
+// anything it cannot verify, so an unauthenticated transport is acceptable
+// here. This matters: the answer sets a counter, and a forged one high
+// enough would strand this device forever.
+//
+// Safe to call at any time, including from a network callback of your own.
+//
+// Parameters:
+// - adapter: Library state
+// - data: response body as received, or NULL if the request failed
+// - size: length of data in bytes
+void mobile_device_auth_query_result(struct mobile_adapter *adapter, const void *data, unsigned size);
+
 void mobile_config_set_device(struct mobile_adapter *adapter, enum mobile_adapter_device device, bool unmetered);
 void mobile_config_get_device(struct mobile_adapter *adapter, enum mobile_adapter_device *device, bool *unmetered);
 void mobile_config_set_dns(struct mobile_adapter *adapter, const struct mobile_addr *dns, enum mobile_dns num);
