@@ -1584,13 +1584,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef USE_LIBMOBILE
-	// Deliberately not a game action: the adapter can be switched on and
-	// configured before a game is loaded, and is plugged in once one starts.
-	m_actions.addAction(tr("Mobile Game Boy Adapter..."), "mbAdapter", [this]() {
+	// A game action on purpose, like the other peripherals: every port opens
+	// this screen only once a game is running, so this one does too.
+	addGameAction(tr("Mobile Game Boy Adapter..."), "mbAdapter", [this]() {
 		MobileAdapterView* view = new MobileAdapterView(m_controller, this);
-		if (m_controller) {
-			connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
-		}
+		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
 		openView(view);
 	}, "emu");
 #endif

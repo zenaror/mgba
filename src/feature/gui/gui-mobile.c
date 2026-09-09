@@ -253,9 +253,6 @@ struct mGUIMobileAdapter {
 #endif
 	int platform;
 	bool attached;
-	// Set when the adapter exists only to read and edit the stored config,
-	// with no game to plug into. It is never started, so it never runs.
-	bool configOnly;
 };
 
 enum mGUIMobileItem {
@@ -338,7 +335,7 @@ static void _loadConfig(struct mGUIMobileAdapter* m) {
 static void _saveConfig(struct mGUIMobileAdapter* m) {
 	// An adapter that never ran has nothing but zeroes to write back, which
 	// would clobber a perfectly good config file.
-	if (!m || !(m->attached || m->configOnly) || !_adapter(m)) {
+	if (!m || !m->attached || !_adapter(m)) {
 		return;
 	}
 
@@ -371,55 +368,6 @@ static bool _alloc(struct mGUIRunner* runner) {
 
 // Without a game there is no serial port to plug into, but the stored settings
 // can still be read and edited through an adapter that is never started.
-static bool _attachConfigOnly(struct mGUIRunner* runner) {
-	if (!_alloc(runner)) {
-		return false;
-	}
-	struct mGUIMobileAdapter* m = runner->mobile;
-	if (m->attached || m->configOnly) {
-		return true;
-	}
-
-#ifdef M_CORE_GB
-	m->platform = mPLATFORM_GB;
-	GBSIOMobileAdapterCreate(&m->gb);
-#else
-	m->platform = mPLATFORM_GBA;
-	GBASIOMobileAdapterCreate(&m->gba);
-#endif
-
-	_loadConfig(m);
-	struct MobileAdapterGB* gb = _adapter(m);
-	gb->adapter = MobileAdapterGBNew(gb);
-	if (!gb->adapter) {
-		return false;
-	}
-	mobile_config_load(gb->adapter);
-#if defined(__3DS__) || defined(PSP2)
-	// Never goes online, but the pairing code shown on this screen is derived
-	// from the radio's address, and asking for that needs the network stack.
-	SocketSubsystemInit();
-	mobile_def_device_identity(gb->adapter, _deviceIdentity, "mgba");
-#endif
-	m->configOnly = true;
-	return true;
-}
-
-static void _detachConfigOnly(struct mGUIRunner* runner) {
-	struct mGUIMobileAdapter* m = runner->mobile;
-	if (!m || !m->configOnly) {
-		return;
-	}
-	_saveConfig(m);
-	struct MobileAdapterGB* gb = _adapter(m);
-	free(gb->adapter);
-	gb->adapter = NULL;
-	m->configOnly = false;
-#if defined(__3DS__) || defined(PSP2)
-	SocketSubsystemDeinit();
-#endif
-}
-
 static bool _attach(struct mGUIRunner* runner) {
 	if (!runner->core) {
 		return false;
@@ -427,9 +375,6 @@ static bool _attach(struct mGUIRunner* runner) {
 	if (runner->mobile && runner->mobile->attached) {
 		return true;
 	}
-	// A config-only adapter has no serial port behind it, so it can't just be
-	// promoted; it is torn down and rebuilt against the game that just loaded.
-	_detachConfigOnly(runner);
 	if (!_alloc(runner)) {
 		return false;
 	}
@@ -578,10 +523,6 @@ void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 
 void mGUIMobileAdapterDetach(struct mGUIRunner* runner) {
 	struct mGUIMobileAdapter* m = runner->mobile;
-	if (m && m->configOnly) {
-		_detachConfigOnly(runner);
-		return;
-	}
 	if (!m || !m->attached) {
 		return;
 	}
@@ -729,9 +670,7 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 		return;
 	}
 
-	if (runner->mobile->configOnly) {
-		strlcpy(text->status, runner->mobileEnabled ? "On once a game loads" : "No game loaded", sizeof(text->status));
-	} else if (gb->number[0][0]) {
+	if (gb->number[0][0]) {
 		snprintf(text->status, sizeof(text->status), "Line %s", gb->number[0]);
 		if (gb->number[1][0]) {
 			size_t used = strlen(text->status);
@@ -1006,14 +945,9 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 	};
 
 	// Bring an adapter up if there isn't one, so the settings have live data to
-	// show and edit even when it isn't enabled to keep running afterwards. With
-	// no game loaded that adapter can only ever be a config-editing one.
+	// show and edit even when it isn't enabled to keep running afterwards.
 	if (!runner->mobile || !runner->mobile->attached) {
-		if (runner->core) {
-			_attach(runner);
-		} else {
-			_attachConfigOnly(runner);
-		}
+		_attach(runner);
 	}
 	if (!runner->mobile) {
 		GUIShowMessageBox(&runner->params, GUI_MESSAGE_BOX_OK, 240, "Could not start the Mobile Adapter");
@@ -1068,11 +1002,8 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 		_refresh(runner, &menu, &text);
 	}
 
-	// A config-only adapter never outlives this screen; a real one is left
-	// plugged in unless the user switched it off.
-	if (runner->mobile->configOnly) {
-		_detachConfigOnly(runner);
-	} else if (runner->mobileEnabled) {
+	// The adapter is left plugged in unless the user switched it off.
+	if (runner->mobileEnabled) {
 		_saveConfig(runner->mobile);
 	} else {
 		mGUIMobileAdapterDetach(runner);

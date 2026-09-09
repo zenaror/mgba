@@ -276,7 +276,6 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 
 void mGUIDeinit(struct mGUIRunner* runner) {
 #ifdef USE_LIBMOBILE
-	// A config-only adapter outlives any game, so it is cleaned up here.
 	mGUIMobileAdapterDetach(runner);
 	free(runner->mobile);
 	runner->mobile = NULL;
@@ -807,54 +806,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mLOG(GUI_RUNNER, INFO, "Game stopped!");
 }
 
-#ifdef USE_LIBMOBILE
-enum {
-	START_LOAD = 1,
-	START_MOBILE_ADAPTER,
-	START_EXIT
-};
-
-// The pause menu only exists while a game runs, which would leave the adapter
-// unreachable until after one is picked. This gives it a home beforehand, so
-// it can be switched on and configured up front.
-static bool _mGUIShowStartMenu(struct mGUIRunner* runner) {
-	struct GUIMenu menu = {
-		.title = "mGBA",
-		.index = 0
-	};
-	GUIMenuItemListInit(&menu.items, 3);
-	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) { .title = "Load game", .data = GUI_V_U(START_LOAD) };
-	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) { .title = "Mobile Adapter GB", .data = GUI_V_U(START_MOBILE_ADAPTER) };
-	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) { .title = "Exit", .data = GUI_V_U(START_EXIT) };
-
-	bool load = false;
-	while (true) {
-		struct GUIMenuItem* item;
-		enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &menu, &item);
-		if (reason != GUI_MENU_EXIT_ACCEPT || !GUIVariantIsUInt(item->data) || item->data.v.u == START_EXIT) {
-			break;
-		}
-		if (item->data.v.u == START_LOAD) {
-			load = true;
-			break;
-		}
-		mGUIShowMobileAdapter(runner);
-	}
-	GUIMenuItemListDeinit(&menu.items);
-	return load;
-}
-#endif
-
 void mGUIRunloop(struct mGUIRunner* runner) {
 	if (runner->keySources) {
 		mGUILoadInputMaps(runner);
 	}
 	while (!runner->running || runner->running(runner)) {
-#ifdef USE_LIBMOBILE
-		if (!_mGUIShowStartMenu(runner)) {
-			break;
-		}
-#endif
 		char path[PATH_MAX];
 		const char* preselect = mCoreConfigGetValue(&runner->config, "lastGame");
 		if (preselect) {
@@ -864,12 +820,7 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 			++preselect;
 		}
 		if (!GUISelectFile(&runner->params, path, sizeof(path), _testExtensions, NULL, preselect)) {
-#ifdef USE_LIBMOBILE
-			// Backing out returns to the start menu, which is where Exit lives
-			continue;
-#else
 			break;
-#endif
 		}
 		mCoreConfigSetValue(&runner->config, "lastDirectory", runner->params.currentPath);
 		mCoreConfigSetValue(&runner->config, "lastGame", path);
