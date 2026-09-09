@@ -15,7 +15,6 @@ name, and connects. Tested on a New 3DS XL against a local REON server.
   relay token and mail port redirection.
 - The library's own chatter on the bottom screen while a game runs, off
   until asked for.
-- Reaching that screen before a game is loaded, on the 3DS and on the desktop.
 - The vendored libmobile swapped for the `full_server` fork, and the relay
   reporting that comes with it.
 
@@ -87,9 +86,13 @@ chunked. The adapter screen shows it as "counter asked", then "counter
 answered" or "counter unanswered"; an unanswered query costs only the
 recovery, the counter still advances on its own.
 
-With no game there is no serial port to attach to, so that screen builds an
-adapter that is never started, purely to read and edit the stored config.
-Starting one calls into emulation timing that does not exist yet.
+The screen opens only while a game runs, from the pause menu, on every port
+alike. There was for a while a menu ahead of the file browser that led to it,
+backed by an adapter that was never started; it went, on the user's decision,
+so that the desktop, the 3DS and the Vita all behave the same way — the Vita
+only has a menu once a game is running. Switching the adapter on is still
+remembered until the emulator closes, so the next game loaded gets it plugged
+in; at worst a game has to be reset after the adapter is switched on.
 
 ### Where the config lives
 
@@ -129,10 +132,9 @@ DNS server.
 ### Menus drawn through a null core
 
 The menu backdrop is the running game's last frame, drawn straight from the
-core. Safe while menus only existed during a game; opening the adapter screen
-from the start menu took a data abort on hardware. `_drawBackground()` now
-checks for a core. The start menu itself survived only because it passes no
-background at all.
+core. Safe while menus only exist during a game, which is again the case;
+while a start menu led to the adapter screen with no game loaded, opening it
+took a data abort on hardware. `_drawBackground()` checks for a core anyway.
 
 ### Three ways the socket layer was not 3DS-shaped
 

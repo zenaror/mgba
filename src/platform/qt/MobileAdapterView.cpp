@@ -85,63 +85,12 @@ static QString mobileAddrToString(const struct mobile_addr* addr, unsigned defau
 	return ret;
 }
 
-static QString mobileConfigPath() {
-	return ConfigController::configDir() + "/mobile_config.bin";
-}
-
 struct mobile_adapter* MobileAdapterView::adapter() {
-	MobileAdapterGB* gb = adapterGB();
-	return gb ? gb->adapter : nullptr;
+	return adapterGB()->adapter;
 }
 
 MobileAdapterGB* MobileAdapterView::adapterGB() {
-	if (m_controller) {
-		return m_controller->getMobileAdapter();
-	}
-	return m_hasStandalone ? &m_standalone.m : nullptr;
-}
-
-void MobileAdapterView::createStandalone() {
-	GBSIOMobileAdapterCreate(&m_standalone);
-
-	QFile fconfig(mobileConfigPath());
-	if (fconfig.open(QIODevice::ReadOnly)) {
-		fconfig.read((char*) m_standalone.m.config, MOBILE_CONFIG_SIZE);
-		fconfig.close();
-	}
-
-	m_standalone.m.adapter = MobileAdapterGBNew(&m_standalone.m);
-	if (!m_standalone.m.adapter) {
-		return;
-	}
-	// Deliberately not started: without a core there is no timing behind it.
-	mobile_config_load(m_standalone.m.adapter);
-	m_hasStandalone = true;
-}
-
-void MobileAdapterView::saveStandalone() {
-	if (!m_hasStandalone) {
-		return;
-	}
-	// Settings only reach the config blob when the library flushes them, which
-	// it would otherwise do from an emulation frame that is never going to run.
-	mobile_config_save(m_standalone.m.adapter);
-
-	QFile fconfig(mobileConfigPath());
-	if (fconfig.open(QIODevice::WriteOnly)) {
-		fconfig.write((char*) m_standalone.m.config, MOBILE_CONFIG_SIZE);
-		fconfig.close();
-	}
-}
-
-void MobileAdapterView::destroyStandalone() {
-	if (!m_hasStandalone) {
-		return;
-	}
-	saveStandalone();
-	free(m_standalone.m.adapter);
-	m_standalone.m.adapter = nullptr;
-	m_hasStandalone = false;
+	return m_controller->getMobileAdapter();
 }
 
 MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller, Window* window, QWidget* parent)
@@ -167,14 +116,8 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 	connect(m_ui.copyToken, &QAbstractButton::clicked, this, &MobileAdapterView::copyToken);
 	connect(m_ui.importConfig, &QAbstractButton::clicked, this, &MobileAdapterView::importConfig);
 
-	if (m_controller) {
-		connect(m_controller.get(), &CoreController::frameAvailable, this, &MobileAdapterView::advanceFrameCounter);
-		connect(m_controller.get(), &CoreController::stopping, this, &QWidget::close);
-	} else {
-		// Nothing is running, so there is no live status to report.
-		m_ui.statusText->setText(tr("No game loaded"));
-		m_ui.tabWidget->setCurrentWidget(m_ui.settingsTab);
-	}
+	connect(m_controller.get(), &CoreController::frameAvailable, this, &MobileAdapterView::advanceFrameCounter);
+	connect(m_controller.get(), &CoreController::stopping, this, &QWidget::close);
 
 	QString versionText = QString("%1.%2.%3").arg(
 		QString::number(mobile_version_major),
@@ -188,24 +131,15 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 	connect(m_ui.enableAdapter, &QAbstractButton::toggled, this, &MobileAdapterView::setAdapterEnabled);
 
 	// Bring an adapter up so the Status/Settings tabs have live data to show and
-	// edit, even if it isn't enabled to keep running afterwards. With no game
-	// loaded there is no serial port, so it can only be a config-editing one.
-	if (m_controller) {
-		if (!m_controller->getMobileAdapter()->adapter) {
-			m_controller->attachMobileAdapter();
-		}
-	} else {
-		createStandalone();
+	// edit, even if it isn't enabled to keep running afterwards.
+	if (!adapter()) {
+		m_controller->attachMobileAdapter();
 	}
 
 	getConfig();
 }
 
 MobileAdapterView::~MobileAdapterView() {
-	if (!m_controller) {
-		destroyStandalone();
-		return;
-	}
 	// Only tear the adapter down if it isn't meant to keep running in the background;
 	// closing this window is no longer required to keep the adapter attached.
 	if (m_ui.enableAdapter->isChecked()) {
@@ -217,16 +151,12 @@ MobileAdapterView::~MobileAdapterView() {
 
 void MobileAdapterView::setAdapterEnabled(bool enabled) {
 	s_wanted = enabled;
-	if (!m_controller) {
-		// The adapter gets plugged in for real once a game is loaded.
-		return;
-	}
 	if (enabled) {
-		if (!m_controller->getMobileAdapter()->adapter) {
+		if (!adapter()) {
 			m_controller->attachMobileAdapter();
 		}
 		getConfig();
-	} else if (m_controller->getMobileAdapter()->adapter) {
+	} else if (adapter()) {
 		m_controller->detachMobileAdapter();
 	}
 }
@@ -345,24 +275,12 @@ void MobileAdapterView::importConfig(bool checked) {
 		return;
 	}
 
-	if (m_controller) {
-		m_controller->importMobileAdapterConfig(filename);
-	} else if (m_hasStandalone) {
-		QFile fconfig(filename);
-		if (fconfig.open(QIODevice::ReadOnly)) {
-			fconfig.read((char*) m_standalone.m.config, MOBILE_CONFIG_SIZE);
-			fconfig.close();
-			mobile_config_load(m_standalone.m.adapter);
-		}
-	}
+	m_controller->importMobileAdapterConfig(filename);
 	getConfig();
 }
 
 void MobileAdapterView::getConfig() {
-	CoreController::Interrupter interrupter;
-	if (m_controller) {
-		interrupter.interrupt(m_controller);
-	}
+	CoreController::Interrupter interrupter(m_controller);
 	struct mobile_adapter* adapter = this->adapter();
 	if (!adapter) {
 		return;
