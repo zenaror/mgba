@@ -60,6 +60,15 @@ struct mobile_adapter_device_auth {
     unsigned char addr_id;
     struct mobile_addr addr;
 
+    // This device's id, derived once from whatever the frontend's
+    //   mobile_func_device_identity callback hands over, and cached because
+    //   that callback may do real work (reading a MAC, a machine id) and the
+    //   answer cannot change while running. Empty string when the frontend
+    //   set no callback, or offered nothing: the id is then left out of both
+    //   the signed message and the callback, which is the older wire format.
+    char device_id[MOBILE_DEVICE_ID_STR_SIZE];
+    bool device_id_init;
+
     // The connection slot borrowed from mobile_commands_connection_new()
     //   for the current attempt (valid only while state != IDLE), held for
     //   the whole attempt including any DNS1->DNS2 fallback, and released

@@ -25,6 +25,13 @@ struct mobile_adapter;
 #define MOBILE_DEVICE_AUTH_SIG_SIZE 0x20
 #define MOBILE_DEVICE_AUTH_KEY_SIZE 0x20
 
+// Most identity bytes a frontend may hand to mobile_func_device_identity,
+//   and the size of the device id derived from them: 8 bytes, rendered as
+//   16 lowercase hex digits plus a terminator.
+#define MOBILE_DEVICE_IDENTITY_MAX_SIZE 0x40
+#define MOBILE_DEVICE_ID_SIZE 8
+#define MOBILE_DEVICE_ID_STR_SIZE (MOBILE_DEVICE_ID_SIZE * 2 + 1)
+
 // Utility defines
 #define MOBILE_SERIAL_IDLE_BYTE 0xD2
 #define MOBILE_SERIAL_IDLE_WORD 0xD2D2D2D2
@@ -369,6 +376,15 @@ void mobile_def_sock_accept(struct mobile_adapter *adapter, mobile_func_sock_acc
 // This function is non-blocking, and will be called repeatedly until all of
 // the data is sent, or a timeout triggers.
 //
+// Returning 0 is part of that, and is not an error: it means nothing could be
+// sent right now and the same data should be offered again on a later call.
+// Reserve -1 for a socket that is actually broken, since that aborts the
+// whole transfer. Transient backpressure from the underlying stack -- a full
+// send buffer or segment queue, a failed allocation for the outgoing packet
+// -- is the 0 case, as long as nothing was queued, and recovers by itself.
+// Reporting it as -1 turns a condition that would have cleared on the next
+// poll into a dead connection.
+//
 // Returns: non-negative amount of data sent on success, -1 on error
 // Parameters:
 // - conn: Socket number
@@ -498,9 +514,53 @@ void mobile_def_update_number(struct mobile_adapter *adapter, mobile_func_update
 // - addr_ipv4: the device-auth server's resolved address, MOBILE_HOSTLEN_IPV4
 //   bytes -- frontends never need to know its hostname or resolve it
 //   themselves
-typedef void (*mobile_func_update_device_auth)(void *user, enum mobile_device_auth_action action, const unsigned char *ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char *sig, const unsigned char *addr_ipv4);
-void mobile_impl_update_device_auth(void *user, enum mobile_device_auth_action action, const unsigned char *ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char *sig, const unsigned char *addr_ipv4);
+// - device: this device's id, as a null-terminated string of
+//   MOBILE_DEVICE_ID_SIZE * 2 lowercase hex digits, to be sent alongside the
+//   request. NULL when no mobile_func_device_identity callback is set, in
+//   which case the signed message omits it and the request must too -- the
+//   older form, which a server may still accept as identifying the account's
+//   one unnamed device. See mobile_func_device_identity.
+typedef void (*mobile_func_update_device_auth)(void *user, enum mobile_device_auth_action action, const unsigned char *ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char *sig, const unsigned char *addr_ipv4, const char *device);
+void mobile_impl_update_device_auth(void *user, enum mobile_device_auth_action action, const unsigned char *ppp_id, unsigned ppp_id_size, uint64_t counter, const unsigned char *sig, const unsigned char *addr_ipv4, const char *device);
 void mobile_def_update_device_auth(struct mobile_adapter *adapter, mobile_func_update_device_auth func);
+
+// mobile_func_device_identity - Identify this device for device-auth
+//
+// Writes up to <size> bytes that identify this particular device into
+// <data>, returning how many were written, or 0 if this platform has nothing
+// stable to offer. The library hashes whatever it gets and derives a fixed
+// device id from it (see the <device> parameter of
+// mobile_func_update_device_auth), so the bytes themselves never leave the
+// device and their format is entirely up to the frontend.
+//
+// What matters is only that the bytes are STABLE for this device across
+// reboots, and DIFFERENT from those of any other device using the same
+// account. They do not need to be secret, random, or unpredictable.
+//
+// Deliberately a callback rather than something the library stores: the
+// library's config storage is a blob a user may legitimately copy between
+// devices (the same config on an emulator and on real hardware, say), so an
+// id kept in there would identify the blob rather than the device, and both
+// would look like the same device to a server. Anything the frontend
+// persists for this purpose therefore belongs outside that blob.
+//
+// Suitable sources, roughly in order of preference: a hardware id (a Wi-Fi
+// MAC, a board id), a per-installation machine id (/etc/machine-id,
+// MachineGuid, IOPlatformUUID), or as a portable floor, the host name
+// combined with the user name. Note a MAC belonging to a removable interface
+// changes when that interface does, which makes the device look new.
+//
+// Leaving this callback unset is supported: the library then omits the
+// device id entirely and signs the older form of the message, which a server
+// may still accept as the account's single unnamed device.
+//
+// Returns: number of bytes written into <data>, 0 if unavailable
+// Parameters:
+// - data: buffer to write the identifying bytes into
+// - size: capacity of <data>, at least MOBILE_DEVICE_IDENTITY_MAX_SIZE
+typedef unsigned (*mobile_func_device_identity)(void *user, void *data, unsigned size);
+unsigned mobile_impl_device_identity(void *user, void *data, unsigned size);
+void mobile_def_device_identity(struct mobile_adapter *adapter, mobile_func_device_identity func);
 
 void mobile_config_set_device(struct mobile_adapter *adapter, enum mobile_adapter_device device, bool unmetered);
 void mobile_config_get_device(struct mobile_adapter *adapter, enum mobile_adapter_device *device, bool *unmetered);
@@ -673,6 +733,18 @@ void mobile_start(struct mobile_adapter *adapter);
 // It's recommended to call this function before ending the program execution,
 // but it may also be used to temporarily pause the library, before calling
 // mobile_start() again.
+//
+// Those two uses differ in one respect worth knowing about. Ending the
+// session, which this does, may queue a device-auth deauthorize (see
+// mobile_func_update_device_auth), and that event still needs later
+// mobile_loop() calls to resolve an address and be dispatched. By then the
+// library is stopped and no longer does anything, so the event only ever goes
+// out in the pause case, once mobile_start() is called again on the same
+// adapter. Stopping for good never delivers it -- nor does freeing the
+// adapter afterwards, or a device that simply powers off without calling this
+// at all -- and the relay server is left to expire the authorization on its
+// own. Either way the debug log records that an event was left queued, since
+// the library cannot tell at this point which case it is in.
 //
 // Parameters:
 // - adapter: Library state

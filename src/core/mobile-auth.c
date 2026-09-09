@@ -46,7 +46,7 @@ static void _authDrop(struct MobileAdapterAuth* auth) {
 
 static void _authNotify(void* user, enum mobile_device_auth_action action, const unsigned char* pppId,
                         unsigned pppIdSize, uint64_t counter, const unsigned char* sig,
-                        const unsigned char* addrIpv4) {
+                        const unsigned char* addrIpv4, const char* device) {
 	struct MobileAdapterGB* mobile = user;
 	struct MobileAdapterAuth* auth = &mobile->auth;
 
@@ -67,6 +67,9 @@ static void _authNotify(void* user, enum mobile_device_auth_action action, const
 	memcpy(event->pppId, pppId, pppIdSize);
 	event->pppIdSize = pppIdSize;
 	memcpy(event->sig, sig, MOBILE_DEVICE_AUTH_SIG_SIZE);
+	if (device) {
+		strlcpy(event->device, device, sizeof(event->device));
+	}
 	snprintf(auth->last, sizeof(auth->last), "%s queued, #%" PRIu64,
 	    action == MOBILE_DEVICE_AUTH_AUTHORIZE ? "authorize" : "deauthorize", counter);
 	event->address.version = IPV4;
@@ -93,12 +96,21 @@ static bool _authBuildRequest(struct MobileAdapterAuth* auth, const struct Mobil
 		snprintf(&sig[i * 2], 3, "%02x", event->sig[i]);
 	}
 
+	// Named only when the library named it: without a name the server files
+	// the report under the account's one unnamed device, and that is also the
+	// message the library signed.
+	char device[sizeof("&device=") + MOBILE_AUTH_DEVICE_LEN];
+	device[0] = '\0';
+	if (event->device[0]) {
+		snprintf(device, sizeof(device), "&device=%s", event->device);
+	}
+
 	int written = snprintf(auth->request, sizeof(auth->request),
-	    "GET " MOBILE_AUTH_PATH "?ppp_id=%s&action=%s&counter=%" PRIu64 "&sig=%s HTTP/1.1\r\n"
+	    "GET " MOBILE_AUTH_PATH "?ppp_id=%s%s&action=%s&counter=%" PRIu64 "&sig=%s HTTP/1.1\r\n"
 	    "Host: " MOBILE_AUTH_HOST "\r\n"
 	    "Connection: close\r\n"
 	    "\r\n",
-	    pppId, event->action == MOBILE_DEVICE_AUTH_AUTHORIZE ? "authorize" : "deauthorize",
+	    pppId, device, event->action == MOBILE_DEVICE_AUTH_AUTHORIZE ? "authorize" : "deauthorize",
 	    event->counter, sig);
 	if (written <= 0 || (size_t) written >= sizeof(auth->request)) {
 		mLOG(MOBILE_AUTH, ERROR, "Report did not fit in a request");

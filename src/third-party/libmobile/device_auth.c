@@ -17,9 +17,12 @@
 static const char device_auth_host[] = "device.auth.dion.ne.jp";
 #define DEVICE_AUTH_HOST_LEN (sizeof(device_auth_host) - 1)
 
-// Longest possible "ppp_id|action|counter" message:
-//   0x20 (ppp_id) + 1 ('|') + 11 ("deauthorize") + 1 ('|') + 20 (2^64-1)
-#define MESSAGE_MAX_SIZE (0x20 + 1 + 11 + 1 + 20)
+// Longest possible "ppp_id|device|action|counter" message: 0x20 (ppp_id) +
+//   1 ('|') + 16 (device id) + 1 ('|') + 11 ("deauthorize") + 1 ('|') +
+//   20 (2^64-1). The device id and its separator are absent in the older
+//   form, which is shorter, so this bounds both.
+#define MESSAGE_MAX_SIZE \
+    (0x20 + 1 + (MOBILE_DEVICE_ID_SIZE * 2) + 1 + 11 + 1 + 20)
 
 static void debug_prefix(struct mobile_adapter *adapter)
 {
@@ -65,6 +68,47 @@ void mobile_device_auth_init(struct mobile_adapter *adapter)
 {
     adapter->device_auth.state = MOBILE_DEVICE_AUTH_IDLE;
     adapter->device_auth.pending = false;
+    adapter->device_auth.device_id[0] = '\0';
+    adapter->device_auth.device_id_init = false;
+}
+
+// Derives this device's id from the frontend's identity bytes, hashing them
+//   so nothing the frontend considers identifying (a MAC, a machine id, a
+//   host name) is ever put on the wire as-is. Computed once and cached;
+//   returns NULL when the frontend offers no identity, which selects the
+//   older, device-less form of the message.
+static const char *device_auth_device_id(struct mobile_adapter *adapter)
+{
+    struct mobile_adapter_device_auth *s = &adapter->device_auth;
+    if (s->device_id_init) {
+        return s->device_id[0] ? s->device_id : NULL;
+    }
+    s->device_id_init = true;
+
+    unsigned char identity[MOBILE_DEVICE_IDENTITY_MAX_SIZE];
+    unsigned size = mobile_cb_device_identity(adapter, identity,
+        sizeof(identity));
+    if (size == 0 || size > sizeof(identity)) return NULL;
+
+    unsigned char digest[MOBILE_SHA256_SIZE];
+    struct mobile_sha256 ctx;
+    mobile_sha256_init(&ctx);
+    mobile_sha256_update(&ctx, identity, size);
+    mobile_sha256_final(&ctx, digest);
+
+    static const char hex[] = "0123456789abcdef";
+    for (unsigned i = 0; i < MOBILE_DEVICE_ID_SIZE; i++) {
+        s->device_id[i * 2] = hex[digest[i] >> 4];
+        s->device_id[i * 2 + 1] = hex[digest[i] & 0xF];
+    }
+    s->device_id[MOBILE_DEVICE_ID_SIZE * 2] = '\0';
+
+    debug_prefix(adapter);
+    mobile_debug_print(adapter, PSTR("Device id "));
+    mobile_debug_write(adapter, s->device_id, MOBILE_DEVICE_ID_SIZE * 2);
+    mobile_debug_endl(adapter);
+
+    return s->device_id;
 }
 
 void mobile_device_auth_notify(struct mobile_adapter *adapter, enum mobile_device_auth_action action, const unsigned char *ppp_id, unsigned ppp_id_size)
@@ -124,12 +168,22 @@ static void device_auth_sign_and_dispatch(struct mobile_adapter *adapter, const 
         "authorize" : "deauthorize";
     unsigned action_len = (unsigned)strlen(action_name);
 
+    // "ppp_id|device|action|counter", or "ppp_id|action|counter" when this
+    //   device has no id to give. The device field sits where it does so a
+    //   server can tell the two forms apart without ambiguity.
+    const char *device = device_auth_device_id(adapter);
+
     unsigned char message[MESSAGE_MAX_SIZE];
     unsigned pos = 0;
 
     memcpy(message + pos, s->pending_ppp_id, s->pending_ppp_id_size);
     pos += s->pending_ppp_id_size;
     message[pos++] = '|';
+    if (device) {
+        memcpy(message + pos, device, MOBILE_DEVICE_ID_SIZE * 2);
+        pos += MOBILE_DEVICE_ID_SIZE * 2;
+        message[pos++] = '|';
+    }
     memcpy(message + pos, action_name, action_len);
     pos += action_len;
     message[pos++] = '|';
@@ -141,7 +195,8 @@ static void device_auth_sign_and_dispatch(struct mobile_adapter *adapter, const 
     static_assert(MOBILE_SHA256_SIZE == MOBILE_DEVICE_AUTH_SIG_SIZE,
         "device-auth signature size mismatch");
     mobile_cb_update_device_auth(adapter, s->pending_action,
-        s->pending_ppp_id, s->pending_ppp_id_size, counter, sig, addr_ipv4);
+        s->pending_ppp_id, s->pending_ppp_id_size, counter, sig, addr_ipv4,
+        device);
 }
 
 // Starts (or restarts, for the next fallback candidate) resolution at

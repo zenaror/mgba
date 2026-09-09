@@ -195,6 +195,62 @@ static void _updateNumber(void* user, enum mobile_number type, const char* numbe
 	mobile->statusUpdate = true;
 }
 
+// What tells this machine apart from another one on the same account. The
+// library only ever hashes these bytes; they are never sent or stored, so any
+// stable ones will do, and the machine's name is the floor when nothing better
+// is known. A console has a radio whose address is better still, and its own
+// frontend answers with that instead of this.
+static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
+	UNUSED(user);
+#if defined(__3DS__) || defined(PSP2) || defined(__SWITCH__) || defined(GEKKO)
+	UNUSED(data);
+	UNUSED(size);
+	return 0;
+#else
+	char* out = data;
+	unsigned len = 0;
+#ifdef _WIN32
+	DWORD guidSize = size;
+	if (RegGetValueA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Cryptography", "MachineGuid", RRF_RT_REG_SZ, NULL,
+	                 out, &guidSize) == ERROR_SUCCESS && guidSize > 1) {
+		return guidSize - 1;
+	}
+#else
+	FILE* f = fopen("/etc/machine-id", "r");
+	if (!f) {
+		f = fopen("/var/lib/dbus/machine-id", "r");
+	}
+	if (f) {
+		len = fread(out, 1, size, f);
+		fclose(f);
+		while (len && (out[len - 1] == '\n' || out[len - 1] == '\r')) {
+			--len;
+		}
+		if (len) {
+			return len;
+		}
+	}
+#endif
+	if (gethostname(out, size) != 0) {
+		return 0;
+	}
+	out[size - 1] = '\0';
+	len = strlen(out);
+	const char* who = getenv("USER");
+	if (!who) {
+		who = getenv("USERNAME");
+	}
+	if (who && len + 1 < size) {
+		unsigned room = size - len;
+		int n = snprintf(out + len, room, "|%s", who);
+		if (n > 0) {
+			len += (unsigned) n < room ? (unsigned) n : room - 1;
+		}
+	}
+	return len;
+#endif
+}
+
 struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile) {
 	struct mobile_adapter* adapter = mobile_new(mobile);
 	if (!adapter) {
@@ -213,6 +269,7 @@ struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile) {
 	mobile_def_sock_send(adapter, _sockSend);
 	mobile_def_sock_recv(adapter, _sockRecv);
 	mobile_def_update_number(adapter, _updateNumber);
+	mobile_def_device_identity(adapter, _deviceIdentity);
 
 	mobile->adapter = adapter;
 	MobileAdapterAuthInit(mobile);

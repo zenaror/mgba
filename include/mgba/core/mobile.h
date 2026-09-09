@@ -19,6 +19,8 @@ CXX_GUARD_START
 // where the library asks for it, since that call must return promptly.
 #define MOBILE_AUTH_QUEUE_LEN 4
 #define MOBILE_AUTH_REQUEST_LEN 320
+// Sixteen hex digits, as the library names a device.
+#define MOBILE_AUTH_DEVICE_LEN 16
 
 enum MobileAdapterAuthState {
 	MOBILE_AUTH_IDLE = 0,
@@ -33,6 +35,10 @@ struct MobileAdapterAuthEvent {
 	unsigned pppIdSize;
 	uint64_t counter;
 	unsigned char sig[MOBILE_DEVICE_AUTH_SIG_SIZE];
+	// Which of the account's devices this is, as the library names it, or
+	// empty when this frontend offered no identity; the server then files the
+	// report under the account's one unnamed device.
+	char device[MOBILE_AUTH_DEVICE_LEN + 1];
 	// Where to report it, resolved by the library against the DNS the adapter
 	// is configured with, so this never has to know the name behind it.
 	struct Address address;

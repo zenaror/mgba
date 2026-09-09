@@ -62,6 +62,18 @@ the server's signatures matching the previous day's byte for byte. The per-frame
 poll that does this writing (and puts relay reports in the log as they happen)
 had been defined without ever being called; both were dead until this.
 
+Those counters are kept per device on the server, and the library names the
+device from whatever bytes the frontend hands it — never from the config, since
+a name stored there would travel with a copied file and tell two consoles apart
+by which one copied it. The console answers with its radio's MAC address
+(`SOCU_GetNetworkOpt` with `NETOPT_MAC_ADDRESS`; `sceNetGetMacAddress` on the
+Vita), which survives the config being wiped or downloaded again; the desktop
+core answers with the machine id, or the host and user name failing that. The
+library hashes it, and only the hash is ever sent, as the `device` field of the
+report. With no callback there is no field, and the server files the report
+under the account's one unnamed device, which is where every build before this
+one sat.
+
 With no game there is no serial port to attach to, so that screen builds an
 adapter that is never started, purely to read and edit the stored config.
 Starting one calls into emulation timing that does not exist yet.
