@@ -1,3 +1,8 @@
+/* Copyright (c) 2013-2026 Jeffrey Pfau
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef MOBILE_H
 #define MOBILE_H
 
@@ -19,7 +24,7 @@ struct MobileAdapterGB {
 	} socket[MOBILE_MAX_CONNECTIONS];
 	int serial;
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
-	bool status_update;
+	bool statusUpdate;
 };
 
 struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile);
