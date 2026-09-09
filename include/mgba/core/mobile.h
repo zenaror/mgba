@@ -72,7 +72,8 @@ struct MobileAdapterAuth {
 	char request[MOBILE_AUTH_REQUEST_LEN];
 	size_t requestSize;
 	size_t sent;
-	// The reply, kept only for a query; a report's reply is drained unread.
+	// The reply: all of it for a query, whose body goes to the library, and
+	// as much as fits for a report, which is read only for its status line.
 	char response[MOBILE_AUTH_RESPONSE_LEN];
 	size_t responseSize;
 	// Counted in calls rather than seconds; this is driven once per frame.
@@ -98,6 +99,13 @@ struct MobileAdapterGB {
 	// server has already seen, and it refuses those.
 	bool configDirty;
 	struct MobileAdapterAuth auth;
+
+	// Called by the driver on every adapter it builds, after its own
+	// callbacks are in place and before the adapter starts. The adapter is
+	// torn down and built again on every core reset, so anything a frontend
+	// registers on it directly is gone after the first one; what it sets
+	// here is put back each time.
+	void (*setup)(struct MobileAdapterGB*);
 };
 
 struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile);

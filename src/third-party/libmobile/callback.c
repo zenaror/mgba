@@ -106,7 +106,7 @@ IMPL void mobile_impl_update_device_auth(A_UNUSED void *user, A_UNUSED enum mobi
     return;
 }
 
-IMPL bool mobile_impl_device_auth_query(A_UNUSED void *user, A_UNUSED const unsigned char *addr_ipv4, A_UNUSED const unsigned char *ppp_id, A_UNUSED unsigned ppp_id_size, A_UNUSED const unsigned char *sig, A_UNUSED const char *device)
+IMPL bool mobile_impl_device_auth_query(A_UNUSED void *user, A_UNUSED const unsigned char *addr_ipv4, A_UNUSED const unsigned char *ppp_id, A_UNUSED unsigned ppp_id_size, A_UNUSED uint64_t counter, A_UNUSED const unsigned char *sig, A_UNUSED const char *device)
 {
     return false;
 }

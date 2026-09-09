@@ -67,7 +67,8 @@ struct mobile_adapter_device_auth {
     //   set no callback, or offered nothing: the id is then left out of both
     //   the signed message and the callback, which is the older wire format.
     char device_id[MOBILE_DEVICE_ID_STR_SIZE];
-    bool device_id_init;
+    unsigned char device_id_raw[MOBILE_DEVICE_ID_SIZE];
+    bool device_id_init;  // set only once an id was actually derived
 
     // Name of the frontend, mixed into the device id so two frontends on one
     //   machine, which the operating system identifies identically, don't
@@ -91,9 +92,17 @@ struct mobile_adapter_device_auth {
     bool addr_failed;
 
     // A counter query is wanted for this session, or has been handed to the
-    //   frontend and is waiting on mobile_device_auth_query_result().
+    //   frontend and is waiting on mobile_device_auth_query_result(). The
+    //   counter it went out with is kept to match against the echo in the
+    //   answer: an answer echoing anything else is not the answer to this
+    //   query, however well it is signed.
     bool query_pending;
     bool query_inflight;
+    uint64_t query_counter;
+
+    // What the server said about blocking, this session. Never persisted;
+    //   see mobile_device_auth_block_state().
+    enum mobile_device_auth_block_state block_state;
 
     // The connection slot borrowed from mobile_commands_connection_new()
     //   for the current attempt (valid only while state != IDLE), held for
@@ -113,6 +122,11 @@ void mobile_device_auth_session_start(struct mobile_adapter *adapter);
 //   mobile_def_device_identity(), which takes it alongside the callback so
 //   the two cannot be registered apart.
 void mobile_device_auth_set_impl_name(struct mobile_adapter *adapter, const char *impl_name);
+
+// The device id as the MOBILE_DEVICE_ID_SIZE raw bytes the hex form renders,
+//   for protocols that carry it in binary (the relay handshake). NULL when
+//   this device has no id -- same condition as the public getters.
+const unsigned char *mobile_device_auth_device_id_raw(struct mobile_adapter *adapter);
 
 // Queues a device-auth event for signing and dispatch through
 //   mobile_func_update_device_auth, once the server's address has been

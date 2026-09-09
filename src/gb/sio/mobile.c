@@ -65,6 +65,10 @@ bool GBSIOMobileAdapterInit(struct GBSIODriver* driver) {
 	mobile_def_time_latch(mobile->m.adapter, _timeLatch);
 	mobile_def_time_check_ms(mobile->m.adapter, _timeCheckMs);
 
+	if (mobile->m.setup) {
+		mobile->m.setup(&mobile->m);
+	}
+
 	mobile_start(mobile->m.adapter);
 
 	mobile->d.p->magb = mobile;

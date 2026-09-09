@@ -82,9 +82,21 @@ where the counter stands, through the same side channel: a query carries no
 counter, and the reply (`<counter> <signature>`) goes back to the library byte
 for byte, which verifies the signature and only ever moves its counter forward.
 The query is asked as an HTTP/1.0 client so that the body can never arrive
-chunked. The adapter screen shows it as "counter asked", then "counter
+chunked. It consumes a counter of its own, which the server echoes inside the
+signed reply, so an old reply cannot be replayed at a device whose counter
+never moves. The adapter screen shows it as "counter asked", then "counter
 answered" or "counter unanswered"; an unanswered query costs only the
 recovery, the counter still advances on its own.
+
+The same reply is how the site tells a device it has been blocked: a signed
+"blocked" verdict rather than a bare 403, which any DNS on the way could have
+forged. The library then fails the session's network on purpose, so the game
+shows its own error screen, and asks again next session — nothing about it is
+ever persisted. The frontend only says so: "Blocked on the site" replaces the
+status on the adapter screen and above the log, and only on a verified verdict,
+never on a mere lack of answer. A report that was already on its way when the
+verdict arrived is refused by the server; its reply is read for that, so the
+log says "refused, device blocked" rather than blaming the network.
 
 The screen opens only while a game runs, from the pause menu, on every port
 alike. There was for a while a menu ahead of the file browser that led to it,
