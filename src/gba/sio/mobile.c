@@ -1,3 +1,8 @@
+/* Copyright (c) 2013-2026 Jeffrey Pfau
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/sio/mobile.h>
 
 #include <mgba/internal/gba/gba.h>
@@ -6,18 +11,18 @@
 mLOG_DECLARE_CATEGORY(GBA_MOBILE);
 mLOG_DEFINE_CATEGORY(GBA_MOBILE, "Mobile Adapter (GBA)", "gba.mobile");
 
-static void debug_log(void* user, const char* line) {
+static void _debugLog(void* user, const char* line) {
 	UNUSED(user);
 	mLOG(GBA_MOBILE, DEBUG, "%s", line);
 }
 
-static void time_latch(void* user, unsigned timer) {
+static void _timeLatch(void* user, unsigned timer) {
 	struct GBASIOMobileAdapter* adapter = ((struct MobileAdapterGB*) user)->p;
 
 	adapter->timeLatch[timer] = mTimingCurrentTime(&adapter->d.p->p->timing);
 }
 
-static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
+static bool _timeCheckMs(void* user, unsigned timer, unsigned ms) {
 	struct GBASIOMobileAdapter* adapter = ((struct MobileAdapterGB*) user)->p;
 
 	uint32_t time = mTimingCurrentTime(&adapter->d.p->p->timing);
@@ -62,9 +67,9 @@ static bool GBASIOMobileAdapterInit(struct GBASIODriver* driver) {
 		return false;
 	}
 
-	mobile_def_debug_log(mobile->m.adapter, debug_log);
-	mobile_def_time_latch(mobile->m.adapter, time_latch);
-	mobile_def_time_check_ms(mobile->m.adapter, time_check_ms);
+	mobile_def_debug_log(mobile->m.adapter, _debugLog);
+	mobile_def_time_latch(mobile->m.adapter, _timeLatch);
+	mobile_def_time_check_ms(mobile->m.adapter, _timeCheckMs);
 
 	mobile_start(mobile->m.adapter);
 
@@ -122,10 +127,10 @@ static uint32_t GBASIOMobileAdapterFinishNormal32(struct GBASIODriver* driver) {
 	struct GBASIOMobileAdapter* mobile = (struct GBASIOMobileAdapter*) driver;
 
 	if (mobile->m.serial == 4) {
-		uint16_t reg_lo = mobile->d.p->p->memory.io[GBA_REG(SIODATA32_LO)];
-		uint16_t reg_hi = mobile->d.p->p->memory.io[GBA_REG(SIODATA32_HI)];
+		uint16_t regLo = mobile->d.p->p->memory.io[GBA_REG(SIODATA32_LO)];
+		uint16_t regHi = mobile->d.p->p->memory.io[GBA_REG(SIODATA32_HI)];
 		uint32_t ret = mobile->next;
-		mobile->next = mobile_transfer_32bit(mobile->m.adapter, reg_hi << 16 | reg_lo);
+		mobile->next = mobile_transfer_32bit(mobile->m.adapter, regHi << 16 | regLo);
 		return ret;
 	}
 
