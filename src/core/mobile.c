@@ -251,6 +251,20 @@ static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
 #endif
 }
 
+bool MobileAdapterGBPairingCode(struct MobileAdapterGB* mobile, char* out, size_t size) {
+	if (size) {
+		out[0] = '\0';
+	}
+	if (size < MOBILE_PAIRING_CODE_LEN || !mobile->adapter) {
+		return false;
+	}
+	if (!mobile_device_auth_get_pairing_code(mobile->adapter, out)) {
+		out[0] = '\0';
+		return false;
+	}
+	return true;
+}
+
 struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile) {
 	struct mobile_adapter* adapter = mobile_new(mobile);
 	if (!adapter) {
@@ -269,7 +283,10 @@ struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile) {
 	mobile_def_sock_send(adapter, _sockSend);
 	mobile_def_sock_recv(adapter, _sockRecv);
 	mobile_def_update_number(adapter, _updateNumber);
-	mobile_def_device_identity(adapter, _deviceIdentity);
+	// The name is part of the device's id, so it is a plain literal that a
+	// rename must never reach, and its spelling is agreed with the other
+	// frontends: see the library's list of names in use.
+	mobile_def_device_identity(adapter, _deviceIdentity, "mgba");
 
 	mobile->adapter = adapter;
 	MobileAdapterAuthInit(mobile);

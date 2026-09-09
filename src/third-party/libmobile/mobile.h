@@ -32,6 +32,14 @@ struct mobile_adapter;
 #define MOBILE_DEVICE_ID_SIZE 8
 #define MOBILE_DEVICE_ID_STR_SIZE (MOBILE_DEVICE_ID_SIZE * 2 + 1)
 
+// Longest frontend name mixed into the device id, not counting its
+//   terminator. Anything longer is truncated, which is harmless as long as
+//   the first characters already tell one frontend from another.
+#define MOBILE_IMPL_NAME_MAX_SIZE 0x1F
+
+// Size of the pairing code buffer, "XXXX-XXXX" plus its terminator.
+#define MOBILE_PAIRING_CODE_STR_SIZE 10
+
 // Utility defines
 #define MOBILE_SERIAL_IDLE_BYTE 0xD2
 #define MOBILE_SERIAL_IDLE_WORD 0xD2D2D2D2
@@ -537,6 +545,16 @@ void mobile_def_update_device_auth(struct mobile_adapter *adapter, mobile_func_u
 // reboots, and DIFFERENT from those of any other device using the same
 // account. They do not need to be secret, random, or unpredictable.
 //
+// "Any other device" includes another frontend on the same machine. Two of
+// them asking the operating system who it is get the same answer, so the
+// library mixes <impl_name> into the derivation to tell them apart. It is a
+// parameter of registering this callback rather than something to remember
+// separately, because forgetting it would produce a collision that looks
+// exactly like a counter bug and nothing like a missing string. Use a short
+// stable name for the frontend itself, not a version or a build. Where one
+// machine may serve several accounts or users at once, the identity bytes
+// are still the place to distinguish those -- including the OS user, say.
+//
 // Deliberately a callback rather than something the library stores: the
 // library's config storage is a blob a user may legitimately copy between
 // devices (the same config on an emulator and on real hardware, say), so an
@@ -560,7 +578,28 @@ void mobile_def_update_device_auth(struct mobile_adapter *adapter, mobile_func_u
 // - size: capacity of <data>, at least MOBILE_DEVICE_IDENTITY_MAX_SIZE
 typedef unsigned (*mobile_func_device_identity)(void *user, void *data, unsigned size);
 unsigned mobile_impl_device_identity(void *user, void *data, unsigned size);
-void mobile_def_device_identity(struct mobile_adapter *adapter, mobile_func_device_identity func);
+
+// <impl_name> names the frontend, and is mixed into the device id so two
+// frontends on one machine don't derive the same one. Up to
+// MOBILE_IMPL_NAME_MAX_SIZE characters, copied here, so it needn't outlive
+// this call. NULL or empty is treated as no identity at all, the same as
+// setting no callback: a device id that can't be told apart from another
+// frontend's is worse than none, since the server would take both for one
+// device and reject one of them as a replay of the other.
+//
+// Write it as a plain string literal, decided once and never touched again.
+// Not a build macro, a package name, or anything a rename could reach: the
+// name is an input to the hash, so changing it silently turns every device
+// running that frontend into a new one. For the same reason the spelling
+// itself is part of the agreement rather than a matter of taste --
+// "mgba" and "mGBA" are two different devices. Names in use:
+//
+//   "mgba"            mGBA
+//   "libmobile-bgb"   libmobile-bgb
+//   "picoadaptergb"   PicoAdapterGB
+//
+// Anything new goes on that list before it ships, not after.
+void mobile_def_device_identity(struct mobile_adapter *adapter, mobile_func_device_identity func, const char *impl_name);
 
 // mobile_func_device_auth_query - Ask the server what counter it last took
 //
@@ -609,6 +648,47 @@ void mobile_def_device_auth_query(struct mobile_adapter *adapter, mobile_func_de
 // - data: response body as received, or NULL if the request failed
 // - size: length of data in bytes
 void mobile_device_auth_query_result(struct mobile_adapter *adapter, const void *data, unsigned size);
+
+// mobile_device_auth_get_id - This device's id, as sent to the server
+//
+// Writes MOBILE_DEVICE_ID_STR_SIZE bytes into <buf>: the same lowercase hex
+// id the library puts in its requests, null-terminated. Useful for logs and
+// for anywhere the exact value matters; to show a user, prefer
+// mobile_device_auth_get_pairing_code().
+//
+// Returns false, leaving <buf> untouched, when this device has no id --
+// meaning no identity callback was registered, or it offered nothing.
+//
+// Returns: whether an id exists
+// Parameters:
+// - adapter: Library state
+// - buf: buffer of at least MOBILE_DEVICE_ID_STR_SIZE bytes
+bool mobile_device_auth_get_id(struct mobile_adapter *adapter, char *buf);
+
+// mobile_device_auth_get_pairing_code - This device's id, for a person
+//
+// Writes MOBILE_PAIRING_CODE_STR_SIZE bytes into <buf>: the first half of
+// the device id as "XXXX-XXXX", upper case, null-terminated. It exists so
+// somebody looking at a list of devices on a server can tell which entry is
+// the machine in front of them, and so is worth showing wherever that
+// question comes up -- a settings screen, a startup line, a status page.
+//
+// Formatted here rather than by each frontend because the code is only
+// useful if it matches, character for character, what the server shows for
+// the same device. A frontend rendering it in lower case, or grouping it
+// differently, produces something the user cannot match against the list
+// and has no way to tell is merely formatted differently.
+//
+// Being half the id, it identifies rather than authenticates: it is safe to
+// display, and useless for proving anything.
+//
+// Returns false, leaving <buf> untouched, when this device has no id.
+//
+// Returns: whether an id exists
+// Parameters:
+// - adapter: Library state
+// - buf: buffer of at least MOBILE_PAIRING_CODE_STR_SIZE bytes
+bool mobile_device_auth_get_pairing_code(struct mobile_adapter *adapter, char *buf);
 
 void mobile_config_set_device(struct mobile_adapter *adapter, enum mobile_adapter_device device, bool unmetered);
 void mobile_config_get_device(struct mobile_adapter *adapter, enum mobile_adapter_device *device, bool *unmetered);

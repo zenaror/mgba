@@ -102,6 +102,15 @@ struct MobileAdapterGB {
 
 struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile);
 
+// "XXXX-XXXX" and its terminator, as the library formats it.
+#define MOBILE_PAIRING_CODE_LEN MOBILE_PAIRING_CODE_STR_SIZE
+
+// The code a person matches this device against the account's device list
+// by. Formatted by the library, not here, so that every frontend shows the
+// same characters the server does. False when this device has no id, in
+// which case out is left empty.
+bool MobileAdapterGBPairingCode(struct MobileAdapterGB* mobile, char* out, size_t size);
+
 // Wires the side channel up to an adapter. Called for you when one is made.
 void MobileAdapterAuthInit(struct MobileAdapterGB* mobile);
 

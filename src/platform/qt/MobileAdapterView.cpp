@@ -90,10 +90,15 @@ static QString mobileConfigPath() {
 }
 
 struct mobile_adapter* MobileAdapterView::adapter() {
+	MobileAdapterGB* gb = adapterGB();
+	return gb ? gb->adapter : nullptr;
+}
+
+MobileAdapterGB* MobileAdapterView::adapterGB() {
 	if (m_controller) {
-		return m_controller->getMobileAdapter()->adapter;
+		return m_controller->getMobileAdapter();
 	}
-	return m_hasStandalone ? m_standalone.m.adapter : nullptr;
+	return m_hasStandalone ? &m_standalone.m : nullptr;
 }
 
 void MobileAdapterView::createStandalone() {
@@ -361,6 +366,15 @@ void MobileAdapterView::getConfig() {
 	struct mobile_adapter* adapter = this->adapter();
 	if (!adapter) {
 		return;
+	}
+
+	// Not a setting, but it belongs with the status: it is what a person
+	// matches this computer against the account's device list by.
+	char pairing[MOBILE_PAIRING_CODE_LEN];
+	if (MobileAdapterGBPairingCode(adapterGB(), pairing, sizeof(pairing))) {
+		m_ui.pairingCode->setText(QString::fromLatin1(pairing));
+	} else {
+		m_ui.pairingCode->setText(tr("Unavailable"));
 	}
 
 	enum mobile_adapter_device device;

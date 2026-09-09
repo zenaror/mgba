@@ -165,6 +165,11 @@ def(sock_send)
 def(sock_recv)
 def(update_number)
 def(update_device_auth)
-def(device_identity)
 def(device_auth_query)
+
+void mobile_def_device_identity(struct mobile_adapter *adapter, mobile_func_device_identity func, const char *impl_name)
+{
+    adapter->callback.device_identity = func;
+    mobile_device_auth_set_impl_name(adapter, impl_name);
+}
 #endif

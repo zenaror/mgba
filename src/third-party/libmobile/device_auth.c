@@ -71,7 +71,9 @@ void mobile_device_auth_init(struct mobile_adapter *adapter)
     adapter->device_auth.pending = false;
     adapter->device_auth.device_id[0] = '\0';
     adapter->device_auth.device_id_init = false;
+    adapter->device_auth.impl_name[0] = '\0';
     adapter->device_auth.addr_resolved = false;
+    adapter->device_auth.addr_failed = false;
     adapter->device_auth.query_pending = false;
     adapter->device_auth.query_inflight = false;
 }
@@ -81,9 +83,30 @@ void mobile_device_auth_session_start(struct mobile_adapter *adapter)
     struct mobile_adapter_device_auth *s = &adapter->device_auth;
 
     // The resolved address deliberately survives: it belongs to the device's
-    //   run, not to one session.
+    //   run, not to one session. A failed attempt does not: a session brings
+    //   a DNS server the game chose, which the earlier try never had.
+    s->addr_failed = false;
     s->query_inflight = false;
     s->query_pending = adapter->config.device_auth_key_init;
+}
+
+void mobile_device_auth_set_impl_name(struct mobile_adapter *adapter, const char *impl_name)
+{
+    struct mobile_adapter_device_auth *s = &adapter->device_auth;
+
+    unsigned len = 0;
+    if (impl_name) {
+        while (impl_name[len] && len < MOBILE_IMPL_NAME_MAX_SIZE) {
+            s->impl_name[len] = impl_name[len];
+            len++;
+        }
+    }
+    s->impl_name[len] = '\0';
+
+    // The id may already have been derived; the next caller must derive it
+    //   again rather than keep one built without this name.
+    s->device_id_init = false;
+    s->device_id[0] = '\0';
 }
 
 // Builds "ppp_id|device|action" (or "ppp_id|action" without a device id),
@@ -119,14 +142,32 @@ static const char *device_auth_device_id(struct mobile_adapter *adapter)
     }
     s->device_id_init = true;
 
+    // Without a name there is nothing to tell this frontend from another on
+    //   the same machine, and two frontends claiming one id is worse than
+    //   neither claiming any: the server would read one's requests as
+    //   replays of the other's.
+    if (s->impl_name[0] == '\0') return NULL;
+
     unsigned char identity[MOBILE_DEVICE_IDENTITY_MAX_SIZE];
     unsigned size = mobile_cb_device_identity(adapter, identity,
         sizeof(identity));
     if (size == 0 || size > sizeof(identity)) return NULL;
 
+    // sha256(impl_name || 0 || identity). Without the separator ("ab", "cd")
+    //   and ("a", "bcd") would hash alike; with it, no two pairs can.
+    // That holds because impl_name is a C string and so cannot contain a
+    //   zero, which puts the first zero of the concatenation at the length
+    //   of the name in every case -- so equal hashes mean equal names and
+    //   equal identities. Note the guarantee rests on the NAME, not on the
+    //   identity: identity is raw bytes and may well contain zeros (a board
+    //   id often does), which is harmless. Worth knowing before anyone
+    //   "fixes" this, since binary identity is the first thing that looks
+    //   like it should break it.
     unsigned char digest[MOBILE_SHA256_SIZE];
     struct mobile_sha256 ctx;
     mobile_sha256_init(&ctx);
+    mobile_sha256_update(&ctx, s->impl_name, strlen(s->impl_name));
+    mobile_sha256_update(&ctx, "", 1);
     mobile_sha256_update(&ctx, identity, size);
     mobile_sha256_final(&ctx, digest);
 
@@ -143,6 +184,32 @@ static const char *device_auth_device_id(struct mobile_adapter *adapter)
     mobile_debug_endl(adapter);
 
     return s->device_id;
+}
+
+bool mobile_device_auth_get_id(struct mobile_adapter *adapter, char *buf)
+{
+    const char *id = device_auth_device_id(adapter);
+    if (!id) return false;
+
+    memcpy(buf, id, MOBILE_DEVICE_ID_STR_SIZE);
+    return true;
+}
+
+bool mobile_device_auth_get_pairing_code(struct mobile_adapter *adapter, char *buf)
+{
+    const char *id = device_auth_device_id(adapter);
+    if (!id) return false;
+
+    // First half of the id as XXXX-XXXX, upper case.
+    for (unsigned i = 0; i < 8; i++) {
+        char c = id[i];
+        buf[i < 4 ? i : i + 1] = (c >= 'a' && c <= 'f') ? (char)(c - 'a' + 'A') : c;
+    }
+    buf[4] = '-';
+    buf[9] = '\0';
+    static_assert(MOBILE_PAIRING_CODE_STR_SIZE == 10,
+        "pairing code buffer size is out of sync with its format");
+    return true;
 }
 
 void mobile_device_auth_notify(struct mobile_adapter *adapter, enum mobile_device_auth_action action, const unsigned char *ppp_id, unsigned ppp_id_size)
@@ -256,6 +323,49 @@ static bool device_auth_dispatch_query(struct mobile_adapter *adapter)
     return true;
 }
 
+// Pulls the counter out of a query response body, or reports that the body
+//   isn't one. Split out so every way of failing gets logged in one place:
+//   silently discarding an answer leaves nothing to tell "the server said
+//   something unexpected" apart from "the server never answered".
+static bool device_auth_parse_counter(const void *data, unsigned size, uint64_t *out, const unsigned char **sig_hex)
+{
+    // Body is exactly "<counter> <sig>": 1-20 digits, one space, 64 lowercase
+    //   hex, and nothing else. Anything else is discarded rather than
+    //   salvaged -- this sets a counter, and a bad one strands the device.
+    // Trailing CR/LF is the exception, and only because it is the one
+    //   difference a server can add without meaning to (an echo with a
+    //   newline, a proxy being helpful) and the one that costs nothing to
+    //   accept: the signature covers the number, not the framing around it.
+    const unsigned char *body = data;
+    while (size > 0 && (body[size - 1] == '\n' || body[size - 1] == '\r')) {
+        size--;
+    }
+    if (size == 0) return false;
+    unsigned digits = 0;
+    uint64_t value = 0;
+    while (digits < size && body[digits] >= '0' && body[digits] <= '9') {
+        // Refuse anything that would wrap, rather than taking it modulo.
+        if (value > (UINT64_MAX - (uint64_t)(body[digits] - '0')) / 10) return false;
+        value = value * 10 + (uint64_t)(body[digits] - '0');
+        digits++;
+    }
+    if (digits == 0 || digits > 20) return false;
+    if (digits > 1 && body[0] == '0') return false;  // no leading zeros
+    if (size != digits + 1 + (MOBILE_SHA256_SIZE * 2)) return false;
+    if (body[digits] != ' ') return false;
+
+    const unsigned char *hex = body + digits + 1;
+    for (unsigned i = 0; i < MOBILE_SHA256_SIZE * 2; i++) {
+        unsigned char ch = hex[i];
+        bool ok = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f');
+        if (!ok) return false;  // uppercase and anything else is not this format
+    }
+
+    *out = value;
+    *sig_hex = hex;
+    return true;
+}
+
 void mobile_device_auth_query_result(struct mobile_adapter *adapter, const void *data, unsigned size)
 {
     struct mobile_adapter_device_auth *s = &adapter->device_auth;
@@ -265,34 +375,22 @@ void mobile_device_auth_query_result(struct mobile_adapter *adapter, const void 
     s->query_inflight = false;
     if (!data || size == 0) return;
 
-    // Body is exactly "<counter> <sig>": 1-20 digits, one space, 64 lowercase
-    //   hex, and nothing else. Anything else is discarded rather than
-    //   salvaged -- this sets a counter, and a bad one strands the device.
-    const unsigned char *body = data;
-    unsigned digits = 0;
-    uint64_t value = 0;
-    while (digits < size && body[digits] >= '0' && body[digits] <= '9') {
-        // Refuse anything that would wrap, rather than taking it modulo.
-        if (value > (UINT64_MAX - (uint64_t)(body[digits] - '0')) / 10) return;
-        value = value * 10 + (uint64_t)(body[digits] - '0');
-        digits++;
+    uint64_t value;
+    const unsigned char *hex;
+    if (!device_auth_parse_counter(data, size, &value, &hex)) {
+        debug_prefix(adapter);
+        mobile_debug_print(adapter, PSTR("Counter answer isn't in the expected form, ignored"));
+        mobile_debug_endl(adapter);
+        return;
     }
-    if (digits == 0 || digits > 20) return;
-    if (digits > 1 && body[0] == '0') return;  // no leading zeros
-    if (size != digits + 1 + (MOBILE_SHA256_SIZE * 2)) return;
-    if (body[digits] != ' ') return;
 
     unsigned char given[MOBILE_SHA256_SIZE];
-    const unsigned char *hex = body + digits + 1;
     for (unsigned i = 0; i < MOBILE_SHA256_SIZE; i++) {
         unsigned char byte = 0;
         for (unsigned j = 0; j < 2; j++) {
             unsigned char ch = hex[i * 2 + j];
-            unsigned char nibble;
-            if (ch >= '0' && ch <= '9') nibble = (unsigned char)(ch - '0');
-            else if (ch >= 'a' && ch <= 'f') nibble = (unsigned char)(ch - 'a' + 10);
-            else return;  // uppercase and anything else is not this format
-            byte = (unsigned char)(byte << 4 | nibble);
+            byte = (unsigned char)(byte << 4 |
+                (ch <= '9' ? ch - '0' : ch - 'a' + 10));
         }
         given[i] = byte;
     }
@@ -413,12 +511,27 @@ static void device_auth_dispatch_due(struct mobile_adapter *adapter)
     if (s->query_pending && !s->query_inflight) {
         s->query_pending = false;
         s->query_inflight = device_auth_dispatch_query(adapter);
+        if (s->query_inflight) {
+            mobile_cb_time_latch(adapter, MOBILE_TIMER_DEVICE_AUTH);
+        }
     }
 
-    if (s->pending) {
-        s->pending = false;
-        device_auth_sign_and_dispatch(adapter, s->addr_ipv4);
+    if (!s->pending) return;
+
+    // Signing an event while the answer to that query is still on its way
+    //   would use the counter it is about to correct -- and in the case that
+    //   makes the query worth doing at all, that means this event is
+    //   rejected and the game sees the failure. So wait for it, but only
+    //   briefly: an answer that never comes must not hold an authorize
+    //   hostage, since a stale counter is a maybe and a missing authorize is
+    //   a certainty.
+    if (s->query_inflight &&
+            !mobile_cb_time_check_ms(adapter, MOBILE_TIMER_DEVICE_AUTH, 3000)) {
+        return;
     }
+
+    s->pending = false;
+    device_auth_sign_and_dispatch(adapter, s->addr_ipv4);
 }
 
 void mobile_device_auth_handle(struct mobile_adapter *adapter)
@@ -426,22 +539,35 @@ void mobile_device_auth_handle(struct mobile_adapter *adapter)
     struct mobile_adapter_device_auth *s = &adapter->device_auth;
 
     if (s->state == MOBILE_DEVICE_AUTH_IDLE) {
-        if (!s->pending && !s->query_pending) return;
+        bool work = s->pending || s->query_pending;
 
         // Already know where the server is: nothing to look up, send now.
         if (s->addr_resolved) {
-            device_auth_dispatch_due(adapter);
+            if (work) device_auth_dispatch_due(adapter);
             return;
+        }
+
+        // With nothing to send yet, still resolve -- as soon as there is a
+        //   key and somewhere to ask. Getting the address out of the way
+        //   while idle is the whole point of keeping it: by the time an
+        //   authorize is due, there is no lookup left to wait for.
+        if (!work) {
+            if (s->addr_failed || !adapter->config.device_auth_key_init) return;
         }
 
         int rc = device_auth_resolve_start(adapter, 0);
         if (rc == 0) return;  // No connection slot free right now, retry later
         if (rc < 0) {
-            debug_prefix(adapter);
-            mobile_debug_print(adapter, PSTR("No DNS server available, dropping"));
-            mobile_debug_endl(adapter);
-            s->pending = false;
-            s->query_pending = false;
+            if (work) {
+                debug_prefix(adapter);
+                mobile_debug_print(adapter, PSTR("No DNS server available, dropping"));
+                mobile_debug_endl(adapter);
+                s->pending = false;
+                s->query_pending = false;
+            }
+            // Nothing to send, so nothing was lost -- just stop trying until
+            //   a session gives a reason, and a DNS server, to try again.
+            s->addr_failed = true;
             return;
         }
         // fallthrough
@@ -461,6 +587,7 @@ void mobile_device_auth_handle(struct mobile_adapter *adapter)
             s->state = MOBILE_DEVICE_AUTH_IDLE;
             s->pending = false;
             s->query_pending = false;
+            s->addr_failed = true;
             return;
         }
 
@@ -492,10 +619,11 @@ void mobile_device_auth_handle(struct mobile_adapter *adapter)
             }
 
             debug_prefix(adapter);
-            mobile_debug_print(adapter, PSTR("Resolution failed, dropping"));
+            mobile_debug_print(adapter, PSTR("Resolution failed"));
             mobile_debug_endl(adapter);
             s->pending = false;
             s->query_pending = false;
+            s->addr_failed = true;
             return;
         }
 

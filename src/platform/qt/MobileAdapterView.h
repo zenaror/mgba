@@ -53,6 +53,7 @@ private slots:
 
 private:
 	struct mobile_adapter* adapter();
+	MobileAdapterGB* adapterGB();
 	void setDns(int which, const QString& text);
 
 	// Runs fn against whichever adapter is live, pausing emulation for as long
