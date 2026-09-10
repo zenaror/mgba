@@ -18,6 +18,8 @@ extern MGBA_EXPORT const char* const gitBranch;
 extern MGBA_EXPORT const int gitRevision;
 extern MGBA_EXPORT const char* const binaryName;
 extern MGBA_EXPORT const char* const projectName;
+// For titles and app names; projectName names files and folders.
+extern MGBA_EXPORT const char* const projectDisplayName;
 extern MGBA_EXPORT const char* const projectVersion;
 
 #ifdef __cplusplus
