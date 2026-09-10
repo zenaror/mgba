@@ -496,6 +496,12 @@ static inline int SocketSetBlocking(Socket socket, bool blocking) {
 #ifdef _WIN32
 	u_long unblocking = !blocking;
 	return ioctlsocket(socket, FIONBIO, &unblocking) == NO_ERROR;
+#elif defined(PSP2)
+	// fcntl() does nothing to a socket here — it reports success and leaves
+	// the socket blocking, so every read waited until the far end hung up.
+	// The socket layer has a switch of its own.
+	int nonblocking = !blocking;
+	return setsockopt(socket, SOL_SOCKET, SCE_NET_SO_NBIO, &nonblocking, sizeof(nonblocking)) >= 0;
 #else
 #ifdef GEKKO
 	int flags = net_fcntl(socket, F_GETFL, 0);
