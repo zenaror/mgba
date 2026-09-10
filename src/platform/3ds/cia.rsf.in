@@ -1,6 +1,6 @@
 BasicInfo:
-  Title                   : "${PROJECT_NAME}"
-  ProductCode             : "CTR-P-MGBA"
+  Title                   : "${PROJECT_DISPLAY_NAME}"
+  ProductCode             : "CTR-P-MAGB"
   Logo                    : Homebrew # Nintendo / Licensed / Distributed / iQue / iQueForSystem / Homebrew
 
 #RomFs:
@@ -9,7 +9,9 @@ BasicInfo:
 
 TitleInfo:
   Category                : Application
-  UniqueId                : 0xD721
+  # Not upstream's 0xD721: this fork installs beside the official build,
+  # never over it.
+  UniqueId                : 0xD7AB
 
 Option:
   UseOnSD                 : true # true if App is to be installed to SD

@@ -11,4 +11,5 @@ MGBA_EXPORT const char* const gitBranch = "${GIT_BRANCH}";
 MGBA_EXPORT const int gitRevision = ${GIT_REV};
 MGBA_EXPORT const char* const binaryName = "${BINARY_NAME}";
 MGBA_EXPORT const char* const projectName = "${PROJECT_NAME}";
+MGBA_EXPORT const char* const projectDisplayName = "${PROJECT_DISPLAY_NAME}";
 MGBA_EXPORT const char* const projectVersion = "${VERSION_STRING}";

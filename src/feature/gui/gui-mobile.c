@@ -32,6 +32,16 @@
 #include <3ds/services/soc.h>
 #elif defined(PSP2)
 #include <psp2/net/net.h>
+#elif defined(__SWITCH__)
+#include <switch.h>
+#elif defined(GEKKO)
+#include <network.h>
+#endif
+
+// The ports that are a console rather than a computer: one radio, one user,
+// and a card that is the only place anything can be written down.
+#if defined(__3DS__) || defined(PSP2) || defined(__SWITCH__) || defined(GEKKO)
+#define MOBILE_CONSOLE
 #endif
 
 #define MOBILE_CONFIG_FILE "mobile_config.bin"
@@ -59,6 +69,41 @@ static bool _showLog = false;
 // which on a console is the only way to see any of this.
 static bool _traceSockets = false;
 
+#ifdef MOBILE_CONSOLE
+// The screen only ever shows the last few lines, and a game that was stuck
+// scrolls them all off the moment it comes unstuck. So on a console every
+// line can also go to mobile.log beside the config, started afresh each time
+// it is switched on. Off by default: it is for chasing a failure, and costs
+// card space and card time. The file stays open while it is on: opening and
+// closing it around every line cost a few milliseconds of card access each,
+// which showed as the game stuttering whenever the adapter talked. A
+// console's file layer writes straight through, so what was said before a
+// hang is on the card all the same.
+#define MOBILE_LOG_FILE "mobile.log"
+static bool _logToFile = false;
+static struct VFile* _logFile;
+
+static void _openLogFile(void) {
+	if (_logFile) {
+		return;
+	}
+	char path[PATH_MAX];
+	mCoreConfigDirectory(path, sizeof(path));
+	if (!path[0]) {
+		return;
+	}
+	strncat(path, PATH_SEP MOBILE_LOG_FILE, sizeof(path) - strlen(path) - 1);
+	_logFile = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+}
+
+static void _closeLogFile(void) {
+	if (_logFile) {
+		_logFile->close(_logFile);
+		_logFile = NULL;
+	}
+}
+#endif
+
 static void _debugLog(void* user, const char* line) {
 	UNUSED(user);
 	strlcpy(_log[_logNext], line, MOBILE_LOG_LEN);
@@ -67,6 +112,12 @@ static void _debugLog(void* user, const char* line) {
 		++_logCount;
 	}
 	mLOG(GUI_MOBILE, DEBUG, "%s", line);
+#ifdef MOBILE_CONSOLE
+	if (_logFile) {
+		_logFile->write(_logFile, line, strlen(line));
+		_logFile->write(_logFile, "\n", 1);
+	}
+#endif
 }
 
 // Oldest first, so index 0 is the start of what is still remembered.
@@ -111,11 +162,13 @@ static void _logNetworkState(void) {
 	_logPrintf("<mGBA> network ready");
 }
 
-#if defined(__3DS__) || defined(PSP2)
+#ifdef MOBILE_CONSOLE
 // A console has one radio, and its address is the most stable thing about it:
 // it survives the config being copied, wiped or downloaded again, which is
-// the whole point of naming devices. The library only ever hashes these
-// bytes, so they are handed over exactly as the system reports them.
+// the whole point of naming devices. The Switch does not hand out its
+// address, but does hand out its serial number, which is as stable. The
+// library only ever hashes these bytes, so they are handed over exactly as
+// the system reports them.
 static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
 	UNUSED(user);
 #ifdef __3DS__
@@ -136,24 +189,59 @@ static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
 	}
 	memcpy(data, mac, len);
 	return len;
-#else
+#elif defined(PSP2)
 	SceNetEtherAddr addr;
 	if (size < sizeof(addr.data) || sceNetGetMacAddress(&addr, 0) < 0) {
 		return 0;
 	}
 	memcpy(data, addr.data, sizeof(addr.data));
 	return sizeof(addr.data);
+#elif defined(__SWITCH__)
+	// The service is opened and closed around the one call: nothing else
+	// here needs it, and it costs nothing to ask once.
+	SetSysSerialNumber serial;
+	if (R_FAILED(setsysInitialize())) {
+		return 0;
+	}
+	Result res = setsysGetSerialNumber(&serial);
+	setsysExit();
+	if (R_FAILED(res)) {
+		return 0;
+	}
+	size_t len = strnlen(serial.number, sizeof(serial.number));
+	if (!len || size < len) {
+		return 0;
+	}
+	memcpy(data, serial.number, len);
+	return len;
+#else
+	unsigned char mac[6];
+	if (size < sizeof(mac) || net_get_mac_address(mac) < 0) {
+		return 0;
+	}
+	memcpy(data, mac, sizeof(mac));
+	return sizeof(mac);
 #endif
 }
 #endif
 
 // Stand in for the core's own callbacks to report what the adapter's sockets
 // actually do, which is otherwise invisible from a console.
+#ifdef PSP2
+// A connect started on this connection and not yet answered; see
+// _vitaSockConnect. Cleared when the connection gets a new socket.
+static bool _vitaConnecting[MOBILE_MAX_CONNECTIONS];
+static unsigned _vitaConnectTicks[MOBILE_MAX_CONNECTIONS];
+#endif
+
 static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype,
                              unsigned bindport) {
 	struct MobileAdapterGB* mobile = user;
 
 	mobile->socket[conn].socktype = type;
+#ifdef PSP2
+	_vitaConnecting[conn] = false;
+#endif
 
 	struct Address bindaddr = {0};
 	bindaddr.version = addrtype != MOBILE_ADDRTYPE_IPV6 ? IPV4 : IPV6;
@@ -255,6 +343,78 @@ static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size
 	return (res || mobile->socket[conn].socktype == MOBILE_SOCKTYPE_UDP) ? res : -2;
 }
 
+#ifdef PSP2
+// The core's connect asks again every frame until it hears EISCONN, which is
+// what a strict BSD stack answers about a connection in progress; nothing says
+// the Vita's does, and asking it sixty times a second is not worth finding
+// out. So the connect is started once, and its outcome read off the socket:
+// getpeername() answers only once it is through, SO_ERROR says if it never
+// will be. What SO_ERROR says while it is still in progress may be an errno or
+// the socket layer's own code, so both spellings are known here.
+static int _vitaSockConnect(void* user, unsigned conn, const struct mobile_addr* addr) {
+	struct MobileAdapterGB* mobile = user;
+	Socket fd = mobile->socket[conn].fd;
+
+	if (!_vitaConnecting[conn]) {
+		if (addr->type != MOBILE_ADDRTYPE_IPV4) {
+			_logPrintf("<mGBA> conn %u connect: only IPv4 here", conn);
+			return -1;
+		}
+		const struct mobile_addr4* addr4 = (const struct mobile_addr4*) addr;
+		struct sockaddr_in sin;
+		memset(&sin, 0, sizeof(sin));
+		sin.sin_family = AF_INET;
+		sin.sin_port = htons(addr4->port);
+		memcpy(&sin.sin_addr.s_addr, addr4->host, sizeof(sin.sin_addr.s_addr));
+		errno = 0;
+		int rc = connect(fd, (const struct sockaddr*) &sin, sizeof(sin));
+		int err = errno;
+		if (_traceSockets) {
+			_logPrintf("<mGBA> conn %u connect: rc %i, errno %i", conn, rc, err);
+		}
+		if (rc == 0 || err == EISCONN) {
+			return 1;
+		}
+		// Whatever the number said, the socket itself will say how it went.
+		_vitaConnecting[conn] = true;
+		_vitaConnectTicks[conn] = 0;
+		return 0;
+	}
+
+	struct sockaddr_in peer;
+	socklen_t len = sizeof(peer);
+	if (getpeername(fd, (struct sockaddr*) &peer, &len) == 0) {
+		if (_traceSockets) {
+			_logPrintf("<mGBA> conn %u connected after %u ticks", conn, _vitaConnectTicks[conn]);
+		}
+		_vitaConnecting[conn] = false;
+		return 1;
+	}
+	int peerErr = errno;
+	int soErr = 0;
+	len = sizeof(soErr);
+	int rc = getsockopt(fd, SOL_SOCKET, SO_ERROR, &soErr, &len);
+	if (++_vitaConnectTicks[conn] % 60 == 1 && _traceSockets) {
+		_logPrintf("<mGBA> conn %u connecting: peer errno %i, SO_ERROR %i (rc %i)", conn, peerErr, soErr, rc);
+	}
+	bool inProgress = soErr == 0 || soErr == EINPROGRESS || soErr == EALREADY || soErr == EAGAIN ||
+	                  soErr == (int) SCE_NET_ERROR_EINPROGRESS || soErr == (int) SCE_NET_ERROR_EALREADY ||
+	                  soErr == (int) SCE_NET_ERROR_EWOULDBLOCK;
+	if (rc == 0 && !inProgress) {
+		_logPrintf("<mGBA> conn %u connect failed: %i", conn, soErr);
+		_vitaConnecting[conn] = false;
+		return -1;
+	}
+	// Ten seconds is longer than any server on the other end takes.
+	if (_vitaConnectTicks[conn] > 600) {
+		_logPrintf("<mGBA> conn %u connect: gave up waiting", conn);
+		_vitaConnecting[conn] = false;
+		return -1;
+	}
+	return 0;
+}
+#endif
+
 struct mGUIMobileAdapter {
 #ifdef M_CORE_GB
 	struct GBSIOMobileAdapter gb;
@@ -273,6 +433,7 @@ enum mGUIMobileItem {
 	MOBILE_ITEM_PAIRING,
 	MOBILE_ITEM_SHOW_LOG,
 	MOBILE_ITEM_TRACE,
+	MOBILE_ITEM_LOG_FILE,
 	MOBILE_ITEM_TYPE,
 	MOBILE_ITEM_UNMETERED,
 	MOBILE_ITEM_DNS1,
@@ -392,7 +553,10 @@ static void _setup(struct MobileAdapterGB* gb) {
 	mobile_def_sock_open(adapter, _loggingSockOpen);
 	mobile_def_sock_send(adapter, _loggingSockSend);
 	mobile_def_sock_recv(adapter, _loggingSockRecv);
-#if defined(__3DS__) || defined(PSP2)
+#ifdef PSP2
+	mobile_def_sock_connect(adapter, _vitaSockConnect);
+#endif
+#ifdef MOBILE_CONSOLE
 	// Same name as the core registers with, since it is part of the id.
 	mobile_def_device_identity(adapter, _deviceIdentity, "mgba");
 #endif
@@ -429,6 +593,11 @@ static bool _attach(struct mGUIRunner* runner) {
 	// Nothing else on these frontends uses sockets, so the network stack is
 	// only brought up once an adapter is actually plugged in.
 	SocketSubsystemInit();
+#ifdef MOBILE_CONSOLE
+	if (_logToFile) {
+		_openLogFile();
+	}
+#endif
 
 	// The config blob has to be in place before the driver is initialized,
 	// since starting the adapter is what parses it; and so has the setup
@@ -486,7 +655,7 @@ static void _noteRelayReports(struct mGUIRunner* runner) {
 	_logPrintf("<mGBA> relay: %s", gb->auth.last);
 }
 
-#if defined(__3DS__) || defined(PSP2)
+#ifdef MOBILE_CONSOLE
 // The radio's address is not always there to be read the moment the network
 // stack comes up: the console associates with its access point in its own
 // time, and the first session after a boot asks before it has. The library
@@ -509,7 +678,7 @@ static void _announceIdentity(struct mGUIRunner* runner) {
 
 void mGUIMobileAdapterPoll(struct mGUIRunner* runner) {
 	if (runner->mobile && runner->mobile->attached) {
-#if defined(__3DS__) || defined(PSP2)
+#ifdef MOBILE_CONSOLE
 		_announceIdentity(runner);
 #endif
 		_noteRelayReports(runner);
@@ -594,6 +763,9 @@ void mGUIMobileAdapterDetach(struct mGUIRunner* runner) {
 
 	_saveConfig(m);
 	m->attached = false;
+#ifdef MOBILE_CONSOLE
+	_closeLogFile();
+#endif
 	SocketSubsystemDeinit();
 }
 
@@ -702,6 +874,9 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 
 	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_SHOW_LOG)->state = _showLog;
 	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_TRACE)->state = _traceSockets;
+#ifdef MOBILE_CONSOLE
+	GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_LOG_FILE)->state = _logToFile;
+#endif
 
 	if (!adapter) {
 		strlcpy(text->status, "Adapter not running", sizeof(text->status));
@@ -792,6 +967,15 @@ static void _applyToggles(struct mGUIRunner* runner, struct GUIMenu* menu) {
 		_logNetworkState();
 	}
 	_traceSockets = trace;
+#ifdef MOBILE_CONSOLE
+	// Takes effect at once, so a failure can be chased without a new session.
+	_logToFile = GUIMenuItemListGetPointer(&menu->items, MOBILE_ITEM_LOG_FILE)->state;
+	if (_logToFile && runner->mobile && runner->mobile->attached) {
+		_openLogFile();
+	} else if (!_logToFile) {
+		_closeLogFile();
+	}
+#endif
 	if (runner->mobileEnabled && runner->core) {
 		_attach(runner);
 	}
@@ -938,6 +1122,14 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Trace sockets",
 		.data = GUI_V_U(MOBILE_ITEM_TRACE),
+		.validStates = (const char*[]) { "Off", "On" },
+		.nStates = 2
+	};
+	// Items are looked up by their place in this list, so this one is always
+	// appended, even where it does nothing.
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Log to mobile.log",
+		.data = GUI_V_U(MOBILE_ITEM_LOG_FILE),
 		.validStates = (const char*[]) { "Off", "On" },
 		.nStates = 2
 	};
