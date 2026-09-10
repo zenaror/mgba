@@ -304,6 +304,22 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       },
       "0"
    },
+#ifdef USE_LIBMOBILE
+   {
+      "mgba_mobile_adapter",
+      "Mobile Adapter GB",
+      NULL,
+      "Plugs a Mobile Adapter GB into the link port, for games that connect to the Mobile System GB service. Its settings come from 'mobile_config.bin' and 'magb_config.ini' in the frontend's system directory (the same folder as the BIOS files); the ini is created with every setting commented out the first time the adapter is switched on. The pairing code that identifies this device on the service's site is shown when the adapter comes on.",
+      NULL,
+      "input",
+      {
+         { "disabled", NULL },
+         { "enabled",  NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+#endif
    { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL },
 };
 

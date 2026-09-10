@@ -26,6 +26,7 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
+#include "libretro-mobile.h"
 #include "libretro_core_options.h"
 
 #define GB_SAMPLES 512
@@ -408,7 +409,9 @@ void retro_get_system_info(struct retro_system_info* info) {
 	info->valid_extensions = "gba";
 #endif
 	info->library_version = projectVersion;
-	info->library_name = projectName;
+	// The name the frontend lists the core under, and keys its per-core
+	// settings by; the fork's own, so it sits beside the official core.
+	info->library_name = projectDisplayName;
 	info->block_extract = false;
 }
 
@@ -500,6 +503,7 @@ void retro_init(void) {
 	}
 	logger.log = GBARetroLog;
 	mLogSetDefaultLogger(&logger);
+	mRetroMobileInit(environCallback);
 
 	stream.videoDimensionsChanged = NULL;
 	stream.postAudioFrame = NULL;
@@ -546,6 +550,10 @@ void retro_run(void) {
 	if (deferredSetup) {
 		_doDeferredSetup();
 	}
+	// Before the frame rather than after: what the adapter changed during the
+	// last frame reaches disk now, and one frame of delay is nothing next to
+	// a session lost to a crash.
+	mRetroMobilePoll(core);
 	uint16_t keys;
 
 	inputPollCallback();
@@ -570,6 +578,8 @@ void retro_run(void) {
 			mCoreConfigSetIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
 			core->reloadConfigOption(core, "frameskip", NULL);
 		}
+
+		mRetroMobileSettingsChanged(core);
 
 #ifdef M_CORE_GB
 		_updateGbPal();
@@ -990,6 +1000,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 	core->reset(core);
 	_setupMaps(core);
+	mRetroMobileAttach(core);
 
 	return true;
 }
@@ -998,6 +1009,7 @@ void retro_unload_game(void) {
 	if (!core) {
 		return;
 	}
+	mRetroMobileDetach(core);
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
