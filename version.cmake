@@ -1,6 +1,14 @@
 if(NOT PROJECT_NAME)
 	set(PROJECT_NAME "mGBA")
 endif()
+# What a person sees — window titles, app names, the core's name in a
+# frontend — as opposed to PROJECT_NAME, which names files and folders and
+# must stay what upstream's is, or every existing config goes missing. This
+# fork says so in its name, so that nobody takes it for the official build
+# or installs it over one.
+if(NOT PROJECT_DISPLAY_NAME)
+	set(PROJECT_DISPLAY_NAME "mGBA (MAGB fork)")
+endif()
 set(LIB_VERSION_MAJOR 0)
 set(LIB_VERSION_MINOR 11)
 set(LIB_VERSION_PATCH 0)
