@@ -57,8 +57,10 @@ vita_create_self(${BINARY_NAME}.self ${BINARY_NAME}.elf)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/template.xml.in ${CMAKE_CURRENT_BINARY_DIR}/template.xml)
 
-vita_create_vpk(${BINARY_NAME}.vpk MGBA00001 ${BINARY_NAME}.self
-                NAME ${PROJECT_NAME}
+# Not upstream's MGBA00001: this fork installs beside the official build,
+# never over it.
+vita_create_vpk(${BINARY_NAME}.vpk MAGB00001 ${BINARY_NAME}.self
+                NAME "${PROJECT_DISPLAY_NAME}"
                 FILE ${CMAKE_CURRENT_SOURCE_DIR}/icon0.png sce_sys/icon0.png
                 FILE ${CMAKE_CURRENT_SOURCE_DIR}/pic0.png sce_sys/pic0.png
                 FILE ${CMAKE_CURRENT_SOURCE_DIR}/bg.png sce_sys/livearea/contents/bg.png
@@ -73,8 +75,8 @@ if(BUILD_PERF)
 	vita_create_self(perf.bin ../${BINARY_NAME}-perf)
 	vita_create_self(perf-main.self perf-main.elf)
 
-	vita_create_vpk(${BINARY_NAME}-perf.vpk MGBA00002 perf-main.self
-	                NAME "${PROJECT_NAME} Perf Tester"
+	vita_create_vpk(${BINARY_NAME}-perf.vpk MAGB00002 perf-main.self
+	                NAME "${PROJECT_DISPLAY_NAME} Perf Tester"
 	                FILE ${CMAKE_CURRENT_BINARY_DIR}/perf.bin perf.bin
 	                FILE ${CMAKE_CURRENT_SOURCE_DIR}/icon0.png sce_sys/icon0.png
 	                FILE ${CMAKE_CURRENT_SOURCE_DIR}/pic0.png sce_sys/pic0.png

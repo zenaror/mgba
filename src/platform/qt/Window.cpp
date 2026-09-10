@@ -1266,11 +1266,11 @@ void Window::updateTitle(float fps) {
 		}
 	}
 	if (title.isNull()) {
-		setWindowTitle(tr("%1 - %2").arg(projectName).arg(projectVersion));
+		setWindowTitle(tr("%1 - %2").arg(projectDisplayName).arg(projectVersion));
 	} else if (fps < 0) {
-		setWindowTitle(tr("%1 - %2 - %3").arg(projectName).arg(title).arg(projectVersion));
+		setWindowTitle(tr("%1 - %2 - %3").arg(projectDisplayName).arg(title).arg(projectVersion));
 	} else {
-		setWindowTitle(tr("%1 - %2 (%3 fps) - %4").arg(projectName).arg(title).arg(fps).arg(projectVersion));
+		setWindowTitle(tr("%1 - %2 (%3 fps) - %4").arg(projectDisplayName).arg(title).arg(fps).arg(projectVersion));
 	}
 }
 

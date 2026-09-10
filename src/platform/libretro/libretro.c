@@ -408,7 +408,9 @@ void retro_get_system_info(struct retro_system_info* info) {
 	info->valid_extensions = "gba";
 #endif
 	info->library_version = projectVersion;
-	info->library_name = projectName;
+	// The name the frontend lists the core under, and keys its per-core
+	// settings by; the fork's own, so it sits beside the official core.
+	info->library_name = projectDisplayName;
 	info->block_extract = false;
 }
 
