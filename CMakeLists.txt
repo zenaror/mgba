@@ -1055,14 +1055,42 @@ endif()
 
 if(BUILD_LIBRETRO)
 	file(GLOB RETRO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/libretro/*.c)
-	add_library(${BINARY_NAME}_libretro SHARED ${CORE_SRC} ${RETRO_SRC} ${CORE_VFS_SRC})
-	add_dependencies(${BINARY_NAME}_libretro ${BINARY_NAME}-version-info)
-	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "__LIBRETRO__;COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};ENABLE_VFS;MINIMAL_CORE=2")
-	target_link_libraries(${BINARY_NAME}_libretro ${OS_LIB})
+	set(RETRO_CORE_SRC ${CORE_SRC})
+	set(RETRO_DEFINES)
+	set(RETRO_LIB ${OS_LIB})
+	# The Windows directory backend needs ENABLE_DIRECTORIES, which the core
+	# is built without; it came in with the rest of the platform's sources.
+	if(WIN32)
+		list(REMOVE_ITEM RETRO_CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/windows/vfs-w32.c)
+	endif()
+	# The core is built without the SIO extras, but the mobile adapter is one
+	# of them, and a frontend that can reach the network may as well have it:
+	# when it is wanted, its sources, its define and its library go in.
+	if(USE_LIBMOBILE)
+		if(M_CORE_GBA)
+			list(APPEND RETRO_CORE_SRC ${GBA_SIO_SRC})
+		endif()
+		if(M_CORE_GB)
+			list(APPEND RETRO_CORE_SRC ${GB_SIO_SRC})
+		endif()
+		list(APPEND RETRO_DEFINES USE_LIBMOBILE)
+		if(TARGET libmobile_static)
+			list(APPEND RETRO_LIB libmobile_static)
+		else()
+			list(APPEND RETRO_LIB ${LIBMOBILE_LIBRARIES})
+		endif()
+	endif()
+	# A frontend keeps one core per file name, so this fork's core has its
+	# own and sits beside the official mgba_libretro rather than over it.
+	set(RETRO_TARGET ${BINARY_NAME}_magb_libretro)
+	add_library(${RETRO_TARGET} SHARED ${RETRO_CORE_SRC} ${RETRO_SRC} ${CORE_VFS_SRC})
+	add_dependencies(${RETRO_TARGET} ${BINARY_NAME}-version-info)
+	set_target_properties(${RETRO_TARGET} PROPERTIES PREFIX "" COMPILE_DEFINITIONS "__LIBRETRO__;COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};ENABLE_VFS;MINIMAL_CORE=2;${RETRO_DEFINES}")
+	target_link_libraries(${RETRO_TARGET} ${RETRO_LIB})
 	if(MSVC)
-		install(TARGETS ${BINARY_NAME}_libretro RUNTIME DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${BINARY_NAME}_libretro)
+		install(TARGETS ${RETRO_TARGET} RUNTIME DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${RETRO_TARGET})
 	else()
-		install(TARGETS ${BINARY_NAME}_libretro LIBRARY DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${BINARY_NAME}_libretro NAMELINK_SKIP)
+		install(TARGETS ${RETRO_TARGET} LIBRARY DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${RETRO_TARGET} NAMELINK_SKIP)
 	endif()
 endif()
 
