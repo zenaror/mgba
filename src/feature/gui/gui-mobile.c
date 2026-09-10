@@ -32,6 +32,16 @@
 #include <3ds/services/soc.h>
 #elif defined(PSP2)
 #include <psp2/net/net.h>
+#elif defined(__SWITCH__)
+#include <switch.h>
+#elif defined(GEKKO)
+#include <network.h>
+#endif
+
+// The ports that are a console rather than a computer: one radio, one user,
+// and a card that is the only place anything can be written down.
+#if defined(__3DS__) || defined(PSP2) || defined(__SWITCH__) || defined(GEKKO)
+#define MOBILE_CONSOLE
 #endif
 
 #define MOBILE_CONFIG_FILE "mobile_config.bin"
@@ -111,11 +121,13 @@ static void _logNetworkState(void) {
 	_logPrintf("<mGBA> network ready");
 }
 
-#if defined(__3DS__) || defined(PSP2)
+#ifdef MOBILE_CONSOLE
 // A console has one radio, and its address is the most stable thing about it:
 // it survives the config being copied, wiped or downloaded again, which is
-// the whole point of naming devices. The library only ever hashes these
-// bytes, so they are handed over exactly as the system reports them.
+// the whole point of naming devices. The Switch does not hand out its
+// address, but does hand out its serial number, which is as stable. The
+// library only ever hashes these bytes, so they are handed over exactly as
+// the system reports them.
 static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
 	UNUSED(user);
 #ifdef __3DS__
@@ -136,13 +148,38 @@ static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
 	}
 	memcpy(data, mac, len);
 	return len;
-#else
+#elif defined(PSP2)
 	SceNetEtherAddr addr;
 	if (size < sizeof(addr.data) || sceNetGetMacAddress(&addr, 0) < 0) {
 		return 0;
 	}
 	memcpy(data, addr.data, sizeof(addr.data));
 	return sizeof(addr.data);
+#elif defined(__SWITCH__)
+	// The service is opened and closed around the one call: nothing else
+	// here needs it, and it costs nothing to ask once.
+	SetSysSerialNumber serial;
+	if (R_FAILED(setsysInitialize())) {
+		return 0;
+	}
+	Result res = setsysGetSerialNumber(&serial);
+	setsysExit();
+	if (R_FAILED(res)) {
+		return 0;
+	}
+	size_t len = strnlen(serial.number, sizeof(serial.number));
+	if (!len || size < len) {
+		return 0;
+	}
+	memcpy(data, serial.number, len);
+	return len;
+#else
+	unsigned char mac[6];
+	if (size < sizeof(mac) || net_get_mac_address(mac) < 0) {
+		return 0;
+	}
+	memcpy(data, mac, sizeof(mac));
+	return sizeof(mac);
 #endif
 }
 #endif
@@ -392,7 +429,7 @@ static void _setup(struct MobileAdapterGB* gb) {
 	mobile_def_sock_open(adapter, _loggingSockOpen);
 	mobile_def_sock_send(adapter, _loggingSockSend);
 	mobile_def_sock_recv(adapter, _loggingSockRecv);
-#if defined(__3DS__) || defined(PSP2)
+#ifdef MOBILE_CONSOLE
 	// Same name as the core registers with, since it is part of the id.
 	mobile_def_device_identity(adapter, _deviceIdentity, "mgba");
 #endif
@@ -486,7 +523,7 @@ static void _noteRelayReports(struct mGUIRunner* runner) {
 	_logPrintf("<mGBA> relay: %s", gb->auth.last);
 }
 
-#if defined(__3DS__) || defined(PSP2)
+#ifdef MOBILE_CONSOLE
 // The radio's address is not always there to be read the moment the network
 // stack comes up: the console associates with its access point in its own
 // time, and the first session after a boot asks before it has. The library
@@ -509,7 +546,7 @@ static void _announceIdentity(struct mGUIRunner* runner) {
 
 void mGUIMobileAdapterPoll(struct mGUIRunner* runner) {
 	if (runner->mobile && runner->mobile->attached) {
-#if defined(__3DS__) || defined(PSP2)
+#ifdef MOBILE_CONSOLE
 		_announceIdentity(runner);
 #endif
 		_noteRelayReports(runner);
