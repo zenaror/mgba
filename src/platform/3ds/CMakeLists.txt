@@ -59,7 +59,7 @@ set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DE
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${M_LIBRARY} ${OS_LIB})
 
 add_custom_command(OUTPUT ${BINARY_NAME}.smdh
-                   COMMAND ${BANNERTOOL} makesmdh -s "${PROJECT_NAME}" -l "${SUMMARY}" -p "endrift" -i ${PROJECT_SOURCE_DIR}/res/mgba-48.png -o ${BINARY_NAME}.smdh
+                   COMMAND ${BANNERTOOL} makesmdh -s "${PROJECT_DISPLAY_NAME}" -l "${SUMMARY}" -p "endrift" -i ${PROJECT_SOURCE_DIR}/res/mgba-48.png -o ${BINARY_NAME}.smdh
                    DEPENDS ${PROJECT_SOURCE_DIR}/res/mgba-48.png)
 
 add_custom_command(OUTPUT ${BINARY_NAME}.xml
