@@ -1,0 +1,61 @@
+# The one build this project cannot make on its own machines: a macOS
+# application needs a Mac. GitHub lends one to a public repository, so the
+# build runs there, from the same tree and the same options as everywhere
+# else, and leaves the bundle as an artifact to download from the run.
+name: macOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/full_server
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macos-13 was the last Intel image of its generation and its queue
+          # no longer moves; this is the Intel image GitHub keeps.
+          - runner: macos-15-intel
+            arch: x86_64
+          - runner: macos-14
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The version string is read from git.
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: brew install cmake ffmpeg libzip qt@5 sdl2 libedit lua pkg-config
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DDISTBUILD=ON \
+            -DCMAKE_PREFIX_PATH="$(brew --prefix qt@5)" \
+            -DBUILD_SDL=OFF -DUSE_DISCORD_RPC=OFF
+
+      - name: Build
+        run: cmake --build build -j "$(sysctl -n hw.ncpu)"
+
+      - name: Bundle
+        run: |
+          cd build
+          make install DESTDIR="$PWD/install"
+          APP="$(find install -name '*.app' -maxdepth 6 | head -1)"
+          test -n "$APP"
+          echo "Bundle: $APP"
+          # For the run's log only; a checkout may be detached, in which case
+          # the version string carries no branch, and that is not a failure.
+          echo "Version: $(strings "$APP/Contents/MacOS/"* | grep -m1 -E '0\.11' || echo unknown)"
+          ditto -c -k --keepParent "$APP" "mGBA-MAGB-macOS-${{ matrix.arch }}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mGBA-MAGB-macOS-${{ matrix.arch }}
+          path: build/mGBA-MAGB-macOS-${{ matrix.arch }}.zip
