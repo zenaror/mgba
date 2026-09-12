@@ -288,10 +288,13 @@ belong to a game.
 
 Two things worth knowing before calling it broken:
 
-- **Nothing is reported until an account has a key.** The key arrives through
-  the library's own POP3 bootstrap, so a fresh account has to log in once with
-  a real user and password before any report is ever sent. Until then this is
-  silent by design, not failing.
+- **Nothing is reported until an account has a key.** The key used to arrive
+  through the library's own POP3 bootstrap, on a first login with a real user
+  and password. That bootstrap is gone: mail authenticates with APOP, whose
+  secret is the key itself, and the server no longer accepts a password at
+  all, so the key can no longer be fetched by logging in. It now comes only
+  from a mobile_config.bin downloaded from the site. Until an account has one,
+  this is silent by design, not failing.
 - **Quitting without the game ending its session skips the closing report.**
   The server's own timeout covers that case; nothing here tries to catch it.
   The library says so in the log when it happens, which is the only trace that
