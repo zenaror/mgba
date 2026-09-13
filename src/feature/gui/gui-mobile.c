@@ -32,6 +32,7 @@
 #include <3ds/services/soc.h>
 #elif defined(PSP2)
 #include <psp2/net/net.h>
+#include <psp2/net/netctl.h>
 #elif defined(__SWITCH__)
 #include <switch.h>
 #elif defined(GEKKO)
@@ -145,6 +146,24 @@ static void _logNetworkState(void) {
 	uint32_t ip = gethostid();
 	const uint8_t* octet = (const uint8_t*) &ip;
 	_logPrintf("<mGBA> console is %u.%u.%u.%u", octet[0], octet[1], octet[2], octet[3]);
+#elif defined(PSP2)
+	// Nothing else in this port brings netctl up, so it is opened around the
+	// one call -- and closed again only if opening it is what started it.
+	bool ctlOpened = sceNetCtlInit() >= 0;
+	SceNetCtlInfo info;
+	int res = sceNetCtlInetGetInfo(SCE_NETCTL_INFO_GET_IP_ADDRESS, &info);
+	if (ctlOpened) {
+		sceNetCtlTerm();
+	}
+	if (res < 0) {
+		// Said rather than skipped: an address missing from this line would
+		// read as one that is fine. Never a made-up number, which would send
+		// someone after the network when the fault is somewhere else.
+		_logPrintf("<mGBA> console has no address (%08X)", (unsigned) res);
+	} else {
+		info.ip_address[sizeof(info.ip_address) - 1] = '\0';
+		_logPrintf("<mGBA> console is %s", info.ip_address);
+	}
 #endif
 	Socket test = SocketCreate(false, SOCK_DGRAM, IPPROTO_UDP);
 	if (SOCKET_FAILED(test)) {
