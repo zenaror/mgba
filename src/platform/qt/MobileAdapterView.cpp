@@ -289,10 +289,21 @@ void MobileAdapterView::getConfig() {
 	// Not a setting, but it belongs with the status: it is what a person
 	// matches this computer against the account's device list by.
 	char pairing[MOBILE_PAIRING_CODE_LEN];
-	if (MobileAdapterGBPairingCode(adapterGB(), pairing, sizeof(pairing))) {
-		m_ui.pairingCode->setText(QString::fromLatin1(pairing));
-	} else {
+	if (!MobileAdapterGBPairingCode(adapterGB(), pairing, sizeof(pairing))) {
+		// No id for this computer at all, which is a different thing from
+		// having one and no key: keep the two visibly apart.
 		m_ui.pairingCode->setText(tr("Unavailable"));
+		m_ui.pairingCode->setToolTip(tr("Identifies this computer in the account's device list"));
+	} else if (!MobileAdapterGBHasAuthKey(adapterGB())) {
+		// The code is derived from the id alone, so it reads the same with or
+		// without a key. Unmarked, it says the adapter is ready when no mail
+		// can be fetched at all.
+		m_ui.pairingCode->setText(tr("%1 (no mail key)").arg(QString::fromLatin1(pairing)));
+		m_ui.pairingCode->setToolTip(tr("No mail key yet - download mobile_config.bin from your "
+		                                "account. Import it here; mail will not work until then."));
+	} else {
+		m_ui.pairingCode->setText(QString::fromLatin1(pairing));
+		m_ui.pairingCode->setToolTip(tr("Identifies this computer in the account's device list"));
 	}
 
 	enum mobile_adapter_device device;

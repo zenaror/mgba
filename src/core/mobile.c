@@ -265,6 +265,24 @@ bool MobileAdapterGBPairingCode(struct MobileAdapterGB* mobile, char* out, size_
 	return true;
 }
 
+bool MobileAdapterGBHasAuthKey(struct MobileAdapterGB* mobile) {
+	if (!mobile->adapter) {
+		return false;
+	}
+	// The library hands the key out rather than answering a question about
+	// it, so take it into a buffer that dies here and keep only the answer.
+	// Wiped through a volatile pointer: explicit_bzero() is not there on
+	// every toolchain this builds with, and a plain memset() on a buffer
+	// nothing reads again is exactly what a compiler is allowed to drop.
+	unsigned char key[MOBILE_DEVICE_AUTH_KEY_SIZE];
+	bool has = mobile_config_get_device_auth_key(mobile->adapter, key);
+	volatile unsigned char* wipe = key;
+	for (size_t i = 0; i < sizeof(key); ++i) {
+		wipe[i] = 0;
+	}
+	return has;
+}
+
 struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile) {
 	struct mobile_adapter* adapter = mobile_new(mobile);
 	if (!adapter) {

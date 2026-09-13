@@ -164,6 +164,16 @@ static void _saveConfig(struct MobileAdapterGB* gb) {
 	gb->configDirty = false;
 }
 
+static bool _identityUsable(void) {
+	unsigned i;
+	for (i = 0; i < MOBILE_IDENTITY_SIZE; ++i) {
+		if (_identity[i]) {
+			return true;
+		}
+	}
+	return false;
+}
+
 static void _loadIdentity(void) {
 	char path[PATH_MAX];
 	_path(path, sizeof(path), MOBILE_IDENTITY_FILE);
@@ -171,6 +181,15 @@ static void _loadIdentity(void) {
 	if (vf) {
 		_hasIdentity = vf->read(vf, _identity, MOBILE_IDENTITY_SIZE) == MOBILE_IDENTITY_SIZE;
 		vf->close(vf);
+		// The right length is not enough. A file of zeros -- a write cut
+		// short, a filesystem that padded it -- would be taken as a perfectly
+		// good identity, and every install that ever hit it would derive the
+		// same device id and share one entry on the account. Draw again
+		// instead, which costs a new device and not a merged one.
+		if (_hasIdentity && !_identityUsable()) {
+			mLOG(RETRO_MOBILE, WARN, "%s is all zeroes; drawing a new identity", path);
+			_hasIdentity = false;
+		}
 		if (_hasIdentity) {
 			return;
 		}
@@ -183,6 +202,7 @@ static void _loadIdentity(void) {
 	if (random) {
 		_hasIdentity = random->read(random, _identity, MOBILE_IDENTITY_SIZE) == MOBILE_IDENTITY_SIZE;
 		random->close(random);
+		_hasIdentity = _hasIdentity && _identityUsable();
 	}
 	if (!_hasIdentity) {
 		uint64_t seed = (uint64_t) time(NULL) ^ ((uint64_t) (uintptr_t) &seed << 16) ^ (uint64_t) clock();
@@ -594,12 +614,24 @@ void mRetroMobileAttach(struct mCore* core) {
 
 	char text[80];
 	char code[MOBILE_PAIRING_CODE_LEN];
-	if (MobileAdapterGBPairingCode(gb, code, sizeof(code))) {
+	bool haveCode = MobileAdapterGBPairingCode(gb, code, sizeof(code));
+	if (haveCode) {
 		snprintf(text, sizeof(text), "Mobile Adapter GB on, pairing code %s", code);
 	} else {
 		strlcpy(text, "Mobile Adapter GB on", sizeof(text));
 	}
 	_message(text);
+
+	// The pairing code is derived from the device id alone, so it reads the
+	// same whether or not mail can authenticate. Without this, a core with no
+	// key announces itself as ready and then fetches nothing.
+	if (haveCode && !MobileAdapterGBHasAuthKey(gb)) {
+		_message("No mail key yet - download mobile_config.bin from your account. "
+		         "Put it in RetroArch's system folder; mail will not work until then.");
+		mLOG(RETRO_MOBILE, WARN,
+		     "No mail key yet - download mobile_config.bin from your account. "
+		     "Put it in RetroArch's system folder; mail will not work until then.");
+	}
 }
 
 void mRetroMobileDetach(struct mCore* core) {
