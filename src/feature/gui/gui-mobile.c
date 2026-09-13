@@ -169,6 +169,44 @@ static void _logNetworkState(void) {
 // address, but does hand out its serial number, which is as stable. The
 // library only ever hashes these bytes, so they are handed over exactly as
 // the system reports them.
+// Takes what a system service handed back and decides whether it is an
+// identity at all. Every source goes through here, because this class of
+// failure is silent: the 3DS returned success and nothing usable when its
+// MAC was asked for with the wrong buffer size, and the only symptom was a
+// console that quietly stopped having a name -- which surfaced three layers
+// away, as a device-auth report with no device in it.
+//
+// All-zero is rejected as hard as empty, and matters more: a console with no
+// identity is merely anonymous, while every console failing the same way and
+// handing back zeros would derive the same id and become one shared device
+// on the account. Silence would make that look like it was working.
+static unsigned _identityAccept(const char* what, const void* bytes, unsigned len, void* data, unsigned size) {
+	const unsigned char* raw = bytes;
+	bool anySet = false;
+	unsigned i;
+	for (i = 0; i < len; ++i) {
+		if (raw[i]) {
+			anySet = true;
+			break;
+		}
+	}
+	if (!len || len > size || !anySet) {
+		// The library asks again at every use until it works, so say it once
+		// per distinct outcome rather than on every attempt.
+		static unsigned lastLen = ~0u;
+		static bool lastAnySet;
+		if (len != lastLen || anySet != lastAnySet) {
+			_logPrintf("<mGBA> no device identity from %s: %u bytes%s", what, len,
+			           len && !anySet ? ", all zero" : "");
+			lastLen = len;
+			lastAnySet = anySet;
+		}
+		return 0;
+	}
+	memcpy(data, bytes, len);
+	return len;
+}
+
 static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
 	UNUSED(user);
 #ifdef __3DS__
@@ -177,50 +215,49 @@ static unsigned _deviceIdentity(void* user, void* data, unsigned size) {
 	unsigned char mac[6];
 	socklen_t len = sizeof(mac);
 	int res = SOCU_GetNetworkOpt(SOL_CONFIG, NETOPT_MAC_ADDRESS, mac, &len);
-	if (res != 0 || len == 0 || len > sizeof(mac) || size < len) {
-		// The library asks again at every use until it works, so only a
-		// change is news.
+	if (res != 0) {
 		static int lastRes;
 		if (res != lastRes) {
-			_logPrintf("<mGBA> no MAC address: %08X, %u bytes", (unsigned) res, (unsigned) len);
+			_logPrintf("<mGBA> no MAC address: %08X", (unsigned) res);
 			lastRes = res;
 		}
 		return 0;
 	}
-	memcpy(data, mac, len);
-	return len;
+	if (len > sizeof(mac)) {
+		len = sizeof(mac);
+	}
+	return _identityAccept("the MAC address", mac, len, data, size);
 #elif defined(PSP2)
 	SceNetEtherAddr addr;
-	if (size < sizeof(addr.data) || sceNetGetMacAddress(&addr, 0) < 0) {
-		return 0;
+	if (sceNetGetMacAddress(&addr, 0) < 0) {
+		return _identityAccept("the MAC address", addr.data, 0, data, size);
 	}
-	memcpy(data, addr.data, sizeof(addr.data));
-	return sizeof(addr.data);
+	return _identityAccept("the MAC address", addr.data, sizeof(addr.data), data, size);
 #elif defined(__SWITCH__)
 	// The service is opened and closed around the one call: nothing else
 	// here needs it, and it costs nothing to ask once.
 	SetSysSerialNumber serial;
 	if (R_FAILED(setsysInitialize())) {
-		return 0;
+		return _identityAccept("the serial number", serial.number, 0, data, size);
 	}
 	Result res = setsysGetSerialNumber(&serial);
 	setsysExit();
 	if (R_FAILED(res)) {
-		return 0;
+		return _identityAccept("the serial number", serial.number, 0, data, size);
 	}
-	size_t len = strnlen(serial.number, sizeof(serial.number));
-	if (!len || size < len) {
-		return 0;
-	}
-	memcpy(data, serial.number, len);
-	return len;
+	// A blank serial is what a console with nothing provisioned hands back,
+	// and it is exactly the case that must not pass silently.
+	return _identityAccept("the serial number", serial.number,
+	                       strnlen(serial.number, sizeof(serial.number)), data, size);
 #else
+	// libogc needs its network up before it knows the address; asked too
+	// early it answers with zeros rather than an error.
 	unsigned char mac[6];
-	if (size < sizeof(mac) || net_get_mac_address(mac) < 0) {
-		return 0;
+	memset(mac, 0, sizeof(mac));
+	if (net_get_mac_address(mac) < 0) {
+		return _identityAccept("the Wi-Fi address", mac, 0, data, size);
 	}
-	memcpy(data, mac, sizeof(mac));
-	return sizeof(mac);
+	return _identityAccept("the Wi-Fi address", mac, sizeof(mac), data, size);
 #endif
 }
 #endif
@@ -449,7 +486,8 @@ enum mGUIMobileItem {
 struct mGUIMobileText {
 	char status[64];
 	char reports[64];
-	char pairing[16];
+	// Wide enough for the code plus the note that says it means nothing yet.
+	char pairing[32];
 	char dns1[ADDR_TEXT_LEN];
 	char dns2[ADDR_TEXT_LEN];
 	char p2pPort[8];
@@ -669,8 +707,17 @@ static void _announceIdentity(struct mGUIRunner* runner) {
 		return;
 	}
 	char code[MOBILE_PAIRING_CODE_LEN];
-	if (MobileAdapterGBPairingCode(_adapter(runner->mobile), code, sizeof(code))) {
+	struct MobileAdapterGB* gb = _adapter(runner->mobile);
+	if (MobileAdapterGBPairingCode(gb, code, sizeof(code))) {
 		_logPrintf("<mGBA> this device is %s", code);
+		// The code comes from the device id alone, so it looks the same
+		// with or without a key. Say so here, or a console with no key
+		// looks ready and then fetches nothing.
+		if (!MobileAdapterGBHasAuthKey(gb)) {
+			_logPrintf("<mGBA> No mail key yet - download mobile_config.bin from your "
+			           "account. Put it in the mGBA folder on the SD card; mail will "
+			           "not work until then.");
+		}
 		announced = true;
 	}
 }
@@ -712,9 +759,11 @@ void mGUIMobileAdapterDrawLog(struct mGUIRunner* runner) {
 	// The pairing code goes on the same line so it is in view whenever the
 	// log is, which is where someone matching this console against the
 	// account's device list will be looking.
-	char pairing[MOBILE_PAIRING_CODE_LEN];
+	char pairing[MOBILE_PAIRING_CODE_LEN + 16];
 	if (!gb || !MobileAdapterGBPairingCode(gb, pairing, sizeof(pairing))) {
 		strlcpy(pairing, "-", sizeof(pairing));
+	} else if (!MobileAdapterGBHasAuthKey(gb)) {
+		strlcat(pairing, " no mail key", sizeof(pairing));
 	}
 	const char* state = "waiting for game";
 	if (gb && gb->adapter && mobile_device_auth_block_state(gb->adapter) == MOBILE_DEVICE_AUTH_BLOCK_YES) {
@@ -915,6 +964,10 @@ static void _refresh(struct mGUIRunner* runner, struct GUIMenu* menu, struct mGU
 
 	if (!MobileAdapterGBPairingCode(gb, text->pairing, sizeof(text->pairing))) {
 		strlcpy(text->pairing, "unavailable", sizeof(text->pairing));
+	} else if (!MobileAdapterGBHasAuthKey(gb)) {
+		// Distinct from "unavailable" on purpose: there the device has no id
+		// at all, here it has one and still cannot fetch mail.
+		strlcat(text->pairing, " (no mail key)", sizeof(text->pairing));
 	}
 
 	enum mobile_adapter_device device;

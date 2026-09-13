@@ -35,9 +35,11 @@ enum MobileAdapterAuthState {
 
 struct MobileAdapterAuthEvent {
 	// A query asks the server where this device's counter stands instead of
-	// reporting anything; it carries no counter, and its reply goes back to
-	// the library, which is the only thing that can tell a real answer from
-	// a forged one. Then action is meaningless.
+	// reporting anything. It still carries a counter, and has to: that value
+	// is the nonce the server echoes back, which is what makes the reply
+	// fresh rather than a recording of an older one. The reply goes to the
+	// library, the only thing that can tell a real answer from a forged one.
+	// Then action is meaningless.
 	bool query;
 	enum mobile_device_auth_action action;
 	unsigned char pppId[MOBILE_MAX_NUMBER_SIZE];
@@ -118,6 +120,13 @@ struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB* mobile);
 // same characters the server does. False when this device has no id, in
 // which case out is left empty.
 bool MobileAdapterGBPairingCode(struct MobileAdapterGB* mobile, char* out, size_t size);
+
+// Whether this device has the key mail authenticates with. The pairing code
+// above is derived from the device's id alone and says nothing about it, so
+// a device with no key shows a perfectly ordinary code and then fetches no
+// mail at all. Frontends ask this to tell those two apart. The key itself
+// never leaves here.
+bool MobileAdapterGBHasAuthKey(struct MobileAdapterGB* mobile);
 
 // Wires the side channel up to an adapter. Called for you when one is made.
 void MobileAdapterAuthInit(struct MobileAdapterGB* mobile);
