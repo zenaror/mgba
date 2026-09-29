@@ -1,8 +1,8 @@
 # Mobile Adapter GB on the 3DS
 
-Notes from porting mGBA's Mobile Adapter GB support to the Nintendo 3DS, on
-branch `feature/3ds-magb`. Written mostly for whoever picks this up next,
-including the bugs that cost the most time and why they hid for so long.
+Notes from porting mGBA's Mobile Adapter GB support to the Nintendo 3DS.
+Written mostly for whoever picks this up next, including the bugs that cost the
+most time and why they hid for so long.
 
 Status: **working on hardware.** A game reaches the DNS server, resolves a
 name, and connects. Tested on a New 3DS XL against a local REON server.
@@ -277,7 +277,7 @@ reset. Both other implementations of this hit that and fixed it the same way.
 Finding the server is the library's business, not this file's. It resolves the
 name against the same DNS a game's own lookups go through, on whatever port
 that is configured with, and there is deliberately no way to point it elsewhere
-from here. An earlier version of this did its own lookup; that is gone.
+from here.
 
 A failed report is dropped rather than retried: nothing in the emulated session
 depends on it, and the game reopening mail produces another.
@@ -288,13 +288,11 @@ belong to a game.
 
 Two things worth knowing before calling it broken:
 
-- **Nothing is reported until an account has a key.** The key used to arrive
-  through the library's own POP3 bootstrap, on a first login with a real user
-  and password. That bootstrap is gone: mail authenticates with APOP, whose
-  secret is the key itself, and the server no longer accepts a password at
-  all, so the key can no longer be fetched by logging in. It now comes only
-  from a mobile_config.bin downloaded from the site. Until an account has one,
-  this is silent by design, not failing.
+- **Nothing is reported until an account has a key.** The key comes from a
+  mobile_config.bin downloaded from the site, and only from there: mail
+  authenticates with APOP, whose secret is the key itself, and the server
+  accepts no password, so logging in cannot provision one. Until an account has
+  the key, this is silent by design, not failing.
 - **Quitting without the game ending its session skips the closing report.**
   The server's own timeout covers that case; nothing here tries to catch it.
   The library says so in the log when it happens, which is the only trace that
