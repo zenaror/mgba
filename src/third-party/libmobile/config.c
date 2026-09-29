@@ -291,8 +291,9 @@ bool mobile_config_get_device_auth_key(struct mobile_adapter *adapter, unsigned 
     return true;
 }
 
-// Provisions a new device_auth_key (e.g. one just received live from
-//   XPROVISION), replacing any existing one. The counter is reset to 0,
+// Provisions a new device_auth_key (e.g. one unpacked from a downloaded
+//   config.bin), replacing any existing one. The key is also the APOP
+//   secret for POP3 login (see pop3_auth.h). The counter is reset to 0,
 //   since it's meaningless against a key the server has never seen a
 //   counter value for yet.
 void mobile_config_set_device_auth_key(struct mobile_adapter *adapter, const unsigned char *key)

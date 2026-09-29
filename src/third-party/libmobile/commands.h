@@ -76,8 +76,8 @@ struct mobile_adapter_commands {
     unsigned char ppp_id_size;
 
     // Tracks which of the connections above are known to be a POP3
-    //   connection (destination port 110), for the XAPOP/XPROVISION
-    //   interception in pop3_auth.h -- unrelated to device-auth below.
+    //   connection (destination port 110), for the APOP interception in
+    //   pop3_auth.h -- unrelated to device-auth below.
     bool mail_conn[MOBILE_MAX_CONNECTIONS];
 
     // Whether the device-auth authorize HTTP side channel has already
@@ -88,8 +88,9 @@ struct mobile_adapter_commands {
     //   of which mail protocol (or order) the game actually uses.
     bool mail_authorized;
 
-    // Line-oriented USER/PASS interception state for the mail_conn
-    //   connection above, see pop3_auth.h.
+    // Line-oriented POP3 login interception state (APOP in place of the
+    //   game's USER/PASS) for the mail_conn connection above, see
+    //   pop3_auth.h.
     struct mobile_pop3_auth pop3;
 };
 
