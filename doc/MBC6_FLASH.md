@@ -112,3 +112,68 @@ The flash write-protect input does not protect the whole chip: Iceboy documents
 that it blocks programming and erase of sector 0 and the hidden map region,
 while sectors 1-7 remain writable and erasable. The emulator's write-enable
 checks intentionally preserve that behavior.
+
+## Net de Get runtime checks (2026-10-06)
+
+A fresh Linux Qt/SDL/shared-library build of commit `4c8066be4` passed the
+complete 33-target CTest suite with `QT_QPA_PLATFORM=offscreen` (including
+`gb-mbc`). The initial run without a display failed to initialize two Qt
+tests; both passed with the offscreen backend. The default MBC6 Test ROM
+reported 15 PASS, 0 FAIL,
+0 SKIP and 5 INFO; the disposable destructive fixture with the TD6 marker
+reported 22 PASS, 0 FAIL, 0 SKIP and 10 INFO. These are emulator results.
+
+The original Net de Get writer also completed four 4 KiB fixture writes:
+selector 0 at `$4000`, selector 1 at `$5000`, and selector 127 at both
+`$4000` and `$5000`. Each completed 32 program operations, matched all target
+bytes in memory and on disk, and matched after reopening a fresh core.
+Bytes outside the target, including hidden storage, remained unchanged.
+Those tests enter the writer with synthetic WRAM input; they do not prove
+the preceding network acquisition path.
+
+The independent Net de Get reconstruction project provides an original
+PAD TEST homebrew fixture and `fixtures/input-tester/run_natural.sh`.
+With an isolated SRAM catalog and flash sidecar, joypad input alone opened
+the fixture from BOX2. All eight held/released masks and press counters
+passed, and the complete flash sidecar remained byte-identical. Start+Select
+returned to the host; the host moved the catalog entry to BOX1, where the
+fixture reopened both in the same core and after reopening the save.
+The tested 8 KiB payload SHA-256 is
+`0e42875ef2569905d056f895ab5d6998e4f17709875dd27f13cbd9b20c2158b0`.
+
+Two fixture errors were exposed by natural execution: the header must include
+the entry offset word at bytes 3–4, and minigame state must not overwrite host
+WRAM at `$C700`. The corrected fixture uses bank 1 `$D800`. A repeated sample
+at the host's VBlank wait PC does not establish a freeze; input and the actual
+catalog location must be checked.
+
+Natural execution with a disposable Mobile GB Adapter configuration reached
+the local REON HTTP menu and authenticated catalog. Test instrumentation
+resolves DNS locally and remaps port 80 to loopback port 8088. No personal
+adapter configuration is used. The SDK performs GET followed by an empty
+authenticated POST to the same `RomList.cgb` URL. A GET-only restriction in
+the local server harness caused error `32-404`; the server project corrected
+the harness to use its existing handler for POST.
+
+The natural integration run then exposed a catalog encoder error. The original
+ROM reads blocks at record offset `$04`, category at `$05`, ID at `$06`,
+levels at `$0C`, hidden requirements at `$10`/`$12`, and title length at `$14`.
+Four leading reserved bytes were missing from the server's custom record.
+After the server project corrected these offsets, PAD TEST appeared naturally.
+The tested GET and POST catalog bodies were identical (434 bytes, SHA-256
+`8f072d41c39146380053abe0281835b4a639511a523cd5963bc67ef222aec043`).
+
+The original ROM downloaded the Maker mode-5 body (1,014 bytes, SHA-256
+`a8f6e181ddedf0f5d0b1b8e164d9e41edcddaadd14cf0c9f4730ede455560a24`).
+Starting from an erased flash fixture, it wrote the payload only after BOX2
+was selected, then confirmed storage completion. The resulting first 8 KiB
+matched the expected payload byte-for-byte; the remaining array, hidden map
+and protection metadata were unchanged. The complete sidecar SHA-256 was
+`cf6d32c72339ee34bc0029142a7cf0a8e7b35935544302a779a0a52c10bc511b`.
+Joypad input alone then launched the downloaded game from BOX2, validated all
+eight controls, exited, and reopened it from BOX1 with counters reset. A new
+core reopened the resulting save, launched the game, accepted input and exited
+without changing the flash sidecar. No CPU registers or PC were redirected in
+this acquisition/launch sequence. This validates the complete local fixture
+path; it does not establish production REON deployment or arbitrary payload
+compatibility.
