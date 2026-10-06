@@ -100,6 +100,14 @@ protection operation, the ready-status protected bit was set (`82`). These
 checks validate mGBA state serialization with fixture contents, not hardware
 behavior.
 
+Reset behavior also passed a focused array-mode harness. `$F0` exited JEDEC ID
+and hidden-map reads when written through either mapped window, after which the
+independently selected flash banks returned their original `5A/A5` array
+sentinels. A separate pending-program case wrote `$F0` through the opposite
+window while busy; the operation remained busy and completed normally. This
+matches Iceboy's description that `$F0` exits command/status modes and has no
+effect while an operation is still in progress.
+
 The flash write-protect input does not protect the whole chip: Iceboy documents
 that it blocks programming and erase of sector 0 and the hidden map region,
 while sectors 1-7 remain writable and erasable. The emulator's write-enable
