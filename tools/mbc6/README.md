@@ -30,6 +30,32 @@ Run from this repository:
 python3 tools/mbc6/run_netdeget_local.py ROM BUILD EMPTY_SAV EMPTY_FLASH PAYLOAD
 ```
 
+For another diagnostic payload with the same D800 ABI, G001 ID, 8 KiB block
+and menu route, supply its independently verified hashes explicitly:
+
+```sh
+python3 tools/mbc6/run_netdeget_local.py ROM BUILD EMPTY_SAV EMPTY_FLASH PAYLOAD \
+  --payload-sha256 PAYLOAD_SHA --catalog-sha256 CATALOG_SHA --body-sha256 BODY_SHA
+```
+
+The defaults retain the original PAD TEST regression. Overrides change only
+the expected byte identities; input, exit, relaunch, fresh-core persistence,
+ROM identity and unchanged chip-region checks still apply. The example in C
+from the Maker's GBDK compiler integration uses this diagnostic ABI; these
+options do not make the macro a generic gameplay test for arbitrary games.
+
+On 2026-10-06 the Maker's first C PAD TEST, compiled with GBDK 4.5.0 and
+its own host-compatible startup (without the normal CRT/libraries), passed
+this complete natural download/gameplay/fresh-core sequence using mGBA
+`358230c82`. The payload, HTTP body and catalog identities were respectively:
+
+- 8,192 bytes: `ab49fffb02e1b918d442a876508ed83c75ffc32fbbfa482cb8a3b9e46d70381c`.
+- 1,114 bytes: `f46337ae8627482742511c5d508aaa0ac66930de93c9fe2814fd0c00a02324ba`.
+- 437 bytes: `d5323f206466632a447ceb68168175af5d8c6de66e441c9a58f7868c65e679e6`.
+
+This demonstrates the compiler/startup/example path. It does not establish
+compatibility with the standard GBDK runtime or arbitrary GBDK programs.
+
 The adapter's socket callback redirects requested HTTP port 80 exclusively to
 `127.0.0.1:8088`. DNS answers are exclusively loopback. The helper closes its
 DNS socket after the run; stop the disposable REON harness separately.

@@ -18,6 +18,11 @@ BODY_SHA = 'a8f6e181ddedf0f5d0b1b8e164d9e41edcddaadd14cf0c9f4730ede455560a24'
 def digest(data):
     return hashlib.sha256(data).hexdigest()
 
+def expected_sha(value):
+    if not re.fullmatch(r'[0-9a-fA-F]{64}', value):
+        raise argparse.ArgumentTypeError('expected a 64-digit SHA-256')
+    return value.lower()
+
 def dns_loop(sock, stopped):
     sock.settimeout(0.2)
     while not stopped.is_set():
@@ -43,6 +48,10 @@ parser.add_argument('build', type=Path, help='Linux shared mGBA build directory'
 parser.add_argument('empty_save', type=Path, help='validated synthetic SRAM fixture')
 parser.add_argument('empty_flash', type=Path, help='erased synthetic flash sidecar')
 parser.add_argument('payload', type=Path, help='8 KiB D800 PAD TEST payload')
+parser.add_argument('--payload-sha256', type=expected_sha,
+                    default='0e42875ef2569905d056f895ab5d6998e4f17709875dd27f13cbd9b20c2158b0')
+parser.add_argument('--catalog-sha256', type=expected_sha, default=CATALOG_SHA)
+parser.add_argument('--body-sha256', type=expected_sha, default=BODY_SHA)
 args = parser.parse_args()
 assert digest(args.rom.read_bytes()) == ROM_SHA, 'unexpected host ROM'
 sram = args.empty_save.read_bytes()
@@ -50,7 +59,7 @@ flash = args.empty_flash.read_bytes()
 payload = args.payload.read_bytes()
 assert len(sram) == 0x8000 and sram[0x4F2] == 0xFF, 'requires empty catalog fixture'
 assert len(flash) == 0x100101 and flash[:0x100000] == b'\xFF' * 0x100000
-assert digest(payload) == '0e42875ef2569905d056f895ab5d6998e4f17709875dd27f13cbd9b20c2158b0'
+assert len(payload) == 8192 and digest(payload) == args.payload_sha256
 root = Path(tempfile.mkdtemp(prefix='mgba-netdeget-local-'))
 (root / 'padtest.sav').write_bytes(sram)
 (root / 'padtest.sav.flash').write_bytes(flash)
@@ -112,8 +121,8 @@ assert (root / 'padtest.sav.flash').read_bytes() == payload + flash[8192:]
 assert (root / 'padtest.sav').read_bytes()[0x4F2:0x4F4] == b'\x10\x00'
 responses = (root / 'tcp-recv.bin').read_bytes().split(b'HTTP/1.0 ')[1:]
 bodies = [response.split(b'\r\n\r\n', 1)[1] for response in responses]
-assert sum(digest(body) == CATALOG_SHA for body in bodies) == 2
-assert sum(digest(body) == BODY_SHA for body in bodies) == 2
+assert sum(digest(body) == args.catalog_sha256 for body in bodies) == 2
+assert sum(digest(body) == args.body_sha256 for body in bodies) == 2
 assert digest(args.rom.read_bytes()) == ROM_SHA
 print('PASS natural download, flash write, eight inputs, exit and relaunch:', root)
 # Reload the downloaded save in a new core, with no adapter attached.
