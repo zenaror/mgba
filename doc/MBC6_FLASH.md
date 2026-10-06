@@ -80,6 +80,26 @@ all 128 8 KiB selectors with A and B mapped independently and found zero
 mismatches. These tests exercise emulator address mapping and buffering; they
 do not establish physical-chip electrical behavior.
 
+## Persistence and savestates
+
+The host save is split into SRAM in `.sav` and flash-chip contents in
+`.sav.flash`. The flash sidecar includes the 1 MiB array, the 256-byte hidden
+map, and the protection metadata byte. An emulator harness loaded a synthetic
+legacy combined `.sav`, synchronized it, confirmed that mGBA split it into an
+SRAM-only `.sav` and a `0x100101`-byte `.sav.flash`, then reopened both through
+a fresh core and recovered the written SRAM and flash sentinels. A separate
+raw-sidecar fixture confirmed that a short flash image is expanded with erased
+(`FF`) bytes while preserving the SRAM section.
+
+Savestates retain volatile flash command/buffer/operation state; the flash
+array itself remains in savedata. Disposable-core checks restored a pending
+program, a partially filled program buffer, a pending sector erase, and a
+pending chip erase, hidden-map erase, and sector-0 protection operation. Each
+resumed operation completed with the expected data and status; after the
+protection operation, the ready-status protected bit was set (`82`). These
+checks validate mGBA state serialization with fixture contents, not hardware
+behavior.
+
 The flash write-protect input does not protect the whole chip: Iceboy documents
 that it blocks programming and erase of sector 0 and the hidden map region,
 while sectors 1-7 remain writable and erasable. The emulator's write-enable
