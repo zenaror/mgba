@@ -853,6 +853,20 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 			LOG(QT, ERROR) << tr("Failed to open save file: %1").arg(path);
 			return;
 		}
+		if (!temporary && m_threadContext.core->platform(m_threadContext.core) == mPLATFORM_GB) {
+			struct GB* gb = static_cast<struct GB*>(m_threadContext.core->board);
+			if (gb->memory.mbcType == GB_MBC6) {
+				VFile* flash = VFileDevice::open(path + QLatin1String(".flash"), O_CREAT | O_RDWR);
+				if (flash) {
+					VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
+					if (combined) {
+						vf = combined;
+					} else {
+						flash->close(flash);
+					}
+				}
+			}
+		}
 
 		bool ok;
 		if (temporary) {
@@ -873,14 +887,29 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 
 void CoreController::loadSave(VFile* vf, bool temporary, const QString& path) {
 	m_resetActions.append([this, vf, temporary, path]() {
+		VFile* save = vf;
+		if (!temporary && !path.isEmpty() && m_threadContext.core->platform(m_threadContext.core) == mPLATFORM_GB) {
+			struct GB* gb = static_cast<struct GB*>(m_threadContext.core->board);
+			if (gb->memory.mbcType == GB_MBC6) {
+				VFile* flash = VFileDevice::open(path + QLatin1String(".flash"), O_CREAT | O_RDWR);
+				if (flash) {
+					VFile* combined = GBMBC6CreateSaveVFile(gb, save, flash);
+					if (combined) {
+						save = combined;
+					} else {
+						flash->close(flash);
+					}
+				}
+			}
+		}
 		bool ok;
 		if (temporary) {
-			ok = m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadTemporarySave(m_threadContext.core, save);
 		} else {
-			ok = m_threadContext.core->loadSave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadSave(m_threadContext.core, save);
 		}
 		if (!ok) {
-			vf->close(vf);
+			save->close(save);
 		} else {
 			m_savePath = path;
 		}
@@ -1402,7 +1431,24 @@ void CoreController::updatePlayerSave() {
 		saveSuffix = QString(".sa%1").arg(savePlayerId);
 	}
 	QByteArray saveSuffixBin(saveSuffix.toUtf8());
-	VFile* save = mDirectorySetOpenSuffix(&m_threadContext.core->dirs, m_threadContext.core->dirs.save, saveSuffixBin.constData(), O_CREAT | O_RDWR);
+	VFile* save = mDirectorySetOpenSuffix(&m_threadContext.core->dirs, m_threadContext.core->dirs.save,
+	                                      saveSuffixBin.constData(), O_CREAT | O_RDWR);
+	if (save && m_threadContext.core->platform(m_threadContext.core) == mPLATFORM_GB) {
+		struct GB* gb = static_cast<struct GB*>(m_threadContext.core->board);
+		if (gb->memory.mbcType == GB_MBC6) {
+			QByteArray flashSuffix = (saveSuffix + QLatin1String(".flash")).toUtf8();
+			VFile* flash = mDirectorySetOpenSuffix(&m_threadContext.core->dirs, m_threadContext.core->dirs.save,
+			                                      flashSuffix.constData(), O_CREAT | O_RDWR);
+			if (flash) {
+				VFile* combined = GBMBC6CreateSaveVFile(gb, save, flash);
+				if (combined) {
+					save = combined;
+				} else {
+					flash->close(flash);
+				}
+			}
+		}
+	}
 	if (save) {
 		if (!m_threadContext.core->loadSave(m_threadContext.core, save)) {
 			save->close(save);

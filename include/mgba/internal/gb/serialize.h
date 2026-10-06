@@ -269,6 +269,8 @@ DECL_BIT(GBSerializedVideoFlags, NotFrameEventScheduled, 5);
 DECL_BITFIELD(GBSerializedMBC6Flags, uint8_t);
 DECL_BIT(GBSerializedMBC6Flags, FlashBank0, 0);
 DECL_BIT(GBSerializedMBC6Flags, FlashBank1, 1);
+DECL_BIT(GBSerializedMBC6Flags, FlashEnable, 2);
+DECL_BIT(GBSerializedMBC6Flags, FlashWriteEnable, 3);
 
 DECL_BITFIELD(GBSerializedMBC7Flags, uint8_t);
 DECL_BITS(GBSerializedMBC7Flags, Command, 0, 2);
@@ -493,7 +495,30 @@ struct GBSerializedState {
 	uint8_t vram[GB_SIZE_VRAM];
 	uint8_t wram[GB_SIZE_WORKING_RAM];
 
-	uint32_t reserved2[0xA4];
+	union {
+		uint32_t reserved2[0xA4];
+		struct {
+			uint8_t flashMode;
+			uint8_t flashCommand;
+			uint8_t flashProgramCount;
+			uint8_t flashProgramLast;
+			uint8_t flashProgramBuffer[0x80];
+			uint8_t flashProgramWritten[0x10];
+			uint32_t flashProgramPage;
+			uint32_t flashProgramBank;
+			uint8_t flashProgramWindow;
+			uint8_t flashIoWindow;
+			uint8_t flashIoBankValid;
+			uint32_t flashIoBank;
+			uint8_t flashOperationWindow;
+			uint8_t flashOperationKind;
+			uint8_t flashOperationFlags;
+			uint32_t flashOperationBank;
+			uint32_t flashOperationTarget;
+			uint32_t flashOperationRemaining;
+			uint8_t reserved[0x290 - 4 - 0x80 - 0x10 - 4 - 4 - 4 - 4 - 4 - 4 - 4 - 4 - 4];
+		} mbc6;
+	};
 
 	union {
 		uint8_t huc3Registers[0x80];

@@ -22,6 +22,7 @@
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
 #include <mgba/gb/interface.h>
+#include <mgba/internal/gb/gb.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
@@ -249,6 +250,25 @@ bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary) {
 	if (temporary) {
 		return core->loadTemporarySave(core, vf);
 	} else {
+#ifdef M_CORE_GB
+		if (core->platform(core) == mPLATFORM_GB) {
+			struct GB* gb = core->board;
+			if (gb->memory.mbcType == GB_MBC6) {
+				char flashPath[PATH_MAX + 1];
+				if (snprintf(flashPath, sizeof(flashPath), "%s.flash", path) < (int) sizeof(flashPath)) {
+					struct VFile* flash = VFileOpen(flashPath, O_CREAT | O_RDWR);
+					if (flash) {
+						struct VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
+						if (combined) {
+							vf = combined;
+						} else {
+							flash->close(flash);
+						}
+					}
+				}
+			}
+		}
+#endif
 		return core->loadSave(core, vf);
 	}
 }
@@ -264,7 +284,33 @@ bool mCoreAutoloadSave(struct mCore* core) {
 	if (savePlayerId > 1) {
 		snprintf(sav, sizeof(sav), ".sa%i", savePlayerId);
 	}
-	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, sav, O_CREAT | O_RDWR));
+	struct VFile* vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, sav, O_CREAT | O_RDWR);
+	if (!vf) {
+		return false;
+	}
+#ifdef M_CORE_GB
+	if (core->platform(core) == mPLATFORM_GB) {
+		struct GB* gb = core->board;
+		if (gb->memory.mbcType == GB_MBC6) {
+			char flashSuffix[sizeof(sav) + sizeof(".flash")];
+			snprintf(flashSuffix, sizeof(flashSuffix), "%s.flash", sav);
+			struct VFile* flash = mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, flashSuffix, O_CREAT | O_RDWR);
+			if (flash) {
+				struct VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
+				if (combined) {
+					vf = combined;
+				} else {
+					flash->close(flash);
+				}
+			}
+		}
+	}
+#endif
+	if (!core->loadSave(core, vf)) {
+		vf->close(vf);
+		return false;
+	}
+	return true;
 }
 
 bool mCoreAutoloadPatch(struct mCore* core) {
