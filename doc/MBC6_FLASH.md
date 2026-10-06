@@ -208,3 +208,18 @@ The Maker sources and guides are published on `codex/maker-guides-gbdk` at
 Its original additions have an MIT license. This production run validates this
 free C PAD content and the tested host/compiler path; broader host APIs, ordinary
 GBDK libraries and arbitrary minigames require their own checks.
+
+### Natural flash maintenance (2026-10-06)
+
+Additional original-ROM tests found a completed erase latch surviving a flash
+access disable/re-enable cycle. After a natural move/delete, this redirected
+the selected game's ID read to the erased spare sector and caused a white screen.
+The correction releases the latch only when access is disabled after completion
+in array mode; continuous access, busy and status modes retain prior behavior.
+
+[Maintenance evidence](../tools/mbc6/MAINTENANCE.md) records the independent
+first-bad-read trace, four core regression cases, natural deletion with neighbor
+preservation, and occupied-sector erase/copy/program checks. Relocated games and
+new content passed fresh-core gameplay/input/exit. Re-downloading the same ID
+with free space appended a copy; physical reuse was exercised separately after
+seven natural acquisitions. No whole-chip/BOX format menu was confirmed.

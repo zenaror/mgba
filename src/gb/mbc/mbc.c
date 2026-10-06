@@ -310,6 +310,12 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 		break;
 	case 0x3:
 		state->flashEnable = value & 1;
+		/* Net de Get ends an erase access session after F0 by disabling
+		 * flash, then re-enables it to read a different bank's header.
+		 * Keep the erase bank latched while that access session is open. */
+		if (!state->flashEnable && !state->flashMode && !state->flashOperationBusy) {
+			state->flashIoBankValid = false;
+		}
 		break;
 	case 0x4:
 		state->flashWriteEnable = value & 1;

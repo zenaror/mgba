@@ -237,6 +237,101 @@ M_TEST_DEFINE(detect7) {
 	assert_int_not_equal(gb->memory.mbcType, GB_MBC7);
 }
 
+/* Synthetic emulator fixture: these transitions do not assert hardware behavior. */
+static void _mbc6EraseFixture(struct mCore* core) {
+	struct GB* gb = core->board;
+	struct GBCartridge* cart = (struct GBCartridge*) &gb->memory.rom[0x100];
+	gb->memory.mbcType = GB_MBC_AUTODETECT;
+	cart->type = 0x20;
+	core->reset(core);
+	assert_int_equal(gb->memory.mbcType, GB_MBC6);
+	assert_non_null(gb->memory.sram);
+	assert_true(gb->memory.sramSize >= GB_SIZE_MBC6_FLASH_STORAGE);
+	uint8_t* flash = &gb->memory.sram[gb->memory.sramSize - GB_SIZE_MBC6_FLASH_STORAGE];
+	memset(flash, 0xFF, GB_SIZE_MBC6_FLASH_STORAGE);
+	flash[0x60 * GB_SIZE_CART_HALFBANK] = 0xA5;
+	flash[0x70 * GB_SIZE_CART_HALFBANK] = 0x5A;
+
+	core->busWrite8(core, 0x3800, 0x08);
+	core->busWrite8(core, 0x0C00, 1);
+	core->busWrite8(core, 0x1000, 1);
+	core->busWrite8(core, 0x3000, 2);
+	core->busWrite8(core, 0x7555, 0xAA);
+	core->busWrite8(core, 0x3000, 1);
+	core->busWrite8(core, 0x6AAA, 0x55);
+	core->busWrite8(core, 0x3000, 2);
+	core->busWrite8(core, 0x7555, 0x80);
+	core->busWrite8(core, 0x7555, 0xAA);
+	core->busWrite8(core, 0x3000, 1);
+	core->busWrite8(core, 0x6AAA, 0x55);
+	core->busWrite8(core, 0x3000, 0x70);
+	core->busWrite8(core, 0x6000, 0x30);
+	assert_true(gb->memory.mbcState.mbc6.flashOperationBusy);
+	assert_true(gb->memory.mbcState.mbc6.flashIoBankValid);
+	assert_int_equal(gb->memory.mbcState.mbc6.flashIoBank, 0x70);
+}
+
+static void _mbc6CompleteEraseFixture(struct GB* gb) {
+	struct mTimingEvent* event = &gb->memory.mbc6FlashEvent;
+	mTimingDeschedule(&gb->timing, event);
+	event->callback(&gb->timing, event->context, 0);
+	assert_false(gb->memory.mbcState.mbc6.flashOperationBusy);
+	assert_true(gb->memory.mbcState.mbc6.flashIoBankValid);
+}
+
+M_TEST_DEFINE(mbc6EraseLatchContinuousAccess) {
+	struct mCore* core = *state;
+	struct GB* gb = core->board;
+	_mbc6EraseFixture(core);
+	_mbc6CompleteEraseFixture(gb);
+	core->busWrite8(core, 0x6000, 0xF0);
+	core->busWrite8(core, 0x3000, 0x60);
+	assert_true(gb->memory.mbcState.mbc6.flashIoBankValid);
+	assert_int_equal(core->busRead8(core, 0x6000), 0xFF);
+}
+
+M_TEST_DEFINE(mbc6EraseLatchArrayAccessCycle) {
+	struct mCore* core = *state;
+	struct GB* gb = core->board;
+	_mbc6EraseFixture(core);
+	_mbc6CompleteEraseFixture(gb);
+	core->busWrite8(core, 0x6000, 0xF0);
+	core->busWrite8(core, 0x0C00, 0);
+	assert_false(gb->memory.mbcState.mbc6.flashIoBankValid);
+	assert_int_equal(core->busRead8(core, 0x6000), 0xFF);
+	core->busWrite8(core, 0x3000, 0x60);
+	core->busWrite8(core, 0x0C00, 1);
+	assert_int_equal(core->busRead8(core, 0x6000), 0xA5);
+}
+
+M_TEST_DEFINE(mbc6EraseLatchBusyAccessCycle) {
+	struct mCore* core = *state;
+	struct GB* gb = core->board;
+	_mbc6EraseFixture(core);
+	core->busWrite8(core, 0x0C00, 0);
+	assert_true(gb->memory.mbcState.mbc6.flashIoBankValid);
+	core->busWrite8(core, 0x3000, 0x60);
+	core->busWrite8(core, 0x0C00, 1);
+	assert_int_equal(core->busRead8(core, 0x6000), 0);
+	_mbc6CompleteEraseFixture(gb);
+	core->busWrite8(core, 0x6000, 0xF0);
+	assert_int_equal(core->busRead8(core, 0x6000), 0xFF);
+}
+
+M_TEST_DEFINE(mbc6EraseLatchStatusAccessCycle) {
+	struct mCore* core = *state;
+	struct GB* gb = core->board;
+	_mbc6EraseFixture(core);
+	_mbc6CompleteEraseFixture(gb);
+	core->busWrite8(core, 0x0C00, 0);
+	assert_true(gb->memory.mbcState.mbc6.flashIoBankValid);
+	core->busWrite8(core, 0x3000, 0x60);
+	core->busWrite8(core, 0x0C00, 1);
+	assert_int_equal(core->busRead8(core, 0x6000), 0x80);
+	core->busWrite8(core, 0x6000, 0xF0);
+	assert_int_equal(core->busRead8(core, 0x6000), 0xFF);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBMBC,
 	cmocka_unit_test(detectNone),
 	cmocka_unit_test(detect1),
@@ -244,4 +339,8 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBMBC,
 	cmocka_unit_test(detect3),
 	cmocka_unit_test(detect5),
 	cmocka_unit_test(detect6),
-	cmocka_unit_test(detect7))
+	cmocka_unit_test(detect7),
+	cmocka_unit_test(mbc6EraseLatchContinuousAccess),
+	cmocka_unit_test(mbc6EraseLatchArrayAccessCycle),
+	cmocka_unit_test(mbc6EraseLatchBusyAccessCycle),
+	cmocka_unit_test(mbc6EraseLatchStatusAccessCycle))

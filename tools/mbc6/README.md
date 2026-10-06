@@ -79,3 +79,11 @@ This is an emulator/local-server integration check. It does not establish
 production deployment, physical cartridge behavior, or arbitrary minigame
 compatibility. The C socket capture helpers are adapted from `src/core/mobile.c`
 (MPL-2.0); the Mobile Trainer tracing work provided the adapter attachment pattern.
+
+## Delete, rearrangement and occupied-sector reuse
+
+See [MAINTENANCE.md](MAINTENANCE.md) for the natural maintenance regression,
+its first-bad-read trace, the completed array-mode access-cycle fix, and the
+bounded delete/erase/copy/program results. A BOX is a catalog group, not a
+physical flash sector. Re-downloading a game while space is free may append a
+new copy; that alone does not test overwriting occupied storage.
