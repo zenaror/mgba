@@ -32,13 +32,53 @@ busy, any such mapped window returns status; a window mapped to ROM continues
 to return ROM.
 
 Dan Docs' Net de Get analysis is more specific about sector erase: after the
-game issues F0, status and the erase-selected bank remain active in the
-operation window until another flash command is issued; the other 8 KiB window
-continues using its current bank. Accordingly, F0 does not clear the remembered
-bank; accepting the next flash opcode does. This game-specific observation
-qualifies Iceboy's general “any address” description and adds a window detail
-not covered by Pan Docs' brief status summary. The cross-window status policy
-after completion remains open pending ROM/test-ROM evidence.
+game issues F0, the erase-selected bank remains latched in the operation window
+until another flash opcode is accepted; the other 8 KiB window continues to use
+its current array bank. Accordingly, F0 does not clear the remembered bank.
+Accepting the next opcode releases that exception and makes the new chip mode
+visible through both mapped flash windows. A focused differential harness
+reproduces this transition: after erase/F0/hidden-map entry, the old core reads
+the hidden byte as `66/FF` through A/B, while the updated core reads `66/66`.
+The MBC6 Test ROM's TD9 run used a controlled fixture with only hidden-map byte
+5 set to `66`; all other flash and hidden-map bytes were `FF`. TD9 erased sector
+7 via flash bank 112 in window A, ran the game's F0 reset, entered hidden-map
+mode, then XOR-read all 256 hidden bytes through each window. Both windows
+returned checksum `99`;
+an array read would return `00` for this fixture. This directly validates this
+post-erase/F0/77 transition for the sentinel fixture, while the XOR checksums do
+not prove arbitrary byte-for-byte equality or hardware behavior. This game-
+specific observation qualifies Iceboy's general “any address” description and
+adds a window detail not covered by Pan Docs' brief status summary.
+
+The cross-window array exception is specific to sector erase. After a buffered
+program or chip erase completes, status remains visible from both flash windows
+until F0 or another opcode. A disposable-core harness observed program polling
+as `00/00`, then ready status `80/80` with the programmed byte changed to `66`;
+chip-erase ready status was also `80/80`. The pre-fix core returned `80/FF` in
+the other window for both operations. The implementation now applies the
+remembered-array exception only when the completed operation was sector erase,
+matching the narrower Net de Get observation while preserving Iceboy's
+operation-wide status behavior for other operations. These timings are emulator
+fixture results, not exact hardware timing claims.
+
+The MBC6 Test ROM's disposable TD10–TD12 fixture also passed against the
+updated core: JEDEC ID reads after commands in either window returned `C2/81`
+through both windows; buffered-program and chip-erase status snapshots were
+`00/00` while busy and `80/80` when ready; and the first/last buffer slots in
+the first/last 8 KiB bank pages retained their distinct `A5/5A` sentinels. The
+runner reported 21 pass, 0 fail, 1 skip, 10 informational results and a valid
+checksum. The ROM and `.sav.flash` were disposable fixtures. A separate core
+harness saved/restored a one-slot, not-yet-triggered program buffer, then added
+a second slot and triggered programming; both bytes (`66/33`) were programmed
+and both windows returned ready status (`80/80`). This exercises emulator
+state restoration only; no hardware behavior is inferred.
+
+Additional disposable-core cases cover buffer slots 0 and 127, changing the
+selected flash bank between buffer fill and trigger, and a fill that crosses a
+128-byte page. All four cases passed. A separate sweep read both endpoints of
+all 128 8 KiB selectors with A and B mapped independently and found zero
+mismatches. These tests exercise emulator address mapping and buffering; they
+do not establish physical-chip electrical behavior.
 
 The flash write-protect input does not protect the whole chip: Iceboy documents
 that it blocks programming and erase of sector 0 and the hidden map region,
