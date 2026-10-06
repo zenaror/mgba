@@ -177,3 +177,34 @@ without changing the flash sidecar. No CPU registers or PC were redirected in
 this acquisition/launch sequence. This validates the complete local fixture
 path; it does not establish production REON deployment or arbitrary payload
 compatibility.
+
+### Production REON acquisition (2026-10-06)
+
+The original Net de Get ROM also completed the C PAD TEST route against the
+production REON service using a dedicated temporary opt-in account and disposable
+SRAM/flash. The test used real DNS on port 53 and the normal mGBA socket callbacks;
+there was no loopback DNS or HTTP redirection. The runtime remained
+`358230c82773aec67dff2995eb77fbd84f8ea8a2` (the Linux test release).
+
+Joypad input alone entered the account password, downloaded the game, selected
+BOX2, launched it, exercised all eight held/released inputs exactly once, exited,
+and relaunched it from BOX1 with cleared counters. The resulting first 8 KiB
+matched the C PAD payload SHA-256
+`ab49fffb02e1b918d442a876508ed83c75ffc32fbbfa482cb8a3b9e46d70381c`;
+the remaining array, hidden map and protection bytes were unchanged. A fresh
+core reopened the save, launched the game, accepted input and exited with the
+flash unchanged. Both assertions reported PASS.
+
+The server owner independently confirmed two successful authenticated catalog
+responses and two successful game-body responses in the production logs, with
+no PHP errors. The server's separate byte checks matched the previously tested
+437-byte catalog and 1,114-byte C PAD body. The emulator run did not capture raw
+HTTP traffic or WRAM; credentials were provided only to the temporary process.
+Local assertion logs are `/tmp/mgba-netdeget-production-zqeg16la/run.log` and
+`reopened/run.log`; the gameplay image is `c-pad-controls.png` in that directory.
+
+The Maker sources and guides are published on `codex/maker-guides-gbdk` at
+`zenaror/net-de-get-maker`, commit `727b06b607adea93e5fbe10b6890b45739be1070`.
+Its original additions have an MIT license. This production run validates this
+free C PAD content and the tested host/compiler path; broader host APIs, ordinary
+GBDK libraries and arbitrary minigames require their own checks.
