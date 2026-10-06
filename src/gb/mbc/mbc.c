@@ -375,7 +375,8 @@ uint8_t _GBMBC6Read(struct GBMemory* memory, uint16_t address) {
 			if (state->flashOperationBusy && state->flashMode >= 2) {
 				return (state->flashSector0Protected ? 0x02 : 0);
 			}
-			if (state->flashOperationActive && !operationWindow && state->flashMode >= 2) {
+			if (state->flashOperationActive && state->flashOperationKind == GB_MBC6_FLASH_OP_ERASE_SECTOR &&
+			    !operationWindow && state->flashMode >= 2) {
 				return memory->sram[memory->sramSize - GB_SIZE_MBC6_FLASH_STORAGE + offset];
 			}
 			switch (state->flashMode) {
@@ -613,6 +614,7 @@ static void _GBMBC6FlashWrite(struct GB* gb, uint16_t address, uint32_t offset, 
 		if (value == 0x90 || value == 0xA0 || value == 0x80 || value == 0x60 || value == 0x77) {
 			/* Net de Get keeps the erase bank latched through F0, until a new opcode. */
 			state->flashIoBankValid = false;
+			state->flashOperationActive = false;
 		}
 		switch (value) {
 		case 0x90:
