@@ -412,7 +412,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Configure", .data = GUI_V_U(RUNNER_CONFIG) };
 #ifdef USE_LIBMOBILE
-	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Mobile Adapter GB", .data = GUI_V_U(RUNNER_MOBILE_ADAPTER) };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Mobile GB Adapter", .data = GUI_V_U(RUNNER_MOBILE_ADAPTER) };
 #endif
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Reset game", .data = GUI_V_U(RUNNER_RESET) };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = GUI_V_U(RUNNER_EXIT) };

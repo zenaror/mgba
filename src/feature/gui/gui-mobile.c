@@ -1150,7 +1150,7 @@ static void _editPort(struct mGUIRunner* runner, char* buffer, size_t bufferLeng
 void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 	struct mGUIMobileText text = {0};
 	struct GUIMenu menu = {
-		.title = "Mobile Adapter GB",
+		.title = "Mobile GB Adapter",
 		.index = 0,
 		.background = &runner->background.d
 	};
@@ -1159,7 +1159,7 @@ void mGUIShowMobileAdapter(struct mGUIRunner* runner) {
 	// Enabling the adapter is deliberately not persisted: it always starts off
 	// for a fresh session, and stays on only for as long as this game runs.
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
-		.title = "Enable Mobile Adapter GB",
+		.title = "Enable Mobile GB Adapter",
 		.data = GUI_V_U(MOBILE_ITEM_ENABLE),
 		.validStates = (const char*[]) { "Off", "On" },
 		.nStates = 2

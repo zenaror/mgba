@@ -9,7 +9,7 @@
    <item>
     <widget class="QCheckBox" name="enableAdapter">
      <property name="text">
-      <string>Enable Mobile Adapter GB</string>
+      <string>Enable Mobile GB Adapter</string>
      </property>
     </widget>
    </item>
