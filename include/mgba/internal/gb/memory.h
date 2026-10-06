@@ -63,6 +63,8 @@ enum {
 	GB_SIZE_HRAM = 0x7F,
 
 	GB_SIZE_MBC6_FLASH = 0x100000,
+	GB_SIZE_MBC6_FLASH_EXTRA = 0x101,
+	GB_SIZE_MBC6_FLASH_STORAGE = GB_SIZE_MBC6_FLASH + GB_SIZE_MBC6_FLASH_EXTRA,
 };
 
 struct GBMemory;
@@ -193,6 +195,29 @@ struct GBMBC1State {
 struct GBMBC6State {
 	bool flashBank0;
 	bool flashBank1;
+	bool flashEnable;
+	bool flashWriteEnable;
+	bool flashSector0Protected;
+	uint8_t flashMode;
+	uint8_t flashCommand;
+	uint8_t flashProgramCount;
+	uint8_t flashProgramLast;
+	uint8_t flashProgramBuffer[0x80];
+	uint8_t flashProgramWritten[0x10];
+	uint32_t flashProgramPage;
+	uint32_t flashProgramBank;
+	uint8_t flashProgramWindow;
+	uint8_t flashIoWindow;
+	bool flashIoBankValid;
+	uint32_t flashIoBank;
+	uint8_t flashOperationWindow;
+	uint8_t flashOperationKind;
+	bool flashOperationActive;
+	bool flashOperationBusy;
+	bool flashOperationWriteEnable;
+	bool flashOperationSector0Protected;
+	uint32_t flashOperationBank;
+	uint32_t flashOperationTarget;
 };
 
 struct GBMBC7State {
@@ -322,6 +347,7 @@ struct GBMemory {
 	bool sramAccess;
 	bool directSramAccess;
 	uint8_t* sram;
+	size_t sramSize;
 	uint8_t* sramBank;
 	int sramCurrentBank;
 
@@ -342,6 +368,7 @@ struct GBMemory {
 
 	struct mTimingEvent dmaEvent;
 	struct mTimingEvent hdmaEvent;
+	struct mTimingEvent mbc6FlashEvent;
 
 	size_t romSize;
 

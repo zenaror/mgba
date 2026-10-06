@@ -260,6 +260,285 @@ static void GBSramDeinit(struct GB* gb) {
 	gb->memory.sram = NULL;
 }
 
+static void GBMBC6SyncSave(struct GB* gb) {
+	if (gb->memory.mbcType != GB_MBC6 || !gb->memory.sram || gb->sramSize < GB_SIZE_MBC6_FLASH_STORAGE) {
+		return;
+	}
+	uint8_t* protection = &gb->memory.sram[gb->sramSize - 1];
+	if (*protection > 1) {
+		*protection = 0;
+		if (gb->sramVf == gb->sramRealVf) {
+			gb->sramDirty |= mSAVEDATA_DIRT_NEW;
+		}
+	}
+	gb->memory.mbcState.mbc6.flashSector0Protected = *protection == 1;
+	GBMBCSwitchHalfBank(gb, 0, gb->memory.currentBank);
+	GBMBCSwitchHalfBank(gb, 1, gb->memory.currentBank1);
+	GBMBCSwitchSramHalfBank(gb, 0, gb->memory.sramCurrentBank);
+	GBMBCSwitchSramHalfBank(gb, 1, gb->memory.currentSramBank1);
+}
+
+struct GBMBC6SaveVFile {
+	struct VFile d;
+	struct VFile* sram;
+	struct VFile* flash;
+	uint8_t* data;
+	size_t size;
+	size_t sramSize;
+	size_t position;
+	bool legacyCombined;
+};
+
+// The frontend sees one combined save image; disk stores SRAM in .sav and chip data in .sav.flash.
+static bool _GBMBC6SaveRead(struct VFile* vf, off_t offset, void* data, size_t size) {
+	if (offset < 0 || vf->seek(vf, offset, SEEK_SET) < 0) {
+		return false;
+	}
+	uint8_t* cursor = data;
+	while (size) {
+		ssize_t read = vf->read(vf, cursor, size);
+		if (read <= 0) {
+			return false;
+		}
+		cursor += read;
+		size -= read;
+	}
+	return true;
+}
+
+static bool _GBMBC6SaveWrite(struct VFile* vf, off_t offset, const void* data, size_t size) {
+	if (offset < 0 || vf->seek(vf, offset, SEEK_SET) < 0) {
+		return false;
+	}
+	const uint8_t* cursor = data;
+	while (size) {
+		ssize_t written = vf->write(vf, cursor, size);
+		if (written <= 0) {
+			return false;
+		}
+		cursor += written;
+		size -= written;
+	}
+	return true;
+}
+
+static bool _GBMBC6SaveLoad(struct GBMBC6SaveVFile* save) {
+	if (save->data) {
+		return true;
+	}
+	save->data = malloc(save->size);
+	if (!save->data) {
+		return false;
+	}
+	memset(save->data, 0xFF, save->size);
+	ssize_t rawSaveSize = save->sram->size(save->sram);
+	if (rawSaveSize < 0) {
+		free(save->data);
+		save->data = NULL;
+		return false;
+	}
+	size_t saveSize = rawSaveSize;
+	size_t sramRead = saveSize < save->sramSize ? saveSize : save->sramSize;
+	if (sramRead && !_GBMBC6SaveRead(save->sram, 0, save->data, sramRead)) {
+		free(save->data);
+		save->data = NULL;
+		return false;
+	}
+
+	ssize_t rawFlashSize = save->flash->size(save->flash);
+	if (rawFlashSize < 0) {
+		free(save->data);
+		save->data = NULL;
+		return false;
+	}
+	size_t flashSize = rawFlashSize;
+	if (flashSize >= GB_SIZE_MBC6_FLASH) {
+		size_t flashRead = flashSize < GB_SIZE_MBC6_FLASH_STORAGE ? flashSize : GB_SIZE_MBC6_FLASH_STORAGE;
+		if (!_GBMBC6SaveRead(save->flash, 0, &save->data[save->sramSize], flashRead)) {
+			free(save->data);
+			save->data = NULL;
+			return false;
+		}
+		if (flashRead < GB_SIZE_MBC6_FLASH_STORAGE && save->legacyCombined &&
+		    saveSize > save->sramSize + GB_SIZE_MBC6_FLASH) {
+			size_t metadataSize = saveSize - save->sramSize - GB_SIZE_MBC6_FLASH;
+			if (metadataSize > GB_SIZE_MBC6_FLASH_EXTRA) {
+				metadataSize = GB_SIZE_MBC6_FLASH_EXTRA;
+			}
+			if (!_GBMBC6SaveRead(save->sram, save->sramSize + GB_SIZE_MBC6_FLASH,
+			                      &save->data[save->sramSize + GB_SIZE_MBC6_FLASH], metadataSize)) {
+				free(save->data);
+				save->data = NULL;
+				return false;
+			}
+		}
+	} else if (save->legacyCombined && saveSize > save->sramSize) {
+		size_t legacyFlashSize = saveSize - save->sramSize;
+		if (legacyFlashSize > GB_SIZE_MBC6_FLASH_STORAGE) {
+			legacyFlashSize = GB_SIZE_MBC6_FLASH_STORAGE;
+		}
+		if (legacyFlashSize && !_GBMBC6SaveRead(save->sram, save->sramSize, &save->data[save->sramSize], legacyFlashSize)) {
+			free(save->data);
+			save->data = NULL;
+			return false;
+		}
+	}
+	if (save->data[save->size - 1] > 1) {
+		save->data[save->size - 1] = 0;
+	}
+	return true;
+}
+
+static ssize_t _GBMBC6SaveReadVFile(struct VFile* vf, void* buffer, size_t size) {
+	struct GBMBC6SaveVFile* save = (struct GBMBC6SaveVFile*) vf;
+	if (!_GBMBC6SaveLoad(save)) {
+		return -1;
+	}
+	if (save->position >= save->size) {
+		return 0;
+	}
+	if (size > save->size - save->position) {
+		size = save->size - save->position;
+	}
+	memcpy(buffer, &save->data[save->position], size);
+	save->position += size;
+	return size;
+}
+
+static off_t _GBMBC6SaveSeek(struct VFile* vf, off_t offset, int whence) {
+	struct GBMBC6SaveVFile* save = (struct GBMBC6SaveVFile*) vf;
+	switch (whence) {
+	case SEEK_SET:
+		break;
+	case SEEK_CUR:
+		offset += save->position;
+		break;
+	case SEEK_END:
+		offset += save->size;
+		break;
+	default:
+		return -1;
+	}
+	if (offset < 0 || (uint64_t) offset > save->size) {
+		return -1;
+	}
+	save->position = offset;
+	return offset;
+}
+
+static ssize_t _GBMBC6SaveWriteVFile(struct VFile* vf, const void* buffer, size_t size) {
+	struct GBMBC6SaveVFile* save = (struct GBMBC6SaveVFile*) vf;
+	if (!_GBMBC6SaveLoad(save)) {
+		return -1;
+	}
+	if (save->position >= save->size) {
+		return 0;
+	}
+	if (size > save->size - save->position) {
+		size = save->size - save->position;
+	}
+	memcpy(&save->data[save->position], buffer, size);
+	save->position += size;
+	return size;
+}
+
+static void* _GBMBC6SaveMap(struct VFile* vf, size_t size, int flags) {
+	UNUSED(flags);
+	struct GBMBC6SaveVFile* save = (struct GBMBC6SaveVFile*) vf;
+	if (size > save->size || !_GBMBC6SaveLoad(save)) {
+		return NULL;
+	}
+	return save->data;
+}
+
+static void _GBMBC6SaveUnmap(struct VFile* vf, void* memory, size_t size) {
+	UNUSED(size);
+	struct GBMBC6SaveVFile* save = (struct GBMBC6SaveVFile*) vf;
+	if (save->data == memory) {
+		vf->sync(vf, memory, save->size);
+	}
+}
+
+static bool _GBMBC6SaveSync(struct VFile* vf, void* buffer, size_t size) {
+	struct GBMBC6SaveVFile* save = (struct GBMBC6SaveVFile*) vf;
+	if (!_GBMBC6SaveLoad(save) || (buffer && size < save->size) || (!buffer && size)) {
+		return false;
+	}
+	if (buffer && buffer != save->data) {
+		memcpy(save->data, buffer, save->size);
+	}
+	const uint8_t* flash = &save->data[save->sramSize];
+	bool sramOK = _GBMBC6SaveWrite(save->sram, 0, save->data, save->sramSize);
+	bool flashOK = _GBMBC6SaveWrite(save->flash, 0, flash, GB_SIZE_MBC6_FLASH_STORAGE);
+	if (sramOK && flashOK) {
+		save->sram->truncate(save->sram, save->sramSize);
+		save->flash->truncate(save->flash, GB_SIZE_MBC6_FLASH_STORAGE);
+		if (save->sram->sync(save->sram, NULL, 0) && save->flash->sync(save->flash, NULL, 0)) {
+			save->legacyCombined = false;
+			return true;
+		}
+	}
+
+	// If splitting a legacy save fails, keep a complete combined image in .sav.
+	if (save->legacyCombined) {
+		bool legacyOK = _GBMBC6SaveWrite(save->sram, 0, save->data, save->size);
+		save->sram->truncate(save->sram, save->size);
+		if (legacyOK) {
+			save->sram->sync(save->sram, NULL, 0);
+		}
+	}
+	return false;
+}
+
+static ssize_t _GBMBC6SaveSize(struct VFile* vf) {
+	return ((struct GBMBC6SaveVFile*) vf)->size;
+}
+
+static void _GBMBC6SaveTruncate(struct VFile* vf, size_t size) {
+	struct GBMBC6SaveVFile* save = (struct GBMBC6SaveVFile*) vf;
+	if (size <= save->size && _GBMBC6SaveLoad(save)) {
+		memset(&save->data[size], 0xFF, save->size - size);
+	}
+}
+
+static bool _GBMBC6SaveClose(struct VFile* vf) {
+	struct GBMBC6SaveVFile* save = (struct GBMBC6SaveVFile*) vf;
+	if (save->data) {
+		vf->sync(vf, save->data, save->size);
+		free(save->data);
+	}
+	save->sram->close(save->sram);
+	save->flash->close(save->flash);
+	free(save);
+	return true;
+}
+
+struct VFile* GBMBC6CreateSaveVFile(struct GB* gb, struct VFile* sramVf, struct VFile* flashVf) {
+	if (!gb || gb->memory.mbcType != GB_MBC6 || !sramVf || !flashVf || gb->sramSize < GB_SIZE_MBC6_FLASH_STORAGE) {
+		return NULL;
+	}
+	struct GBMBC6SaveVFile* save = calloc(1, sizeof(*save));
+	if (!save) {
+		return NULL;
+	}
+	save->sram = sramVf;
+	save->flash = flashVf;
+	save->size = gb->sramSize;
+	save->sramSize = gb->sramSize - GB_SIZE_MBC6_FLASH_STORAGE;
+	save->legacyCombined = sramVf->size(sramVf) > (ssize_t) save->sramSize;
+	save->d.close = _GBMBC6SaveClose;
+	save->d.seek = _GBMBC6SaveSeek;
+	save->d.read = _GBMBC6SaveReadVFile;
+	save->d.readline = NULL;
+	save->d.write = _GBMBC6SaveWriteVFile;
+	save->d.map = _GBMBC6SaveMap;
+	save->d.unmap = _GBMBC6SaveUnmap;
+	save->d.truncate = _GBMBC6SaveTruncate;
+	save->d.size = _GBMBC6SaveSize;
+	save->d.sync = _GBMBC6SaveSync;
+	return &save->d;
+}
+
 bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	GBSramDeinit(gb);
 	gb->sramVf = vf;
@@ -270,6 +549,7 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	if (gb->sramSize) {
 		GBResizeSram(gb, gb->sramSize);
 		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+		GBMBC6SyncSave(gb);
 
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCRead(gb);
@@ -284,6 +564,7 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 
 void GBResizeSram(struct GB* gb, size_t size) {
 	if (gb->memory.sram && size <= gb->sramSize) {
+		gb->memory.sramSize = gb->sramSize;
 		return;
 	}
 	struct VFile* vf = gb->sramVf;
@@ -373,6 +654,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 	if (gb->sramSize < size) {
 		gb->sramSize = size;
 	}
+	gb->memory.sramSize = gb->sramSize;
 }
 
 void GBSramClean(struct GB* gb, uint32_t frameCount) {
@@ -413,6 +695,7 @@ void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
 	gb->sramMaskWriteback = writeback;
 	GBResizeSram(gb, gb->sramSize);
 	GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+	GBMBC6SyncSave(gb);
 }
 
 void GBSavedataUnmask(struct GB* gb) {
@@ -429,6 +712,7 @@ void GBSavedataUnmask(struct GB* gb) {
 		gb->sramMaskWriteback = false;
 	}
 	GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+	GBMBC6SyncSave(gb);
 	vf->close(vf);
 }
 

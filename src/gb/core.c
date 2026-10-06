@@ -1224,6 +1224,11 @@ static size_t _GBCoreSavedataClone(struct mCore* core, void** sram) {
 	return size;
 }
 
+static bool _GBMBC6SavedataIsLegacyFullImage(const struct GB* gb, size_t size) {
+	return gb->memory.mbcType == GB_MBC6 && gb->sramSize >= GB_SIZE_MBC6_FLASH_STORAGE &&
+	       size + (GB_SIZE_MBC6_FLASH_STORAGE - GB_SIZE_MBC6_FLASH) == gb->sramSize;
+}
+
 static bool _GBCoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
 	struct GB* gb = core->board;
 	if (!writeback) {
@@ -1234,13 +1239,59 @@ static bool _GBCoreSavedataRestore(struct mCore* core, const void* sram, size_t 
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
 		vf->seek(vf, 0, SEEK_SET);
-		return vf->write(vf, sram, size) > 0;
+		if (vf->write(vf, sram, size) <= 0) {
+			return false;
+		}
+		if (gb->memory.mbcType == GB_MBC6 && gb->memory.sram && _GBMBC6SavedataIsLegacyFullImage(gb, size)) {
+			size_t trailerSize = GB_SIZE_MBC6_FLASH_STORAGE - GB_SIZE_MBC6_FLASH;
+			memset(&gb->memory.sram[size], 0xFF, trailerSize);
+			gb->memory.sram[gb->sramSize - 1] = 0;
+			vf->seek(vf, size, SEEK_SET);
+			if (vf->write(vf, &gb->memory.sram[size], trailerSize) != (ssize_t) trailerSize) {
+				return false;
+			}
+		}
+		if (gb->memory.mbcType == GB_MBC6 && gb->memory.sram && size >= gb->sramSize) {
+			memcpy(gb->memory.sram, sram, gb->sramSize);
+			uint8_t protection = gb->memory.sram[gb->sramSize - 1];
+			if (protection > 1) {
+				protection = 0;
+				gb->memory.sram[gb->sramSize - 1] = protection;
+			}
+			gb->memory.mbcState.mbc6.flashSector0Protected = protection == 1;
+			GBMBCSwitchHalfBank(gb, 0, gb->memory.currentBank);
+			GBMBCSwitchHalfBank(gb, 1, gb->memory.currentBank1);
+			GBMBCSwitchSramHalfBank(gb, 0, gb->memory.sramCurrentBank);
+			GBMBCSwitchSramHalfBank(gb, 1, gb->memory.currentSramBank1);
+		}
+		return true;
 	}
-	if (size > 0x20000) {
+	if (gb->memory.mbcType == GB_MBC6) {
+		if (size > gb->sramSize) {
+			size = gb->sramSize;
+		}
+	} else if (size > 0x20000) {
 		size = 0x20000;
 	}
 	GBResizeSram(gb, size);
 	memcpy(gb->memory.sram, sram, size);
+	if (_GBMBC6SavedataIsLegacyFullImage(gb, size)) {
+		size_t trailerSize = GB_SIZE_MBC6_FLASH_STORAGE - GB_SIZE_MBC6_FLASH;
+		memset(&gb->memory.sram[size], 0xFF, trailerSize);
+		gb->memory.sram[gb->sramSize - 1] = 0;
+	}
+	if (gb->memory.mbcType == GB_MBC6 && size == gb->sramSize && size) {
+		uint8_t protection = gb->memory.sram[size - 1];
+		if (protection > 1) {
+			protection = 0;
+			gb->memory.sram[size - 1] = protection;
+		}
+		gb->memory.mbcState.mbc6.flashSector0Protected = protection == 1;
+		GBMBCSwitchHalfBank(gb, 0, gb->memory.currentBank);
+		GBMBCSwitchHalfBank(gb, 1, gb->memory.currentBank1);
+		GBMBCSwitchSramHalfBank(gb, 0, gb->memory.sramCurrentBank);
+		GBMBCSwitchSramHalfBank(gb, 1, gb->memory.currentSramBank1);
+	}
 	return true;
 }
 

@@ -95,7 +95,7 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
-		if (gb->memory.mbcReadBank1) {
+		if (gb->memory.mbcType == GB_MBC6 || gb->memory.mbcReadBank1) {
 			cpu->memory.cpuLoad8 = GBLoad8;
 			break;
 		}
@@ -274,14 +274,20 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
 		if (gb->memory.mbcType == GB_MBC6 || (gb->memory.mbcType == GB_UNL_NT_NEW && gb->memory.mbcState.ntNew.splitMode)) {
-			memory->cartBus = memory->romBank1[address & (GB_SIZE_CART_HALFBANK - 1)];
+			if (gb->memory.mbcType == GB_MBC6) {
+				memory->cartBus = memory->mbcRead(memory, address);
+			} else {
+				memory->cartBus = memory->romBank1[address & (GB_SIZE_CART_HALFBANK - 1)];
+			}
 			memory->cartBusPc = cpu->pc;
 			return memory->cartBus;
 		}
 		// Fall through
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
-		if (address >= memory->romSize) {
+		if (gb->memory.mbcType == GB_MBC6) {
+			memory->cartBus = memory->mbcRead(memory, address);
+		} else if (address >= memory->romSize) {
 			memory->cartBus = 0xFF;
 		} else if (gb->memory.mbcReadBank1) {
 			memory->cartBus = memory->mbcRead(memory, address);
@@ -792,8 +798,32 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	case GB_MBC6:
 		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashBank0(0, memory->mbcState.mbc6.flashBank0);
 		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashBank1(state->memory.mbc6.flags, memory->mbcState.mbc6.flashBank1);
+		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashEnable(state->memory.mbc6.flags, memory->mbcState.mbc6.flashEnable);
+		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashWriteEnable(state->memory.mbc6.flags, memory->mbcState.mbc6.flashWriteEnable);
 		state->memory.mbc6.bank1 = memory->currentBank1;
 		state->memory.mbc6.sramBank1 = memory->currentSramBank1;
+		state->mbc6.flashMode = memory->mbcState.mbc6.flashMode;
+		state->mbc6.flashCommand = memory->mbcState.mbc6.flashCommand;
+		state->mbc6.flashProgramCount = memory->mbcState.mbc6.flashProgramCount;
+		state->mbc6.flashProgramLast = memory->mbcState.mbc6.flashProgramLast;
+		memcpy(state->mbc6.flashProgramBuffer, memory->mbcState.mbc6.flashProgramBuffer, sizeof(state->mbc6.flashProgramBuffer));
+		memcpy(state->mbc6.flashProgramWritten, memory->mbcState.mbc6.flashProgramWritten, sizeof(state->mbc6.flashProgramWritten));
+		STORE_32LE(memory->mbcState.mbc6.flashProgramPage, 0, &state->mbc6.flashProgramPage);
+		STORE_32LE(memory->mbcState.mbc6.flashProgramBank, 0, &state->mbc6.flashProgramBank);
+		state->mbc6.flashProgramWindow = memory->mbcState.mbc6.flashProgramWindow;
+		state->mbc6.flashIoWindow = memory->mbcState.mbc6.flashIoWindow;
+		state->mbc6.flashIoBankValid = memory->mbcState.mbc6.flashIoBankValid;
+		STORE_32LE(memory->mbcState.mbc6.flashIoBank, 0, &state->mbc6.flashIoBank);
+		state->mbc6.flashOperationWindow = memory->mbcState.mbc6.flashOperationWindow;
+		state->mbc6.flashOperationKind = memory->mbcState.mbc6.flashOperationKind;
+		state->mbc6.flashOperationFlags = (memory->mbcState.mbc6.flashOperationActive ? 1 : 0) |
+			(memory->mbcState.mbc6.flashOperationBusy ? 2 : 0) |
+			(memory->mbcState.mbc6.flashOperationWriteEnable ? 4 : 0) |
+			(memory->mbcState.mbc6.flashOperationSector0Protected ? 8 : 0);
+		STORE_32LE(memory->mbcState.mbc6.flashOperationBank, 0, &state->mbc6.flashOperationBank);
+		STORE_32LE(memory->mbcState.mbc6.flashOperationTarget, 0, &state->mbc6.flashOperationTarget);
+		uint32_t flashRemaining = memory->mbcState.mbc6.flashOperationBusy ? mTimingUntil(&gb->timing, &memory->mbc6FlashEvent) : 0;
+		STORE_32LE(flashRemaining, 0, &state->mbc6.flashOperationRemaining);
 		break;
 	case GB_MBC7:
 		state->memory.mbc7.state = memory->mbcState.mbc7.state;
@@ -953,8 +983,52 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	case GB_MBC6:
 		memory->mbcState.mbc6.flashBank0 = GBSerializedMBC6FlagsGetFlashBank0(state->memory.mbc6.flags);
 		memory->mbcState.mbc6.flashBank1 = GBSerializedMBC6FlagsGetFlashBank1(state->memory.mbc6.flags);
+		memory->mbcState.mbc6.flashEnable = GBSerializedMBC6FlagsGetFlashEnable(state->memory.mbc6.flags);
+		memory->mbcState.mbc6.flashWriteEnable = GBSerializedMBC6FlagsGetFlashWriteEnable(state->memory.mbc6.flags);
+		if (memory->sram && gb->sramSize >= GB_SIZE_MBC6_FLASH_STORAGE) {
+			memory->mbcState.mbc6.flashSector0Protected = memory->sram[gb->sramSize - 1] == 1;
+		}
 		memory->currentBank1 = state->memory.mbc6.bank1;
 		memory->currentSramBank1 = state->memory.mbc6.sramBank1;
+		uint32_t version;
+		LOAD_32LE(version, 0, &state->versionMagic);
+		if (version >= GBSavestateMagic + 4) {
+			memory->mbcState.mbc6.flashMode = state->mbc6.flashMode;
+			memory->mbcState.mbc6.flashCommand = state->mbc6.flashCommand;
+			memory->mbcState.mbc6.flashProgramCount = state->mbc6.flashProgramCount;
+			memory->mbcState.mbc6.flashProgramLast = state->mbc6.flashProgramLast;
+			memcpy(memory->mbcState.mbc6.flashProgramBuffer, state->mbc6.flashProgramBuffer, sizeof(state->mbc6.flashProgramBuffer));
+			memcpy(memory->mbcState.mbc6.flashProgramWritten, state->mbc6.flashProgramWritten, sizeof(state->mbc6.flashProgramWritten));
+			if (version >= GBSavestateMagic + 5) {
+				LOAD_32LE(memory->mbcState.mbc6.flashProgramPage, 0, &state->mbc6.flashProgramPage);
+				LOAD_32LE(memory->mbcState.mbc6.flashProgramBank, 0, &state->mbc6.flashProgramBank);
+				memory->mbcState.mbc6.flashProgramWindow = state->mbc6.flashProgramWindow;
+				memory->mbcState.mbc6.flashIoWindow = state->mbc6.flashIoWindow;
+				memory->mbcState.mbc6.flashIoBankValid = state->mbc6.flashIoBankValid;
+				LOAD_32LE(memory->mbcState.mbc6.flashIoBank, 0, &state->mbc6.flashIoBank);
+				memory->mbcState.mbc6.flashOperationWindow = state->mbc6.flashOperationWindow;
+				memory->mbcState.mbc6.flashOperationKind = state->mbc6.flashOperationKind;
+				memory->mbcState.mbc6.flashOperationActive = state->mbc6.flashOperationFlags & 1;
+				memory->mbcState.mbc6.flashOperationBusy = state->mbc6.flashOperationFlags & 2;
+				memory->mbcState.mbc6.flashOperationWriteEnable = state->mbc6.flashOperationFlags & 4;
+				memory->mbcState.mbc6.flashOperationSector0Protected = state->mbc6.flashOperationFlags & 8;
+				LOAD_32LE(memory->mbcState.mbc6.flashOperationBank, 0, &state->mbc6.flashOperationBank);
+				LOAD_32LE(memory->mbcState.mbc6.flashOperationTarget, 0, &state->mbc6.flashOperationTarget);
+				uint32_t flashRemaining;
+				LOAD_32LE(flashRemaining, 0, &state->mbc6.flashOperationRemaining);
+				if (memory->mbcState.mbc6.flashOperationBusy) {
+					mTimingDeschedule(&gb->timing, &memory->mbc6FlashEvent);
+					mTimingSchedule(&gb->timing, &memory->mbc6FlashEvent, flashRemaining);
+				}
+			}
+		} else {
+			memory->mbcState.mbc6.flashEnable = false;
+			memory->mbcState.mbc6.flashWriteEnable = false;
+			memory->mbcState.mbc6.flashMode = 0;
+			memory->mbcState.mbc6.flashCommand = 0;
+			memory->mbcState.mbc6.flashProgramCount = 0;
+			memset(memory->mbcState.mbc6.flashProgramWritten, 0, sizeof(memory->mbcState.mbc6.flashProgramWritten));
+		}
 		GBMBCSwitchHalfBank(gb, 0, memory->currentBank);
 		GBMBCSwitchHalfBank(gb, 1, memory->currentBank1);
 		GBMBCSwitchSramHalfBank(gb, 0, memory->sramCurrentBank);

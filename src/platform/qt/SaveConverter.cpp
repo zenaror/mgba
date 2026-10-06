@@ -28,6 +28,12 @@
 
 using namespace QGBA;
 
+#ifdef M_CORE_GB
+static bool _isMBC6SramSize(size_t size) {
+	return size == 0x2000 || size == 0x4000 || size == 0x8000 || size == 0x10000 || size == 0x20000;
+}
+#endif
+
 SaveConverter::SaveConverter(QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
@@ -35,7 +41,10 @@ SaveConverter::SaveConverter(QWidget* parent)
 
 	connect(m_ui.inputFile, &QLineEdit::textEdited, this, &SaveConverter::refreshInputTypes);
 	connect(m_ui.inputBrowse, &QAbstractButton::clicked, this, [this]() {
-		QStringList formats{"*.gsv", "*.sav", "*.sgm", "*.sps", "*.ss0", "*.ss1", "*.ss2", "*.ss3", "*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9", "*.xps"};
+		QStringList formats{
+			"*.gsv", "*.sav", "*.sav.flash", "*.flash", "*.sgm", "*.sps", "*.ss0", "*.ss1", "*.ss2", "*.ss3",
+			"*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9", "*.xps"
+		};
 		QString filter = tr("Save games and save states (%1)").arg(formats.join(QChar(' ')));
 		QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save game or save state"), filter);
 		if (!filename.isEmpty()) {
@@ -48,7 +57,7 @@ SaveConverter::SaveConverter(QWidget* parent)
 	connect(m_ui.outputFile, &QLineEdit::textEdited, this, &SaveConverter::checkCanConvert);
 	connect(m_ui.outputBrowse, &QAbstractButton::clicked, this, [this]() {
 		// TODO: Add gameshark saves here too
-		QStringList formats{"*.sav", "*.sgm"};
+		QStringList formats{"*.sav", "*.sav.flash", "*.flash", "*.sgm"};
 		QString filter = tr("Save games (%1)").arg(formats.join(QChar(' ')));
 		QString filename = GBAApp::app()->getSaveFileName(this, tr("Select save game"), filter);
 		if (!filename.isEmpty()) {
@@ -255,7 +264,19 @@ void SaveConverter::detectFromSize(std::shared_ptr<VFileDevice> vf) {
 		m_validSaves.append(AnnotatedSave{GB_MBC2, vf});
 		break;
 	case GB_SIZE_MBC6_FLASH: // Flash only
-	case GB_SIZE_MBC6_FLASH + 0x8000: // Concatenated SRAM and flash
+	case GB_SIZE_MBC6_FLASH_STORAGE: // Flash, hidden region and protection state
+		m_validSaves.append(AnnotatedSave{GB_MBC6, vf});
+		break;
+	case GB_SIZE_MBC6_FLASH + 0x2000:
+	case GB_SIZE_MBC6_FLASH + 0x4000:
+	case GB_SIZE_MBC6_FLASH + 0x8000:
+	case GB_SIZE_MBC6_FLASH + 0x10000:
+	case GB_SIZE_MBC6_FLASH + 0x20000:
+	case GB_SIZE_MBC6_FLASH_STORAGE + 0x2000:
+	case GB_SIZE_MBC6_FLASH_STORAGE + 0x4000:
+	case GB_SIZE_MBC6_FLASH_STORAGE + 0x8000:
+	case GB_SIZE_MBC6_FLASH_STORAGE + 0x10000:
+	case GB_SIZE_MBC6_FLASH_STORAGE + 0x20000:
 		m_validSaves.append(AnnotatedSave{GB_MBC6, vf});
 		break;
 	case 0x20:
@@ -512,7 +533,7 @@ SaveConverter::AnnotatedSave::operator QString() const {
 			}
 			break;
 		case GB_MBC6:
-			if (size == GB_SIZE_MBC6_FLASH) {
+			if (size == GB_SIZE_MBC6_FLASH || size == GB_SIZE_MBC6_FLASH_STORAGE) {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 flash");
 			} else if (size > GB_SIZE_MBC6_FLASH) {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 combined SRAM + flash");
@@ -620,12 +641,32 @@ QList<SaveConverter::AnnotatedSave> SaveConverter::AnnotatedSave::possibleConver
 			}
 			break;
 		case GB_MBC6:
-			if (size > GB_SIZE_MBC6_FLASH) {
+			if (size > GB_SIZE_MBC6_FLASH_STORAGE && _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH_STORAGE)) {
+				AnnotatedSave separated = same;
+				separated.size = size - GB_SIZE_MBC6_FLASH_STORAGE;
+				possible.append(separated);
+				separated.size = GB_SIZE_MBC6_FLASH_STORAGE;
+				possible.append(separated);
+				separated.size = GB_SIZE_MBC6_FLASH;
+				possible.append(separated);
+				separated.size = size - GB_SIZE_MBC6_FLASH_EXTRA;
+				possible.append(separated); // Legacy combined SRAM + flash image
+			} else if (size > GB_SIZE_MBC6_FLASH && _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH)) {
 				AnnotatedSave separated = same;
 				separated.size = size - GB_SIZE_MBC6_FLASH;
 				possible.append(separated);
 				separated.size = GB_SIZE_MBC6_FLASH;
 				possible.append(separated);
+				separated.size = size + GB_SIZE_MBC6_FLASH_EXTRA;
+				possible.append(separated); // Current combined SRAM + flash image
+			} else if (size == GB_SIZE_MBC6_FLASH) {
+				AnnotatedSave extended = same;
+				extended.size = GB_SIZE_MBC6_FLASH_STORAGE;
+				possible.append(extended);
+			} else if (size == GB_SIZE_MBC6_FLASH_STORAGE) {
+				AnnotatedSave legacy = same;
+				legacy.size = GB_SIZE_MBC6_FLASH;
+				possible.append(legacy);
 			}
 			break;
 		default:
@@ -734,9 +775,34 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 			}
 			break;
 		case GB_MBC6:
-			if (size == target.size + GB_SIZE_MBC6_FLASH) {
-				converted = backing->read(target.size);
-			} else if (target.size == GB_SIZE_MBC6_FLASH) {
+			if (size > GB_SIZE_MBC6_FLASH_STORAGE && _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH_STORAGE) &&
+			    size - GB_SIZE_MBC6_FLASH_EXTRA == target.size) {
+				converted = backing->read(target.size); // Current combined image to legacy combined image
+			} else if (size > GB_SIZE_MBC6_FLASH && _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH) &&
+			           size + GB_SIZE_MBC6_FLASH_EXTRA == target.size) {
+				converted = backing->readAll();
+				converted.append(GB_SIZE_MBC6_FLASH_EXTRA, static_cast<char>(0xFF));
+				converted[converted.size() - 1] = 0; // Unprotected sector 0 by default
+			} else if (size == GB_SIZE_MBC6_FLASH && target.size == GB_SIZE_MBC6_FLASH_STORAGE) {
+				converted = backing->readAll();
+				converted.append(GB_SIZE_MBC6_FLASH_EXTRA, static_cast<char>(0xFF));
+				converted[converted.size() - 1] = 0;
+			} else if (size == GB_SIZE_MBC6_FLASH_STORAGE && target.size == GB_SIZE_MBC6_FLASH) {
+				converted = backing->read(GB_SIZE_MBC6_FLASH);
+			} else if (size > GB_SIZE_MBC6_FLASH_STORAGE &&
+			           _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH_STORAGE) &&
+			           size - GB_SIZE_MBC6_FLASH_STORAGE == target.size) {
+				converted = backing->read(target.size); // SRAM from new combined image
+			} else if (target.size == GB_SIZE_MBC6_FLASH_STORAGE && size > GB_SIZE_MBC6_FLASH_STORAGE &&
+			           _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH_STORAGE)) {
+				backing->seek(size - GB_SIZE_MBC6_FLASH_STORAGE);
+				converted = backing->read(GB_SIZE_MBC6_FLASH_STORAGE);
+			} else if (target.size == GB_SIZE_MBC6_FLASH && size > GB_SIZE_MBC6_FLASH_STORAGE && _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH_STORAGE)) {
+				backing->seek(size - GB_SIZE_MBC6_FLASH_STORAGE);
+				converted = backing->read(GB_SIZE_MBC6_FLASH);
+			} else if (size > GB_SIZE_MBC6_FLASH && _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH) && size - GB_SIZE_MBC6_FLASH == target.size) {
+				converted = backing->read(target.size); // SRAM from legacy combined image
+			} else if (target.size == GB_SIZE_MBC6_FLASH && size > GB_SIZE_MBC6_FLASH && _isMBC6SramSize(size - GB_SIZE_MBC6_FLASH)) {
 				backing->seek(size - GB_SIZE_MBC6_FLASH);
 				converted = backing->read(GB_SIZE_MBC6_FLASH);
 			}

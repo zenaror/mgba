@@ -62,7 +62,7 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 			bankStart &= GB_SIZE_MBC6_FLASH - 1;
 			bank = bankStart / GB_SIZE_CART_HALFBANK;
 		}
-		bankStart += gb->sramSize - GB_SIZE_MBC6_FLASH;
+		bankStart += gb->sramSize - GB_SIZE_MBC6_FLASH_STORAGE;
 	} else {
 		if (bankStart + GB_SIZE_CART_HALFBANK > gb->memory.romSize) {
 			mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
@@ -257,7 +257,7 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 
 void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM_HALFBANK;
-	size_t sramSize = gb->sramSize - GB_SIZE_MBC6_FLASH;
+	size_t sramSize = gb->sramSize - GB_SIZE_MBC6_FLASH_STORAGE;
 	if (bankStart + GB_SIZE_EXTERNAL_RAM_HALFBANK > sramSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid RAM bank: %0X", bank);
 		bankStart &= (sramSize - 1);
@@ -415,10 +415,12 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBMBC6;
 		gb->memory.mbcRead = _GBMBC6Read;
 		gb->memory.directSramAccess = false;
+		_GBMBC6InitFlashEvent(gb);
+		memset(&gb->memory.mbcState.mbc6, 0, sizeof(gb->memory.mbcState.mbc6));
 		if (!sramSize) {
 			sramSize = GB_SIZE_EXTERNAL_RAM; // Force minimum size for convenience
 		}
-		sramSize += GB_SIZE_MBC6_FLASH; // Flash is concatenated at the end
+		sramSize += GB_SIZE_MBC6_FLASH_STORAGE; // Flash and its hidden region/protection bit follow SRAM
 		break;
 	case GB_MBC7:
 		gb->memory.mbcWrite = _GBMBC7;
@@ -570,10 +572,13 @@ void GBMBCReset(struct GB* gb) {
 		gb->memory.mbcState.mbc1.bankLo = 1;
 		break;
 	case GB_MBC6:
+		if (gb->memory.sram && gb->sramSize >= GB_SIZE_MBC6_FLASH_STORAGE) {
+			gb->memory.mbcState.mbc6.flashSector0Protected = gb->memory.sram[gb->sramSize - 1] == 1;
+		}
 		GBMBCSwitchHalfBank(gb, 0, 2);
 		GBMBCSwitchHalfBank(gb, 1, 3);
 		GBMBCSwitchSramHalfBank(gb, 0, 0);
-		GBMBCSwitchSramHalfBank(gb, 0, 1);
+		GBMBCSwitchSramHalfBank(gb, 1, 1);
 		break;
 	case GB_MMM01:
 		GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);

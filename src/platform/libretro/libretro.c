@@ -74,6 +74,7 @@ static float audioSamplesPerFrameAvg;
 static void* data;
 static size_t dataSize;
 static void* savedata;
+static size_t savedataCapacity;
 static struct mAVStream stream;
 static bool sensorsInitDone;
 static bool rumbleInitDone;
@@ -347,7 +348,13 @@ static void _doDeferredSetup(void) {
 	// On the off-hand chance that a core actually expects its buffers to be populated when
 	// you actually first get them, you're out of luck without workarounds. Yup, seriously.
 	// Here's that workaround, but really the API needs to be thrown out and rewritten.
-	struct VFile* save = VFileFromMemory(savedata, GBA_SIZE_FLASH1M);
+	size_t saveSize = GBA_SIZE_FLASH1M;
+#ifdef M_CORE_GB
+	if (core->platform(core) == mPLATFORM_GB && ((struct GB*) core->board)->memory.mbcType == GB_MBC6) {
+		saveSize = ((struct GB*) core->board)->sramSize;
+	}
+#endif
+	struct VFile* save = VFileFromMemory(savedata, saveSize);
 	if (!core->loadSave(core, save)) {
 		save->close(save);
 	}
@@ -931,8 +938,16 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
 	core->setPeripheral(core, mPERIPH_ROTATION, &rotation);
 
-	savedata = anonymousMemoryMap(GBA_SIZE_FLASH1M);
-	memset(savedata, 0xFF, GBA_SIZE_FLASH1M);
+#ifdef M_CORE_GB
+	savedataCapacity = GB_SIZE_MBC6_FLASH_STORAGE + 0x20000;
+	if (savedataCapacity < GBA_SIZE_FLASH1M) {
+		savedataCapacity = GBA_SIZE_FLASH1M;
+	}
+#else
+	savedataCapacity = GBA_SIZE_FLASH1M;
+#endif
+	savedata = anonymousMemoryMap(savedataCapacity);
+	memset(savedata, 0xFF, savedataCapacity);
 
 	_reloadSettings();
 	core->loadROM(core, rom);
@@ -1014,8 +1029,9 @@ void retro_unload_game(void) {
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;
-	mappedMemoryFree(savedata, GBA_SIZE_FLASH1M);
+	mappedMemoryFree(savedata, savedataCapacity);
 	savedata = 0;
+	savedataCapacity = 0;
 }
 
 size_t retro_serialize_size(void) {

@@ -175,6 +175,8 @@ void GBHalt(struct SM83Core* cpu);
 struct VFile;
 bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
+// On success, ownership of both VFiles transfers to the returned combined view.
+struct VFile* GBMBC6CreateSaveVFile(struct GB* gb, struct VFile* sramVf, struct VFile* flashVf);
 void GBUnloadROM(struct GB* gb);
 void GBSynthesizeROM(struct VFile* vf);
 void GBYankROM(struct GB* gb);

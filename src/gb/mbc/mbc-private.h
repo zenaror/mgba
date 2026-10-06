@@ -19,6 +19,7 @@ void _GBMBC2(struct GB*, uint16_t address, uint8_t value);
 void _GBMBC3(struct GB*, uint16_t address, uint8_t value);
 void _GBMBC5(struct GB*, uint16_t address, uint8_t value);
 void _GBMBC6(struct GB*, uint16_t address, uint8_t value);
+void _GBMBC6InitFlashEvent(struct GB*);
 void _GBMBC7(struct GB*, uint16_t address, uint8_t value);
 
 void _GBMMM01(struct GB*, uint16_t address, uint8_t value);
