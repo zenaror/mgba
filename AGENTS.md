@@ -28,6 +28,10 @@ atual nem estas regras.
   componente (`Core:`, `mGUI:`, `Qt:`, `Libretro:`, `Third-Party:`, `All:`...).
 - Nunca reescreva commits de outras pessoas (Wit-MKW, upstream do mGBA) nem os
   branches do upstream. Histórico publicado só muda com autorização específica.
+- A base de atualização é `mgba-emu/master` do repositório oficial. Integre por
+  merge normal, preservando o histórico e as extensões locais Mobile Adapter/MBC6;
+  confira conflitos e compatibilidade antes de publicar. PRs ainda abertos não
+  fazem parte dessa base até serem integrados pelo projeto oficial.
 - A libmobile em `src/third-party/libmobile` é cópia byte a byte do fork
   zenaror/libmobile. Atualize copiando de novo do commit publicado; não edite à mão.
 - Nomes que vão para o servidor nunca se renomeiam: `ppp_id`, `action`, `counter`,
