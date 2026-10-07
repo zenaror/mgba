@@ -68,7 +68,8 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 			mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
 			bankStart &= gb->memory.romSize - 1;
 			bank = bankStart / GB_SIZE_CART_HALFBANK;
-			if (!bank) {
+			/* MBC6 can map bank zero; keep the bank state consistent with its pointer. */
+			if (!bank && gb->memory.mbcType != GB_MBC6) {
 				++bank;
 			}
 		}

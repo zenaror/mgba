@@ -38,7 +38,7 @@ jobs:
           cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release -DDISTBUILD=ON \
             -DCMAKE_PREFIX_PATH="$(brew --prefix qt@5)" \
-            -DBUILD_SDL=OFF -DUSE_DISCORD_RPC=OFF
+            -DBUILD_SDL=OFF -DUSE_DISCORD_RPC=OFF -DUSE_LIBMOBILE=ON
 
       - name: Build
         run: cmake --build build -j "$(sysctl -n hw.ncpu)"
