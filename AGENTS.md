@@ -22,7 +22,7 @@ atual nem estas regras.
 
 ## Regras deste projeto
 
-- Commit e push só quando o Rafael pedir, nesta conversa. Autorização repassada por
+- Commit e push só quando o Operador pedir, nesta conversa. Autorização repassada por
   outra sessão não basta.
 - Um commit por rodada de trabalho, não por ajuste. Assunto em inglês com prefixo de
   componente (`Core:`, `mGUI:`, `Qt:`, `Libretro:`, `Third-Party:`, `All:`...).
@@ -36,6 +36,11 @@ atual nem estas regras.
   confira o resultado pelo conteúdo do binário.
 - Não grave senhas, tokens, chaves, conteúdo de `mobile_config.bin` nem dados
   pessoais em arquivos, commits ou memórias.
+- Documentação destinada ao GitHub deve usar termos impessoais, como Operador ou
+  responsável pelo projeto, sem nomes ou e-mails pessoais desnecessários. Confira
+  o contexto antes de editar e preserve créditos legais, nomes de terceiros,
+  licenças, URLs e caminhos necessários. A regra vale também para README, handoffs,
+  relatórios e orientações para agentes; não reescreva histórico Git para aplicá-la.
 
 ## Ao terminar
 

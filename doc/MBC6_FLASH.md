@@ -246,6 +246,6 @@ in the minigame; releasing both returned to the host with the BOX2 catalog and
 flash unchanged. These are three tested examples, not proof for arbitrary games.
 
 REON does not implement billing. A game's price remains historical metadata;
-charging is not a required compatibility test. Rafael confirmed the admin panel
-test passed. Missing original downloadable minigames do not block validation of
+charging is not a required compatibility test. The project operator confirmed
+the admin panel test passed. Missing original downloadable minigames do not block validation of
 the emulator and the available Maker examples.
