@@ -223,3 +223,29 @@ preservation, and occupied-sector erase/copy/program checks. Relocated games and
 new content passed fresh-core gameplay/input/exit. Re-downloading the same ID
 with free space appended a copy; physical reuse was exercised separately after
 seven natural acquisitions. No whole-chip/BOX format menu was confirmed.
+
+### ROM bank zero and Maker exit compatibility
+
+MBC6 permits ROM bank zero in either 8 KiB window. The existing ROM-overflow
+wrap policy previously left the bank pointer at zero but recorded bank one.
+Switching ROM to flash and back then selected the wrong ROM data. The correction
+keeps the recorded bank consistent with the pointer for MBC6; other mappers and
+invalid-bank warnings retain their existing behavior. This does not establish
+the electrical meaning of selector bit 7. The same regression executable passes
+13/13 mapper cases with the fix, versus 12/13 with `61f28d126`; all 30 CTest
+targets pass with the corrected core.
+
+The Maker release-wait examples (C PAD, assembly PAD and C REACTION) were each
+downloaded by the original Net de Get through the authenticated local REON
+fixture, then stored in BOX2. Each complete 8 KiB payload matched its sealed
+Maker artifact and every byte outside the payload remained unchanged. Fresh
+cores launched the downloaded saves using only joypad inputs. Both PAD examples
+passed all eight controls. REACTION passed WAIT, early response, GO, scored
+response and reset states. Start+Select followed by holding Select kept control
+in the minigame; releasing both returned to the host with the BOX2 catalog and
+flash unchanged. These are three tested examples, not proof for arbitrary games.
+
+REON does not implement billing. A game's price remains historical metadata;
+charging is not a required compatibility test. Rafael confirmed the admin panel
+test passed. Missing original downloadable minigames do not block validation of
+the emulator and the available Maker examples.

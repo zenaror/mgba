@@ -332,6 +332,55 @@ M_TEST_DEFINE(mbc6EraseLatchStatusAccessCycle) {
 	assert_int_equal(core->busRead8(core, 0x6000), 0xFF);
 }
 
+/* Check the emulator's existing wrap policy, not the electrical meaning of bit 7. */
+static void _mbc6ROMZeroFixture(struct mCore* core, uint8_t selector) {
+	struct VFile* vf = VFileMemChunk(NULL, GB_SIZE_MBC6_FLASH);
+	assert_non_null(vf);
+	GBSynthesizeROM(vf);
+	assert_true(core->loadROM(core, vf));
+	struct GB* gb = core->board;
+	struct GBCartridge* cart = (struct GBCartridge*) &gb->memory.rom[0x100];
+	cart->type = 0x20;
+	gb->memory.mbcType = GB_MBC_AUTODETECT;
+	core->reset(core);
+	assert_int_equal(gb->memory.mbcType, GB_MBC6);
+	assert_int_equal(gb->memory.romSize, GB_SIZE_MBC6_FLASH);
+	gb->memory.rom[0] = 0x11;
+	gb->memory.rom[GB_SIZE_CART_HALFBANK] = 0x22;
+	uint8_t* flash = &gb->memory.sram[gb->memory.sramSize - GB_SIZE_MBC6_FLASH_STORAGE];
+	flash[0] = 0xCC;
+	core->busWrite8(core, 0x0C00, 1);
+
+	for (unsigned half = 0; half < 2; ++half) {
+		uint16_t bankRegister = half ? 0x3000 : 0x2000;
+		uint16_t sourceRegister = half ? 0x3800 : 0x2800;
+		uint16_t window = half ? 0x6000 : 0x4000;
+		core->busWrite8(core, sourceRegister, 0);
+		core->busWrite8(core, bankRegister, selector);
+		assert_int_equal(half ? gb->memory.currentBank1 : gb->memory.currentBank, 0);
+		assert_ptr_equal(half ? gb->memory.romBank1 : gb->memory.romBank, gb->memory.rom);
+		assert_int_equal(core->busRead8(core, window), 0x11);
+
+		core->busWrite8(core, sourceRegister, 8);
+		assert_int_equal(half ? gb->memory.currentBank1 : gb->memory.currentBank, 0);
+		assert_ptr_equal(half ? gb->memory.romBank1 : gb->memory.romBank, flash);
+		assert_int_equal(core->busRead8(core, window), 0xCC);
+
+		core->busWrite8(core, sourceRegister, 0);
+		assert_int_equal(half ? gb->memory.currentBank1 : gb->memory.currentBank, 0);
+		assert_ptr_equal(half ? gb->memory.romBank1 : gb->memory.romBank, gb->memory.rom);
+		assert_int_equal(core->busRead8(core, window), 0x11);
+	}
+}
+
+M_TEST_DEFINE(mbc6ROMZeroMapping) {
+	_mbc6ROMZeroFixture(*state, 0);
+}
+
+M_TEST_DEFINE(mbc6ROMWrappedZeroMapping) {
+	_mbc6ROMZeroFixture(*state, 0x80);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBMBC,
 	cmocka_unit_test(detectNone),
 	cmocka_unit_test(detect1),
@@ -343,4 +392,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBMBC,
 	cmocka_unit_test(mbc6EraseLatchContinuousAccess),
 	cmocka_unit_test(mbc6EraseLatchArrayAccessCycle),
 	cmocka_unit_test(mbc6EraseLatchBusyAccessCycle),
-	cmocka_unit_test(mbc6EraseLatchStatusAccessCycle))
+	cmocka_unit_test(mbc6EraseLatchStatusAccessCycle),
+	cmocka_unit_test(mbc6ROMZeroMapping),
+	cmocka_unit_test(mbc6ROMWrappedZeroMapping))
