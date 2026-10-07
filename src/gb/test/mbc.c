@@ -381,6 +381,81 @@ M_TEST_DEFINE(mbc6ROMWrappedZeroMapping) {
 	_mbc6ROMZeroFixture(*state, 0x80);
 }
 
+static struct GB* _mbc6SRAMFixture(struct mCore* core) {
+	struct GB* gb = core->board;
+	struct GBCartridge* cart = (struct GBCartridge*) &gb->memory.rom[0x100];
+	cart->type = 0x20;
+	cart->ramSize = 3;
+	gb->memory.mbcType = GB_MBC_AUTODETECT;
+	core->reset(core);
+	assert_int_equal(gb->memory.mbcType, GB_MBC6);
+	assert_int_equal(gb->sramSize, 0x8000 + GB_SIZE_MBC6_FLASH_STORAGE);
+	return gb;
+}
+
+M_TEST_DEFINE(mbc6SRAMHalfBankWrap) {
+	struct GB* gb = _mbc6SRAMFixture(*state);
+	const int selectors[] = {0, 15, 16, 255};
+	for (int bank = 0; bank < 8; ++bank) {
+		gb->memory.sram[bank * GB_SIZE_EXTERNAL_RAM_HALFBANK] = bank;
+	}
+	/* Composite save storage must not participate in SRAM address wrapping. */
+	gb->memory.sram[0x8000] = 0xCC;
+	for (int half = 0; half < 2; ++half) {
+		for (size_t i = 0; i < sizeof(selectors) / sizeof(*selectors); ++i) {
+			int expected = selectors[i] & 7;
+			GBMBCSwitchSramHalfBank(gb, half, selectors[i]);
+			uint8_t* pointer = half ? gb->memory.sramBank1 : gb->memory.sramBank;
+			assert_int_equal(half ? gb->memory.currentSramBank1 : gb->memory.sramCurrentBank, expected);
+			assert_ptr_equal(pointer, &gb->memory.sram[expected * GB_SIZE_EXTERNAL_RAM_HALFBANK]);
+			assert_int_equal(*pointer, expected);
+		}
+	}
+}
+
+M_TEST_DEFINE(mbc6SRAMHalfBankAbsent) {
+	struct GB* gb = _mbc6SRAMFixture(*state);
+	size_t allocationSize = gb->sramSize;
+	const size_t reportedSizes[] = {GB_SIZE_MBC6_FLASH_STORAGE, GB_SIZE_MBC6_FLASH_STORAGE - 1};
+	for (int half = 0; half < 2; ++half) {
+		GBMBCSwitchSramHalfBank(gb, half, 3);
+		uint8_t* previous = half ? gb->memory.sramBank1 : gb->memory.sramBank;
+		for (size_t i = 0; i < sizeof(reportedSizes) / sizeof(*reportedSizes); ++i) {
+			gb->sramSize = reportedSizes[i];
+			GBMBCSwitchSramHalfBank(gb, half, 0);
+			/* Restore the real allocation size before assertions or teardown. */
+			gb->sramSize = allocationSize;
+			assert_ptr_equal(half ? gb->memory.sramBank1 : gb->memory.sramBank, previous);
+			assert_int_equal(half ? gb->memory.currentSramBank1 : gb->memory.sramCurrentBank, 3);
+		}
+	}
+}
+
+M_TEST_DEFINE(mbc6SRAMHalfBankFallback) {
+	struct GB* gb = _mbc6SRAMFixture(*state);
+	size_t allocationSize = gb->sramSize;
+	const struct {
+		size_t sramSize;
+		int selector;
+		int expected;
+	} cases[] = {
+		{0x400, 15, 0},
+		{0x3000, 1, 1},
+		{0x3000, 3, 0},
+		{0x3000, 4, 0},
+	};
+	for (int half = 0; half < 2; ++half) {
+		for (size_t i = 0; i < sizeof(cases) / sizeof(*cases); ++i) {
+			gb->sramSize = cases[i].sramSize + GB_SIZE_MBC6_FLASH_STORAGE;
+			GBMBCSwitchSramHalfBank(gb, half, cases[i].selector);
+			gb->sramSize = allocationSize;
+			assert_int_equal(half ? gb->memory.currentSramBank1 : gb->memory.sramCurrentBank, cases[i].expected);
+			assert_ptr_equal(half ? gb->memory.sramBank1 : gb->memory.sramBank,
+			                 &gb->memory.sram[cases[i].expected * GB_SIZE_EXTERNAL_RAM_HALFBANK]);
+		}
+	}
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBMBC,
 	cmocka_unit_test(detectNone),
 	cmocka_unit_test(detect1),
@@ -394,4 +469,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(GBMBC,
 	cmocka_unit_test(mbc6EraseLatchBusyAccessCycle),
 	cmocka_unit_test(mbc6EraseLatchStatusAccessCycle),
 	cmocka_unit_test(mbc6ROMZeroMapping),
-	cmocka_unit_test(mbc6ROMWrappedZeroMapping))
+	cmocka_unit_test(mbc6ROMWrappedZeroMapping),
+	cmocka_unit_test(mbc6SRAMHalfBankWrap),
+	cmocka_unit_test(mbc6SRAMHalfBankAbsent),
+	cmocka_unit_test(mbc6SRAMHalfBankFallback))

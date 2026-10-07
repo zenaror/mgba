@@ -82,6 +82,20 @@ do not establish physical-chip electrical behavior.
 
 ## Persistence and savestates
 
+### Official upstream integration
+
+The fork integrates official `mgba-emu/mgba` master through ordinary merges,
+preserving upstream commits and the local Mobile Adapter/MBC6 implementation.
+The synchronization to `3a5e34be33dc7f8f707e5bc9db69e8a430046f21`
+retains the official ROM-size guards and adds them to MBC6 SRAM half-bank
+selection. Its effective SRAM size excludes the complete flash storage region,
+including hidden/protection metadata; wrapping uses this SRAM size rather than
+the composite backing allocation. Fallback bank zero must also reset the pointer
+offset. Regression cases cover both windows, wrapped selectors, absent SRAM,
+small SRAM and non-power-of-two SRAM sizes.
+
+### Save storage
+
 The host save is split into SRAM in `.sav` and flash-chip contents in
 `.sav.flash`. The flash sidecar includes the 1 MiB array, the 256-byte hidden
 map, and the protection metadata byte. An emulator harness loaded a synthetic
