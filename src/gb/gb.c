@@ -528,7 +528,14 @@ static bool _GBMBC6SaveClose(struct VFile* vf) {
 
 #ifdef ENABLE_VFS
 static struct VFile* _GBMBC6OpenFile(struct VDir* dir, const char* path, int mode) {
-	return dir ? dir->openFile(dir, path, mode) : VFileOpen(path, mode);
+#ifdef ENABLE_DIRECTORIES
+	if (dir) {
+		return dir->openFile(dir, path, mode);
+	}
+#else
+	UNUSED(dir);
+#endif
+	return VFileOpen(path, mode);
 }
 
 struct VFile* GBMBC6OpenFlashVFile(struct VDir* dir, const char* savePath) {
