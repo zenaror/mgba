@@ -62,7 +62,7 @@ assert len(flash) == 0x100101 and flash[:0x100000] == b'\xFF' * 0x100000
 assert len(payload) == 8192 and digest(payload) == args.payload_sha256
 root = Path(tempfile.mkdtemp(prefix='mgba-netdeget-local-'))
 (root / 'padtest.sav').write_bytes(sram)
-(root / 'padtest.sav.flash').write_bytes(flash)
+(root / 'padtest.flash').write_bytes(flash)
 repo = Path(__file__).resolve().parents[2]
 subprocess.run(['cc', '-O2', '-DENABLE_VFS', '-DENABLE_DIRECTORIES', '-DENABLE_INPUT',
                 '-I' + str(args.build / 'include'), '-I' + str(repo / 'include'),
@@ -117,7 +117,7 @@ for i, key in enumerate([1, 2, 8, 4, 16, 32, 64, 128]):
 assert 'counters=0101010101010101' in stages[142]
 assert 'A=20 B=0' in stages[144]
 assert 'A=0 B=0' in stages[180] and 'counters=0000000000000000' in stages[180]
-assert (root / 'padtest.sav.flash').read_bytes() == payload + flash[8192:]
+assert (root / 'padtest.flash').read_bytes() == payload + flash[8192:]
 assert (root / 'padtest.sav').read_bytes()[0x4F2:0x4F4] == b'\x10\x00'
 responses = (root / 'tcp-recv.bin').read_bytes().split(b'HTTP/1.0 ')[1:]
 bodies = [response.split(b'\r\n\r\n', 1)[1] for response in responses]
@@ -128,7 +128,7 @@ print('PASS natural download, flash write, eight inputs, exit and relaunch:', ro
 # Reload the downloaded save in a new core, with no adapter attached.
 reopened = root / 'reopened'
 reopened.mkdir()
-for name in ['padtest.sav', 'padtest.sav.flash']:
+for name in ['padtest.sav', 'padtest.flash']:
     (reopened / name).write_bytes((root / name).read_bytes())
 offline_macro = ['0:900', '8:3', '0:180', '1:3', '0:360', '1:3', '0:60', '1:3', '0:240']
 offline_macro += ['128:3', '0:10'] * 16 + ['1:3', '0:60', '1:3', '0:180',
@@ -144,5 +144,5 @@ assert 'A=0 B=0' in stages[44] and 'counters=0000000000000000' in stages[44]
 assert 'held=01' in stages[45] and 'counters=0100000000000000' in stages[45]
 assert 'held=00' in stages[46] and 'counters=0100000000000000' in stages[46]
 assert 'A=20 B=0' in stages[48]
-assert (reopened / 'padtest.sav.flash').read_bytes() == payload + flash[8192:]
+assert (reopened / 'padtest.flash').read_bytes() == payload + flash[8192:]
 print('PASS downloaded save fresh-core launch/input/exit, unchanged flash:', reopened)

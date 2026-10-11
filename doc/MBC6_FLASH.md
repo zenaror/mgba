@@ -96,14 +96,24 @@ small SRAM and non-power-of-two SRAM sizes.
 
 ### Save storage
 
-The host save is split into SRAM in `.sav` and flash-chip contents in
-`.sav.flash`. The flash sidecar includes the 1 MiB array, the 256-byte hidden
-map, and the protection metadata byte. An emulator harness loaded a synthetic
-legacy combined `.sav`, synchronized it, confirmed that mGBA split it into an
-SRAM-only `.sav` and a `0x100101`-byte `.sav.flash`, then reopened both through
-a fresh core and recovered the written SRAM and flash sentinels. A separate
-raw-sidecar fixture confirmed that a short flash image is expanded with erased
-(`FF`) bytes while preserving the SRAM section.
+The host save is split into SRAM in `game.sav` and flash-chip contents in
+`game.flash`. Net de Get stores its BOX/catalog and per-game save files in
+SRAM, separately from downloaded minigame programs in flash. The flash file
+includes the 1 MiB array, the 256-byte hidden map, and the protection metadata
+byte. These represent separate cartridge memories, even though the emulator
+presents one combined savedata buffer internally.
+
+When `game.flash` is absent, the old `game.sav.flash` is copied byte for byte
+into the new file; the old file is preserved. A temporary `.flash.mgba-import`
+marker remains until synchronization succeeds, allowing a process-interrupted import
+to be retried from the old file. Unreadable files cause a load failure rather
+than silently replacing their contents with an empty flash. An existing `game.flash` takes
+precedence, including an intentionally empty file. Multiplayer SRAM files
+such as `game.sa2` use `game.2.flash`, with import from `game.sa2.flash`.
+Explicit save paths replace their final extension with `.flash` as well.
+Legacy combined `.sav` images remain supported by the existing combined-save
+adapter. Historical harness runs below used the former `.sav.flash` naming;
+they are evidence for storage contents, not tests of the renamed-file loader.
 
 Savestates retain volatile flash command/buffer/operation state; the flash
 array itself remains in savedata. Disposable-core checks restored a pending

@@ -18,6 +18,7 @@
 #include <mgba-util/patch.h>
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
+#include <errno.h>
 
 const uint32_t CGB_SM83_FREQUENCY = 0x800000;
 const uint32_t SGB_SM83_FREQUENCY = 0x418B1E;
@@ -302,7 +303,7 @@ struct GBMBC6SaveVFile {
 	bool legacyCombined;
 };
 
-// The frontend sees one combined save image; disk stores SRAM in .sav and chip data in .sav.flash.
+// The frontend sees one combined save image; disk stores SRAM in .sav and chip data in .flash.
 static bool _GBMBC6SaveRead(struct VFile* vf, off_t offset, void* data, size_t size) {
 	if (offset < 0 || vf->seek(vf, offset, SEEK_SET) < 0) {
 		return false;
@@ -525,6 +526,122 @@ static bool _GBMBC6SaveClose(struct VFile* vf) {
 	free(save);
 	return true;
 }
+
+#ifdef ENABLE_VFS
+static struct VFile* _GBMBC6OpenFile(struct VDir* dir, const char* path, int mode) {
+	return dir ? dir->openFile(dir, path, mode) : VFileOpen(path, mode);
+}
+
+struct VFile* GBMBC6OpenFlashVFile(struct VDir* dir, const char* savePath) {
+	char path[PATH_MAX + 1];
+	char legacyPath[PATH_MAX + 1];
+	const char* basename = savePath;
+	for (const char* cursor = savePath; *cursor; ++cursor) {
+		if (*cursor == '/' || *cursor == '\\') {
+			basename = cursor + 1;
+		}
+	}
+	const char* extension = strrchr(basename, '.');
+	size_t stemLength = extension ? (size_t) (extension - savePath) : strlen(savePath);
+	// Preserve separate multiplayer saves without appending the SRAM extension.
+	const char* player = NULL;
+	if (extension && !strncmp(extension, ".sa", 3)) {
+		const char* cursor = extension + 3;
+		if (*cursor) {
+			while (*cursor >= '0' && *cursor <= '9') {
+				++cursor;
+			}
+			if (!*cursor) {
+				player = extension + 3;
+			}
+		}
+	}
+	int length = player ? snprintf(path, sizeof(path), "%.*s.%s.flash", (int) stemLength, savePath, player)
+	                    : snprintf(path, sizeof(path), "%.*s.flash", (int) stemLength, savePath);
+	if (length < 0 || length >= (int) sizeof(path)) {
+		return NULL;
+	}
+	if (!strcasecmp(path, savePath)) {
+		return NULL; // A flash image cannot also be the SRAM file.
+	}
+	length = snprintf(legacyPath, sizeof(legacyPath), "%s.flash", savePath);
+	if (length < 0 || length >= (int) sizeof(legacyPath)) {
+		return NULL;
+	}
+	char pendingPath[PATH_MAX + 1];
+	length = snprintf(pendingPath, sizeof(pendingPath), "%s.mgba-import", path);
+	if (length < 0 || length >= (int) sizeof(pendingPath)) {
+		return NULL;
+	}
+	errno = 0;
+	struct VFile* pending = _GBMBC6OpenFile(dir, pendingPath, O_RDONLY);
+	bool recovering = pending != NULL;
+	if (pending) {
+		pending->close(pending);
+	} else if (errno != ENOENT) {
+		return NULL;
+	}
+	errno = 0;
+	struct VFile* flash = _GBMBC6OpenFile(dir, path, O_RDWR);
+	if (!recovering) {
+		if (flash) {
+			return flash; // Existing canonical files, even empty ones, take precedence.
+		}
+		if (errno != ENOENT) {
+			return NULL;
+		}
+	} else if (flash) {
+		flash->close(flash);
+	}
+	errno = 0;
+	struct VFile* legacy = _GBMBC6OpenFile(dir, legacyPath, O_RDONLY);
+	if (!legacy) {
+		if (recovering || errno != ENOENT) {
+			return NULL; // Never turn an unreadable old flash into a new empty one.
+		}
+		return _GBMBC6OpenFile(dir, path, O_CREAT | O_EXCL | O_RDWR);
+	}
+	ssize_t size = legacy->size(legacy);
+	if (size < 0) {
+		legacy->close(legacy);
+		return NULL;
+	}
+	// Keep a recovery marker until the entire import is synchronized.
+	// An interrupted copy is retried from the untouched legacy file next time.
+	pending = _GBMBC6OpenFile(dir, pendingPath, recovering ? O_RDWR : O_CREAT | O_EXCL | O_RDWR);
+	bool ok = pending && pending->sync(pending, NULL, 0);
+	if (pending) {
+		pending->close(pending);
+	}
+	flash = ok ? _GBMBC6OpenFile(dir, path, recovering ? O_CREAT | O_RDWR : O_CREAT | O_EXCL | O_RDWR) : NULL;
+	ok = ok && flash;
+	uint8_t buffer[4096];
+	for (off_t offset = 0; ok && offset < size;) {
+		size_t chunk = size - offset;
+		if (chunk > sizeof(buffer)) {
+			chunk = sizeof(buffer);
+		}
+		ok = _GBMBC6SaveRead(legacy, offset, buffer, chunk) && _GBMBC6SaveWrite(flash, offset, buffer, chunk);
+		offset += chunk;
+	}
+	legacy->close(legacy);
+	if (ok) {
+		flash->truncate(flash, size);
+		ok = flash->size(flash) == size && flash->sync(flash, NULL, 0) && flash->seek(flash, 0, SEEK_SET) == 0;
+	}
+	if (ok) {
+		ok = dir ? dir->deleteFile && dir->deleteFile(dir, pendingPath) : remove(pendingPath) == 0;
+	}
+	if (!ok) {
+		if (flash) {
+			flash->close(flash);
+		}
+		// Leave the marker for recovery rather than accepting a partial new file.
+		return NULL;
+	}
+	return flash;
+}
+#endif
 
 struct VFile* GBMBC6CreateSaveVFile(struct GB* gb, struct VFile* sramVf, struct VFile* flashVf) {
 	if (!gb || gb->memory.mbcType != GB_MBC6 || !sramVf || !flashVf || gb->sramSize < GB_SIZE_MBC6_FLASH_STORAGE) {

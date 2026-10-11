@@ -254,18 +254,18 @@ bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary) {
 		if (core->platform(core) == mPLATFORM_GB) {
 			struct GB* gb = core->board;
 			if (gb->memory.mbcType == GB_MBC6) {
-				char flashPath[PATH_MAX + 1];
-				if (snprintf(flashPath, sizeof(flashPath), "%s.flash", path) < (int) sizeof(flashPath)) {
-					struct VFile* flash = VFileOpen(flashPath, O_CREAT | O_RDWR);
-					if (flash) {
-						struct VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
-						if (combined) {
-							vf = combined;
-						} else {
-							flash->close(flash);
-						}
-					}
+				struct VFile* flash = GBMBC6OpenFlashVFile(NULL, path);
+				if (!flash) {
+					vf->close(vf);
+					return false;
 				}
+				struct VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
+				if (!combined) {
+					flash->close(flash);
+					vf->close(vf);
+					return false;
+				}
+				vf = combined;
 			}
 		}
 #endif
@@ -292,17 +292,21 @@ bool mCoreAutoloadSave(struct mCore* core) {
 	if (core->platform(core) == mPLATFORM_GB) {
 		struct GB* gb = core->board;
 		if (gb->memory.mbcType == GB_MBC6) {
-			char flashSuffix[sizeof(sav) + sizeof(".flash")];
-			snprintf(flashSuffix, sizeof(flashSuffix), "%s.flash", sav);
-			struct VFile* flash = mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, flashSuffix, O_CREAT | O_RDWR);
-			if (flash) {
-				struct VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
-				if (combined) {
-					vf = combined;
-				} else {
-					flash->close(flash);
-				}
+			char saveName[PATH_MAX + 1];
+			int length = snprintf(saveName, sizeof(saveName), "%s%s", core->dirs.baseName, sav);
+			struct VFile* flash = length >= 0 && length < (int) sizeof(saveName)
+			                   ? GBMBC6OpenFlashVFile(core->dirs.save, saveName) : NULL;
+			if (!flash) {
+				vf->close(vf);
+				return false;
 			}
+			struct VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
+			if (!combined) {
+				flash->close(flash);
+				vf->close(vf);
+				return false;
+			}
+			vf = combined;
 		}
 	}
 #endif

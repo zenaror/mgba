@@ -856,15 +856,19 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 		if (!temporary && m_threadContext.core->platform(m_threadContext.core) == mPLATFORM_GB) {
 			struct GB* gb = static_cast<struct GB*>(m_threadContext.core->board);
 			if (gb->memory.mbcType == GB_MBC6) {
-				VFile* flash = VFileDevice::open(path + QLatin1String(".flash"), O_CREAT | O_RDWR);
-				if (flash) {
-					VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
-					if (combined) {
-						vf = combined;
-					} else {
-						flash->close(flash);
-					}
+				VFile* flash = GBMBC6OpenFlashVFile(nullptr, path.toUtf8().constData());
+				if (!flash) {
+					vf->close(vf);
+					LOG(QT, ERROR) << tr("Failed to open flash file for save: %1").arg(path);
+					return;
 				}
+				VFile* combined = GBMBC6CreateSaveVFile(gb, vf, flash);
+				if (!combined) {
+					flash->close(flash);
+					vf->close(vf);
+					return;
+				}
+				vf = combined;
 			}
 		}
 
@@ -891,15 +895,19 @@ void CoreController::loadSave(VFile* vf, bool temporary, const QString& path) {
 		if (!temporary && !path.isEmpty() && m_threadContext.core->platform(m_threadContext.core) == mPLATFORM_GB) {
 			struct GB* gb = static_cast<struct GB*>(m_threadContext.core->board);
 			if (gb->memory.mbcType == GB_MBC6) {
-				VFile* flash = VFileDevice::open(path + QLatin1String(".flash"), O_CREAT | O_RDWR);
-				if (flash) {
-					VFile* combined = GBMBC6CreateSaveVFile(gb, save, flash);
-					if (combined) {
-						save = combined;
-					} else {
-						flash->close(flash);
-					}
+				VFile* flash = GBMBC6OpenFlashVFile(nullptr, path.toUtf8().constData());
+				if (!flash) {
+					save->close(save);
+					LOG(QT, ERROR) << tr("Failed to open flash file for save: %1").arg(path);
+					return;
 				}
+				VFile* combined = GBMBC6CreateSaveVFile(gb, save, flash);
+				if (!combined) {
+					flash->close(flash);
+					save->close(save);
+					return;
+				}
+				save = combined;
 			}
 		}
 		bool ok;
@@ -1436,16 +1444,18 @@ void CoreController::updatePlayerSave() {
 	if (save && m_threadContext.core->platform(m_threadContext.core) == mPLATFORM_GB) {
 		struct GB* gb = static_cast<struct GB*>(m_threadContext.core->board);
 		if (gb->memory.mbcType == GB_MBC6) {
-			QByteArray flashSuffix = (saveSuffix + QLatin1String(".flash")).toUtf8();
-			VFile* flash = mDirectorySetOpenSuffix(&m_threadContext.core->dirs, m_threadContext.core->dirs.save,
-			                                      flashSuffix.constData(), O_CREAT | O_RDWR);
-			if (flash) {
-				VFile* combined = GBMBC6CreateSaveVFile(gb, save, flash);
-				if (combined) {
-					save = combined;
-				} else {
+			QByteArray saveName = QByteArray(m_threadContext.core->dirs.baseName) + saveSuffixBin;
+			VFile* flash = GBMBC6OpenFlashVFile(m_threadContext.core->dirs.save, saveName.constData());
+			VFile* combined = flash ? GBMBC6CreateSaveVFile(gb, save, flash) : nullptr;
+			if (!combined) {
+				if (flash) {
 					flash->close(flash);
 				}
+				save->close(save);
+				save = nullptr;
+				LOG(QT, ERROR) << tr("Failed to open flash file for save: %1").arg(QString::fromUtf8(saveName));
+			} else {
+				save = combined;
 			}
 		}
 	}

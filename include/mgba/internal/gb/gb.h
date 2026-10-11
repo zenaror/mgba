@@ -173,6 +173,11 @@ void GBUpdateIRQs(struct GB* gb);
 void GBHalt(struct SM83Core* cpu);
 
 struct VFile;
+struct VDir;
+#ifdef ENABLE_VFS
+// Opens the standalone flash file, importing the old appended suffix if needed.
+struct VFile* GBMBC6OpenFlashVFile(struct VDir* dir, const char* savePath);
+#endif
 bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
 // On success, ownership of both VFiles transfers to the returned combined view.
