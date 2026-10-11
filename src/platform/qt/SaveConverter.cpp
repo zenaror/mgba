@@ -42,7 +42,7 @@ SaveConverter::SaveConverter(QWidget* parent)
 	connect(m_ui.inputFile, &QLineEdit::textEdited, this, &SaveConverter::refreshInputTypes);
 	connect(m_ui.inputBrowse, &QAbstractButton::clicked, this, [this]() {
 		QStringList formats{
-			"*.gsv", "*.sav", "*.sav.flash", "*.flash", "*.sgm", "*.sps", "*.ss0", "*.ss1", "*.ss2", "*.ss3",
+			"*.gsv", "*.sav", "*.flash", "*.sgm", "*.sps", "*.ss0", "*.ss1", "*.ss2", "*.ss3",
 			"*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9", "*.xps"
 		};
 		QString filter = tr("Save games and save states (%1)").arg(formats.join(QChar(' ')));
@@ -57,7 +57,7 @@ SaveConverter::SaveConverter(QWidget* parent)
 	connect(m_ui.outputFile, &QLineEdit::textEdited, this, &SaveConverter::checkCanConvert);
 	connect(m_ui.outputBrowse, &QAbstractButton::clicked, this, [this]() {
 		// TODO: Add gameshark saves here too
-		QStringList formats{"*.sav", "*.sav.flash", "*.flash", "*.sgm"};
+		QStringList formats{"*.sav", "*.flash", "*.sgm"};
 		QString filter = tr("Save games (%1)").arg(formats.join(QChar(' ')));
 		QString filename = GBAApp::app()->getSaveFileName(this, tr("Select save game"), filter);
 		if (!filename.isEmpty()) {

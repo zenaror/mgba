@@ -103,13 +103,9 @@ includes the 1 MiB array, the 256-byte hidden map, and the protection metadata
 byte. These represent separate cartridge memories, even though the emulator
 presents one combined savedata buffer internally.
 
-When `game.flash` is absent, the old `game.sav.flash` is copied byte for byte
-into the new file; the old file is preserved. A temporary `.flash.mgba-import`
-marker remains until synchronization succeeds, allowing a process-interrupted import
-to be retried from the old file. Unreadable files cause a load failure rather
-than silently replacing their contents with an empty flash. An existing `game.flash` takes
-precedence, including an intentionally empty file. Multiplayer SRAM files
-such as `game.sa2` use `game.2.flash`, with import from `game.sa2.flash`.
+A missing `game.flash` is created as a new chip image. The loader only opens
+this canonical filename; it does not import files with appended SRAM suffixes.
+Multiplayer SRAM files such as `game.sa2` use `game.2.flash`.
 Explicit save paths replace their final extension with `.flash` as well.
 Legacy combined `.sav` images remain supported by the existing combined-save
 adapter. Historical harness runs below used the former `.sav.flash` naming;

@@ -175,7 +175,7 @@ void GBHalt(struct SM83Core* cpu);
 struct VFile;
 struct VDir;
 #ifdef ENABLE_VFS
-// Opens the standalone flash file, importing the old appended suffix if needed.
+// Opens the standalone flash file alongside the SRAM save.
 struct VFile* GBMBC6OpenFlashVFile(struct VDir* dir, const char* savePath);
 #endif
 bool GBLoadROM(struct GB* gb, struct VFile* vf);
