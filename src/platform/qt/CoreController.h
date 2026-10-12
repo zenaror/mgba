@@ -212,7 +212,9 @@ public slots:
 	void saveMobileAdapterConfig();
 	void importMobileAdapterConfig(const QString& filename);
 	bool updateMobileAdapter(QString* statusText, QString* userNumber, QString* peerNumber);
-	struct MobileAdapterGB* getMobileAdapter() { return platform() == mPLATFORM_GBA ? &m_mobile.m : &m_gbmobile.m; }
+	struct MobileAdapterGB* getMobileAdapter() {
+		return platform() == mPLATFORM_GBA ? &m_mobile.m : &m_gbMobile.m;
+	}
 #endif
 
 #ifdef M_CORE_GBA
@@ -359,7 +361,7 @@ private:
 		CoreController* parent;
 	} m_printer;
 #ifdef USE_LIBMOBILE
-	GBSIOMobileAdapter m_gbmobile;
+	GBSIOMobileAdapter m_gbMobile;
 #endif
 #endif
 

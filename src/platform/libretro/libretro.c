@@ -74,7 +74,7 @@ static float audioSamplesPerFrameAvg;
 static void* data;
 static size_t dataSize;
 static void* savedata;
-static size_t savedataCapacity;
+static size_t _savedataCapacity;
 static struct mAVStream stream;
 static bool sensorsInitDone;
 static bool rumbleInitDone;
@@ -939,15 +939,15 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->setPeripheral(core, mPERIPH_ROTATION, &rotation);
 
 #ifdef M_CORE_GB
-	savedataCapacity = GB_SIZE_MBC6_FLASH_STORAGE + 0x20000;
-	if (savedataCapacity < GBA_SIZE_FLASH1M) {
-		savedataCapacity = GBA_SIZE_FLASH1M;
+	_savedataCapacity = GB_SIZE_MBC6_FLASH_STORAGE + 0x20000;
+	if (_savedataCapacity < GBA_SIZE_FLASH1M) {
+		_savedataCapacity = GBA_SIZE_FLASH1M;
 	}
 #else
-	savedataCapacity = GBA_SIZE_FLASH1M;
+	_savedataCapacity = GBA_SIZE_FLASH1M;
 #endif
-	savedata = anonymousMemoryMap(savedataCapacity);
-	memset(savedata, 0xFF, savedataCapacity);
+	savedata = anonymousMemoryMap(_savedataCapacity);
+	memset(savedata, 0xFF, _savedataCapacity);
 
 	_reloadSettings();
 	core->loadROM(core, rom);
@@ -1029,9 +1029,9 @@ void retro_unload_game(void) {
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;
-	mappedMemoryFree(savedata, savedataCapacity);
+	mappedMemoryFree(savedata, _savedataCapacity);
 	savedata = 0;
-	savedataCapacity = 0;
+	_savedataCapacity = 0;
 }
 
 size_t retro_serialize_size(void) {

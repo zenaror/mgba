@@ -36,25 +36,25 @@ static bool _configWrite(void* user, const void* src, uintptr_t offset, size_t s
 	return true;
 }
 
-static bool _sockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype,
-                      unsigned bindport) {
+static bool _sockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrType,
+                      unsigned bindPort) {
 	struct MobileAdapterGB* mobile = user;
 
 	Socket fd;
 
-	mobile->socket[conn].socktype = type;
+	mobile->socket[conn].sockType = type;
 
-	struct Address bindaddr = {0};
-	if (addrtype != MOBILE_ADDRTYPE_IPV6) {
-		bindaddr.version = IPV4;
+	struct Address bindAddr = {0};
+	if (addrType != MOBILE_ADDRTYPE_IPV6) {
+		bindAddr.version = IPV4;
 	} else {
-		bindaddr.version = IPV6;
+		bindAddr.version = IPV6;
 	}
 
 	if (type != MOBILE_SOCKTYPE_UDP) {
-		fd = SocketOpenTCP(bindport, &bindaddr);
+		fd = SocketOpenTCP(bindPort, &bindAddr);
 	} else {
-		fd = SocketOpenUDP(bindport, &bindaddr);
+		fd = SocketOpenUDP(bindPort, &bindAddr);
 	}
 	if (!SOCKET_FAILED(fd)) {
 		SocketSetBlocking(fd, false);
@@ -71,7 +71,7 @@ static void _sockClose(void* user, unsigned conn) {
 		SocketClose(mobile->socket[conn].fd);
 	}
 	mobile->socket[conn].fd = INVALID_SOCKET;
-	mobile->socket[conn].socktype = 0;
+	mobile->socket[conn].sockType = 0;
 }
 
 static int _sockConnect(void* user, unsigned conn, const struct mobile_addr* addr) {
@@ -79,25 +79,25 @@ static int _sockConnect(void* user, unsigned conn, const struct mobile_addr* add
 
 	Socket fd = mobile->socket[conn].fd;
 
-	struct Address connaddr;
-	int connport;
+	struct Address connAddr;
+	int connPort;
 	if (addr->type == MOBILE_ADDRTYPE_IPV6) {
 		const struct mobile_addr6* addr6 = (struct mobile_addr6*) addr;
-		connaddr.version = IPV6;
-		memcpy(&connaddr.ipv6, addr6->host, MOBILE_HOSTLEN_IPV6);
-		connport = addr6->port;
+		connAddr.version = IPV6;
+		memcpy(&connAddr.ipv6, addr6->host, MOBILE_HOSTLEN_IPV6);
+		connPort = addr6->port;
 	} else {
 		const struct mobile_addr4* addr4 = (struct mobile_addr4*) addr;
-		connaddr.version = IPV4;
-		connaddr.ipv4 = ntohl(*(uint32_t*) &addr4->host);
-		connport = addr4->port;
+		connAddr.version = IPV4;
+		connAddr.ipv4 = ntohl(*(uint32_t*) &addr4->host);
+		connPort = addr4->port;
 	}
 
 	// Two slightly uncommon assumptions are being made about SocketConnect:
 	// (these are true under any *strict* implementation of BSD sockets)
 	// - It works on a socket that has been obtained through SocketOpenTCP/UDP()
 	// - It doesn't block when SocketSetBlocking() has been used
-	int rc = SocketConnect(fd, connport, &connaddr);
+	int rc = SocketConnect(fd, connPort, &connAddr);
 	if (!rc || SocketIsConnected()) {
 		return 1;
 	}
@@ -127,27 +127,27 @@ static bool _sockAccept(void* user, unsigned conn) {
 static int _sockSend(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
-	struct Address sendaddr;
-	int destport = 0;
-	struct Address* destaddr = NULL;
+	struct Address sendAddr;
+	int destPort = 0;
+	struct Address* destAddr = NULL;
 
 	if (addr) {
 		if (addr->type == MOBILE_ADDRTYPE_IPV6) {
 			const struct mobile_addr6* addr6 = (struct mobile_addr6*) addr;
-			sendaddr.version = IPV6;
-			memcpy(&sendaddr.ipv6, addr6->host, MOBILE_HOSTLEN_IPV6);
-			destaddr = &sendaddr;
-			destport = addr6->port;
+			sendAddr.version = IPV6;
+			memcpy(&sendAddr.ipv6, addr6->host, MOBILE_HOSTLEN_IPV6);
+			destAddr = &sendAddr;
+			destPort = addr6->port;
 		} else {
 			const struct mobile_addr4* addr4 = (struct mobile_addr4*) addr;
-			sendaddr.version = IPV4;
-			sendaddr.ipv4 = ntohl(*(uint32_t*) &addr4->host);
-			destaddr = &sendaddr;
-			destport = addr4->port;
+			sendAddr.version = IPV4;
+			sendAddr.ipv4 = ntohl(*(uint32_t*) &addr4->host);
+			destAddr = &sendAddr;
+			destPort = addr4->port;
 		}
 	}
 
-	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destport, destaddr);
+	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destPort, destAddr);
 	return !SOCKET_RESERROR(res) ? res : -1;
 }
 
@@ -157,28 +157,28 @@ static int _sockRecv(void* user, unsigned conn, void* data, unsigned size, struc
 	// No polling first: the socket is non-blocking, so the read below already
 	// answers "has anything arrived" by itself, and it answers honestly on
 	// services whose polling does not.
-	struct Address srcaddr = {0};
-	int srcport = 0;
-	ssize_t res = SocketRecvFrom(mobile->socket[conn].fd, data, size, &srcport, &srcaddr);
+	struct Address srcAddr = {0};
+	int srcPort = 0;
+	ssize_t res = SocketRecvFrom(mobile->socket[conn].fd, data, size, &srcPort, &srcAddr);
 	if (SOCKET_RESERROR(res)) {
 		return SocketWouldBlock() ? 0 : -1;
 	}
 
 	if (res > 0 && addr) {
-		if (srcaddr.version == IPV6) {
+		if (srcAddr.version == IPV6) {
 			struct mobile_addr6* addr6 = (struct mobile_addr6*) addr;
 			addr6->type = MOBILE_ADDRTYPE_IPV6;
-			memcpy(&addr6->host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
-			addr6->port = srcport;
+			memcpy(&addr6->host, &srcAddr.ipv6, MOBILE_HOSTLEN_IPV6);
+			addr6->port = srcPort;
 		} else {
 			struct mobile_addr4* addr4 = (struct mobile_addr4*) addr;
 			addr4->type = MOBILE_ADDRTYPE_IPV4;
-			*(uint32_t*) &addr4->host = htonl(srcaddr.ipv4);
-			addr4->port = srcport;
+			*(uint32_t*) &addr4->host = htonl(srcAddr.ipv4);
+			addr4->port = srcPort;
 		}
 	}
 
-	return (res || (mobile->socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
+	return (res || (mobile->socket[conn].sockType == MOBILE_SOCKTYPE_UDP)) ? res : -2;
 }
 
 static void _updateNumber(void* user, enum mobile_number type, const char* number) {

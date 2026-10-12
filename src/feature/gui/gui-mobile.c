@@ -290,23 +290,23 @@ static bool _vitaConnecting[MOBILE_MAX_CONNECTIONS];
 static unsigned _vitaConnectTicks[MOBILE_MAX_CONNECTIONS];
 #endif
 
-static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype,
-                             unsigned bindport) {
+static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrType,
+                             unsigned bindPort) {
 	struct MobileAdapterGB* mobile = user;
 
-	mobile->socket[conn].socktype = type;
+	mobile->socket[conn].sockType = type;
 #ifdef PSP2
 	_vitaConnecting[conn] = false;
 #endif
 
-	struct Address bindaddr = {0};
-	bindaddr.version = addrtype != MOBILE_ADDRTYPE_IPV6 ? IPV4 : IPV6;
+	struct Address bindAddr = {0};
+	bindAddr.version = addrType != MOBILE_ADDRTYPE_IPV6 ? IPV4 : IPV6;
 
 	Socket fd;
 	if (type != MOBILE_SOCKTYPE_UDP) {
-		fd = SocketOpenTCP(bindport, &bindaddr);
+		fd = SocketOpenTCP(bindPort, &bindAddr);
 	} else {
-		fd = SocketOpenUDP(bindport, &bindaddr);
+		fd = SocketOpenUDP(bindPort, &bindAddr);
 	}
 	if (SOCKET_FAILED(fd)) {
 		if (_traceSockets) {
@@ -317,7 +317,7 @@ static bool _loggingSockOpen(void* user, unsigned conn, enum mobile_socktype typ
 		SocketSetBlocking(fd, false);
 		if (_traceSockets) {
 			_logPrintf("<mGBA> conn %u open %s ok, port %u", conn,
-			           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", bindport);
+			           type == MOBILE_SOCKTYPE_UDP ? "udp" : "tcp", bindPort);
 		}
 	}
 
@@ -329,25 +329,25 @@ static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigne
                             const struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
-	struct Address sendaddr = {0};
-	int destport = 0;
-	struct Address* destaddr = NULL;
+	struct Address sendAddr = {0};
+	int destPort = 0;
+	struct Address* destAddr = NULL;
 	if (addr) {
-		destaddr = &sendaddr;
+		destAddr = &sendAddr;
 		if (addr->type == MOBILE_ADDRTYPE_IPV6) {
 			const struct mobile_addr6* addr6 = (const struct mobile_addr6*) addr;
-			sendaddr.version = IPV6;
-			memcpy(&sendaddr.ipv6, addr6->host, MOBILE_HOSTLEN_IPV6);
-			destport = addr6->port;
+			sendAddr.version = IPV6;
+			memcpy(&sendAddr.ipv6, addr6->host, MOBILE_HOSTLEN_IPV6);
+			destPort = addr6->port;
 		} else {
 			const struct mobile_addr4* addr4 = (const struct mobile_addr4*) addr;
-			sendaddr.version = IPV4;
-			sendaddr.ipv4 = ntohl(*(const uint32_t*) &addr4->host);
-			destport = addr4->port;
+			sendAddr.version = IPV4;
+			sendAddr.ipv4 = ntohl(*(const uint32_t*) &addr4->host);
+			destPort = addr4->port;
 		}
 	}
 
-	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destport, destaddr);
+	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destPort, destAddr);
 	if (SOCKET_RESERROR(res)) {
 		if (_traceSockets) {
 			_logPrintf("<mGBA> conn %u send failed (%i)", conn, SocketError());
@@ -356,8 +356,8 @@ static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigne
 	}
 	if (_traceSockets) {
 		_logPrintf("<mGBA> conn %u sent %i to %u.%u.%u.%u:%i", conn, (int) res,
-		           (unsigned) ((sendaddr.ipv4 >> 24) & 0xFF), (unsigned) ((sendaddr.ipv4 >> 16) & 0xFF),
-		           (unsigned) ((sendaddr.ipv4 >> 8) & 0xFF), (unsigned) (sendaddr.ipv4 & 0xFF), destport);
+		           (unsigned) ((sendAddr.ipv4 >> 24) & 0xFF), (unsigned) ((sendAddr.ipv4 >> 16) & 0xFF),
+		           (unsigned) ((sendAddr.ipv4 >> 8) & 0xFF), (unsigned) (sendAddr.ipv4 & 0xFF), destPort);
 	}
 	return res;
 }
@@ -365,9 +365,9 @@ static int _loggingSockSend(void* user, unsigned conn, const void* data, unsigne
 static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
 	struct MobileAdapterGB* mobile = user;
 
-	struct Address srcaddr = {0};
-	int srcport = 0;
-	ssize_t res = SocketRecvFrom(mobile->socket[conn].fd, data, size, &srcport, &srcaddr);
+	struct Address srcAddr = {0};
+	int srcPort = 0;
+	ssize_t res = SocketRecvFrom(mobile->socket[conn].fd, data, size, &srcPort, &srcAddr);
 	if (SOCKET_RESERROR(res)) {
 		if (SocketWouldBlock()) {
 			return 0;
@@ -380,23 +380,23 @@ static int _loggingSockRecv(void* user, unsigned conn, void* data, unsigned size
 
 	if (res > 0 && _traceSockets) {
 		_logPrintf("<mGBA> conn %u got %i from %u.%u.%u.%u:%i", conn, (int) res,
-		           (unsigned) ((srcaddr.ipv4 >> 24) & 0xFF), (unsigned) ((srcaddr.ipv4 >> 16) & 0xFF),
-		           (unsigned) ((srcaddr.ipv4 >> 8) & 0xFF), (unsigned) (srcaddr.ipv4 & 0xFF), srcport);
+		           (unsigned) ((srcAddr.ipv4 >> 24) & 0xFF), (unsigned) ((srcAddr.ipv4 >> 16) & 0xFF),
+		           (unsigned) ((srcAddr.ipv4 >> 8) & 0xFF), (unsigned) (srcAddr.ipv4 & 0xFF), srcPort);
 	}
 
-	if (res > 0 && addr && srcaddr.version == IPV6) {
+	if (res > 0 && addr && srcAddr.version == IPV6) {
 		struct mobile_addr6* addr6 = (struct mobile_addr6*) addr;
 		addr6->type = MOBILE_ADDRTYPE_IPV6;
-		memcpy(&addr6->host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
-		addr6->port = srcport;
+		memcpy(&addr6->host, &srcAddr.ipv6, MOBILE_HOSTLEN_IPV6);
+		addr6->port = srcPort;
 	} else if (res > 0 && addr) {
 		struct mobile_addr4* addr4 = (struct mobile_addr4*) addr;
 		addr4->type = MOBILE_ADDRTYPE_IPV4;
-		*(uint32_t*) &addr4->host = htonl(srcaddr.ipv4);
-		addr4->port = srcport;
+		*(uint32_t*) &addr4->host = htonl(srcAddr.ipv4);
+		addr4->port = srcPort;
 	}
 
-	return (res || mobile->socket[conn].socktype == MOBILE_SOCKTYPE_UDP) ? res : -2;
+	return (res || mobile->socket[conn].sockType == MOBILE_SOCKTYPE_UDP) ? res : -2;
 }
 
 #ifdef PSP2

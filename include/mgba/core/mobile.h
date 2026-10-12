@@ -89,7 +89,7 @@ struct MobileAdapterGB {
 	uint8_t config[MOBILE_CONFIG_SIZE];
 	struct {
 		Socket fd;
-		enum mobile_socktype socktype;
+		enum mobile_socktype sockType;
 	} socket[MOBILE_MAX_CONNECTIONS];
 	int serial;
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];

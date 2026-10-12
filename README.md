@@ -6,10 +6,17 @@ mGBA
 > libmobile (LGPL-3.0, vendored under `src/third-party/libmobile`), including
 > device authentication for the REON relay; see
 > [MOBILE_ADAPTER_3DS.md](MOBILE_ADAPTER_3DS.md) for what was done and how it
-> works. Everything below this notice is upstream's own README. This fork
+> works. Apart from the AI-assistance note below, the remaining text is
+> upstream's own README. This fork
 > lives at [github.com/zenaror/mgba](https://github.com/zenaror/mgba): report
 > problems with it there, not to the mGBA project. For the official emulator
 > go to [mgba.io](https://mgba.io/).
+
+### AI assistance in this fork
+
+Parts of this fork's modifications were developed with assistance from AI
+tools, including code generation. This statement applies to our modifications,
+not to the upstream mGBA project.
 
 mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack. It also supports Game Boy and Game Boy Color games.
 

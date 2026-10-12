@@ -798,16 +798,20 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	case GB_MBC6:
 		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashBank0(0, memory->mbcState.mbc6.flashBank0);
 		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashBank1(state->memory.mbc6.flags, memory->mbcState.mbc6.flashBank1);
-		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashEnable(state->memory.mbc6.flags, memory->mbcState.mbc6.flashEnable);
-		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashWriteEnable(state->memory.mbc6.flags, memory->mbcState.mbc6.flashWriteEnable);
+		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashEnable(state->memory.mbc6.flags,
+			memory->mbcState.mbc6.flashEnable);
+		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashWriteEnable(state->memory.mbc6.flags,
+			memory->mbcState.mbc6.flashWriteEnable);
 		state->memory.mbc6.bank1 = memory->currentBank1;
 		state->memory.mbc6.sramBank1 = memory->currentSramBank1;
 		state->mbc6.flashMode = memory->mbcState.mbc6.flashMode;
 		state->mbc6.flashCommand = memory->mbcState.mbc6.flashCommand;
 		state->mbc6.flashProgramCount = memory->mbcState.mbc6.flashProgramCount;
 		state->mbc6.flashProgramLast = memory->mbcState.mbc6.flashProgramLast;
-		memcpy(state->mbc6.flashProgramBuffer, memory->mbcState.mbc6.flashProgramBuffer, sizeof(state->mbc6.flashProgramBuffer));
-		memcpy(state->mbc6.flashProgramWritten, memory->mbcState.mbc6.flashProgramWritten, sizeof(state->mbc6.flashProgramWritten));
+		memcpy(state->mbc6.flashProgramBuffer, memory->mbcState.mbc6.flashProgramBuffer,
+		       sizeof(state->mbc6.flashProgramBuffer));
+		memcpy(state->mbc6.flashProgramWritten, memory->mbcState.mbc6.flashProgramWritten,
+		       sizeof(state->mbc6.flashProgramWritten));
 		STORE_32LE(memory->mbcState.mbc6.flashProgramPage, 0, &state->mbc6.flashProgramPage);
 		STORE_32LE(memory->mbcState.mbc6.flashProgramBank, 0, &state->mbc6.flashProgramBank);
 		state->mbc6.flashProgramWindow = memory->mbcState.mbc6.flashProgramWindow;
@@ -822,7 +826,8 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 			(memory->mbcState.mbc6.flashOperationSector0Protected ? 8 : 0);
 		STORE_32LE(memory->mbcState.mbc6.flashOperationBank, 0, &state->mbc6.flashOperationBank);
 		STORE_32LE(memory->mbcState.mbc6.flashOperationTarget, 0, &state->mbc6.flashOperationTarget);
-		uint32_t flashRemaining = memory->mbcState.mbc6.flashOperationBusy ? mTimingUntil(&gb->timing, &memory->mbc6FlashEvent) : 0;
+		uint32_t flashRemaining = memory->mbcState.mbc6.flashOperationBusy
+			? mTimingUntil(&gb->timing, &memory->mbc6FlashEvent) : 0;
 		STORE_32LE(flashRemaining, 0, &state->mbc6.flashOperationRemaining);
 		break;
 	case GB_MBC7:
@@ -997,8 +1002,10 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 			memory->mbcState.mbc6.flashCommand = state->mbc6.flashCommand;
 			memory->mbcState.mbc6.flashProgramCount = state->mbc6.flashProgramCount;
 			memory->mbcState.mbc6.flashProgramLast = state->mbc6.flashProgramLast;
-			memcpy(memory->mbcState.mbc6.flashProgramBuffer, state->mbc6.flashProgramBuffer, sizeof(state->mbc6.flashProgramBuffer));
-			memcpy(memory->mbcState.mbc6.flashProgramWritten, state->mbc6.flashProgramWritten, sizeof(state->mbc6.flashProgramWritten));
+			memcpy(memory->mbcState.mbc6.flashProgramBuffer, state->mbc6.flashProgramBuffer,
+			       sizeof(state->mbc6.flashProgramBuffer));
+			memcpy(memory->mbcState.mbc6.flashProgramWritten, state->mbc6.flashProgramWritten,
+			       sizeof(state->mbc6.flashProgramWritten));
 			if (version >= GBSavestateMagic + 5) {
 				LOAD_32LE(memory->mbcState.mbc6.flashProgramPage, 0, &state->mbc6.flashProgramPage);
 				LOAD_32LE(memory->mbcState.mbc6.flashProgramBank, 0, &state->mbc6.flashProgramBank);

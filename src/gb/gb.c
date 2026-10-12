@@ -390,7 +390,8 @@ static bool _GBMBC6SaveLoad(struct GBMBC6SaveVFile* save) {
 		if (legacyFlashSize > GB_SIZE_MBC6_FLASH_STORAGE) {
 			legacyFlashSize = GB_SIZE_MBC6_FLASH_STORAGE;
 		}
-		if (legacyFlashSize && !_GBMBC6SaveRead(save->sram, save->sramSize, &save->data[save->sramSize], legacyFlashSize)) {
+		if (legacyFlashSize &&
+		    !_GBMBC6SaveRead(save->sram, save->sramSize, &save->data[save->sramSize], legacyFlashSize)) {
 			free(save->data);
 			save->data = NULL;
 			return false;

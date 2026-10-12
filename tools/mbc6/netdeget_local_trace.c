@@ -73,7 +73,7 @@ static int captureRecv(void* user, unsigned conn, void* data, unsigned size, str
 		return SocketWouldBlock() ? 0 : -1;
 	}
 
-	if(res>0 && mobile->socket[conn].socktype!=MOBILE_SOCKTYPE_UDP){FILE*f=captureFile("tcp-recv.bin");if(f){fwrite(data,1,res,f);fclose(f);}}
+	if(res>0 && mobile->socket[conn].sockType!=MOBILE_SOCKTYPE_UDP){FILE*f=captureFile("tcp-recv.bin");if(f){fwrite(data,1,res,f);fclose(f);}}
  if (res > 0 && addr) {
 		if (srcaddr.version == IPV6) {
 			struct mobile_addr6* addr6 = (struct mobile_addr6*) addr;
@@ -88,7 +88,7 @@ static int captureRecv(void* user, unsigned conn, void* data, unsigned size, str
 		}
 	}
 
-	return (res || (mobile->socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
+	return (res || (mobile->socket[conn].sockType == MOBILE_SOCKTYPE_UDP)) ? res : -2;
 }
 
 

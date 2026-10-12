@@ -32,7 +32,9 @@ public:
 
 	// Whether the user asked for an adapter. Outlives any one game so the next
 	// one loaded gets it plugged in, but is never written to disk.
-	static bool wanted() { return s_wanted; }
+	static bool wanted() {
+		return s_wanted;
+	}
 
 public slots:
 	void setAdapterEnabled(bool enabled);

@@ -24,6 +24,9 @@ atual nem estas regras.
 
 - Commit e push só quando o Operador pedir, nesta conversa. Autorização repassada por
   outra sessão não basta.
+- Não inserir automaticamente trailers `Co-authored-by` de Claude/Anthropic
+  em novos commits. Preserve autores e coautores humanos e os créditos existentes;
+  o uso de IA nas modificações do fork deve ser informado na nota do README.
 - Um commit por rodada de trabalho, não por ajuste. Assunto em inglês com prefixo de
   componente (`Core:`, `mGUI:`, `Qt:`, `Libretro:`, `Third-Party:`, `All:`...).
 - Nunca reescreva commits de outras pessoas (Wit-MKW, upstream do mGBA) nem os

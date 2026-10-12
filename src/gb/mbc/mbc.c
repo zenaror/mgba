@@ -356,7 +356,8 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 		break;
 	default:
 		if (address >= GB_BASE_CART_BANK1 && address < GB_BASE_VRAM &&
-		    ((address < GB_BASE_CART_HALFBANK2 && state->flashBank0) || (address >= GB_BASE_CART_HALFBANK2 && state->flashBank1))) {
+		    ((address < GB_BASE_CART_HALFBANK2 && state->flashBank0) ||
+		    (address >= GB_BASE_CART_HALFBANK2 && state->flashBank1))) {
 			if (state->flashEnable) {
 				_GBMBC6FlashWrite(gb, address, _GBMBC6FlashOffset(memory, address), value);
 			}
@@ -372,7 +373,8 @@ uint8_t _GBMBC6Read(struct GBMemory* memory, uint16_t address) {
 	if (address >= GB_BASE_CART_BANK1 && address < GB_BASE_VRAM) {
 		uint8_t window = address >= GB_BASE_CART_HALFBANK2;
 		bool operationWindow = state->flashOperationActive && state->flashOperationWindow == window;
-		if ((address < GB_BASE_CART_HALFBANK2 && state->flashBank0) || (address >= GB_BASE_CART_HALFBANK2 && state->flashBank1)) {
+		if ((address < GB_BASE_CART_HALFBANK2 && state->flashBank0) ||
+		    (address >= GB_BASE_CART_HALFBANK2 && state->flashBank1)) {
 			if (!state->flashEnable || !memory->sram) {
 				return 0xFF;
 			}
@@ -394,14 +396,16 @@ uint8_t _GBMBC6Read(struct GBMemory* memory, uint16_t address) {
 				default: return 0xFF;
 				}
 			case 2: // Flash status
-				return (state->flashOperationBusy && state->flashOperationWindow == window ? 0 : 0x80) | (state->flashSector0Protected ? 0x02 : 0);
+				return (state->flashOperationBusy && state->flashOperationWindow == window ? 0 : 0x80) |
+				       (state->flashSector0Protected ? 0x02 : 0);
 			case 4: // Flash program buffer status
 			case 5: // Hidden-region program buffer status
 			case 6: // Erase command status
 			case 7: // Sector 0 protection command status
 				return 0x80 | (state->flashSector0Protected ? 0x02 : 0);
 			case 3: // Hidden 256-byte region
-				return memory->sram[memory->sramSize - GB_SIZE_MBC6_FLASH_STORAGE + GB_SIZE_MBC6_FLASH + (offset & 0xFF)];
+				return memory->sram[memory->sramSize - GB_SIZE_MBC6_FLASH_STORAGE + GB_SIZE_MBC6_FLASH
+				                    + (offset & 0xFF)];
 			default:
 				return memory->sram[memory->sramSize - GB_SIZE_MBC6_FLASH_STORAGE + arrayOffset];
 			}
@@ -610,7 +614,8 @@ static void _GBMBC6FlashWrite(struct GB* gb, uint16_t address, uint32_t offset, 
 		}
 		break;
 	case GB_MBC6_FLASH_CMD_UNLOCK_1:
-		state->flashCommand = ((offset & 0x7FFF) == 0x2AAA && value == 0x55) ? GB_MBC6_FLASH_CMD_UNLOCK_2 : GB_MBC6_FLASH_CMD_IDLE;
+		state->flashCommand = ((offset & 0x7FFF) == 0x2AAA && value == 0x55)
+			? GB_MBC6_FLASH_CMD_UNLOCK_2 : GB_MBC6_FLASH_CMD_IDLE;
 		break;
 	case GB_MBC6_FLASH_CMD_UNLOCK_2:
 		state->flashCommand = GB_MBC6_FLASH_CMD_IDLE;
@@ -643,10 +648,12 @@ static void _GBMBC6FlashWrite(struct GB* gb, uint16_t address, uint32_t offset, 
 		}
 		break;
 	case GB_MBC6_FLASH_CMD_ERASE_UNLOCK_1:
-		state->flashCommand = ((offset & 0x7FFF) == 0x5555 && value == 0xAA) ? GB_MBC6_FLASH_CMD_ERASE_UNLOCK_2 : GB_MBC6_FLASH_CMD_IDLE;
+		state->flashCommand = ((offset & 0x7FFF) == 0x5555 && value == 0xAA)
+			? GB_MBC6_FLASH_CMD_ERASE_UNLOCK_2 : GB_MBC6_FLASH_CMD_IDLE;
 		break;
 	case GB_MBC6_FLASH_CMD_ERASE_UNLOCK_2:
-		state->flashCommand = ((offset & 0x7FFF) == 0x2AAA && value == 0x55) ? GB_MBC6_FLASH_CMD_ERASE_FINAL : GB_MBC6_FLASH_CMD_IDLE;
+		state->flashCommand = ((offset & 0x7FFF) == 0x2AAA && value == 0x55)
+			? GB_MBC6_FLASH_CMD_ERASE_FINAL : GB_MBC6_FLASH_CMD_IDLE;
 		break;
 	case GB_MBC6_FLASH_CMD_ERASE_FINAL:
 		state->flashCommand = GB_MBC6_FLASH_CMD_IDLE;
@@ -662,10 +669,12 @@ static void _GBMBC6FlashWrite(struct GB* gb, uint16_t address, uint32_t offset, 
 		}
 		break;
 	case GB_MBC6_FLASH_CMD_SPECIAL_UNLOCK_1:
-		state->flashCommand = ((offset & 0x7FFF) == 0x5555 && value == 0xAA) ? GB_MBC6_FLASH_CMD_SPECIAL_UNLOCK_2 : GB_MBC6_FLASH_CMD_IDLE;
+		state->flashCommand = ((offset & 0x7FFF) == 0x5555 && value == 0xAA)
+			? GB_MBC6_FLASH_CMD_SPECIAL_UNLOCK_2 : GB_MBC6_FLASH_CMD_IDLE;
 		break;
 	case GB_MBC6_FLASH_CMD_SPECIAL_UNLOCK_2:
-		state->flashCommand = ((offset & 0x7FFF) == 0x2AAA && value == 0x55) ? GB_MBC6_FLASH_CMD_SPECIAL_FINAL : GB_MBC6_FLASH_CMD_IDLE;
+		state->flashCommand = ((offset & 0x7FFF) == 0x2AAA && value == 0x55)
+			? GB_MBC6_FLASH_CMD_SPECIAL_FINAL : GB_MBC6_FLASH_CMD_IDLE;
 		break;
 	case GB_MBC6_FLASH_CMD_SPECIAL_FINAL:
 		state->flashCommand = GB_MBC6_FLASH_CMD_IDLE;
@@ -673,23 +682,25 @@ static void _GBMBC6FlashWrite(struct GB* gb, uint16_t address, uint32_t offset, 
 			state->flashMode = 5;
 			state->flashProgramCount = 0;
 		} else if (value == 0x04 && state->flashWriteEnable && (offset & 0x7FFF) == 0x5555) {
-			_GBMBC6FlashStart(gb, GB_MBC6_FLASH_OP_ERASE_HIDDEN, GB_SIZE_MBC6_FLASH, address >= GB_BASE_CART_HALFBANK2, offset >> 13);
+			_GBMBC6FlashStart(gb, GB_MBC6_FLASH_OP_ERASE_HIDDEN, GB_SIZE_MBC6_FLASH,
+			                   address >= GB_BASE_CART_HALFBANK2, offset >> 13);
 		} else if (value == 0x20 && state->flashWriteEnable && offset < 0x20000) {
 			_GBMBC6FlashStart(gb, GB_MBC6_FLASH_OP_PROTECT, 0, address >= GB_BASE_CART_HALFBANK2, offset >> 13);
 		} else if (value == 0x40 && state->flashWriteEnable && offset < 0x20000) {
 			_GBMBC6FlashStart(gb, GB_MBC6_FLASH_OP_UNPROTECT, 0, address >= GB_BASE_CART_HALFBANK2, offset >> 13);
-		}
-		else if ((value == 0xE0 || value == 0x04 || value == 0x20 || value == 0x40) &&
+		} else if ((value == 0xE0 || value == 0x04 || value == 0x20 || value == 0x40) &&
 		         (offset & 0x7FFF) == 0x5555 && !state->flashWriteEnable) {
 			/* Protected commands are ignored by the chip and never enter status mode. */
 			state->flashMode = 0;
 		}
 		break;
 	case GB_MBC6_FLASH_CMD_HIDDEN_UNLOCK_1:
-		state->flashCommand = ((offset & 0x7FFF) == 0x5555 && value == 0xAA) ? GB_MBC6_FLASH_CMD_HIDDEN_UNLOCK_2 : GB_MBC6_FLASH_CMD_IDLE;
+		state->flashCommand = ((offset & 0x7FFF) == 0x5555 && value == 0xAA)
+			? GB_MBC6_FLASH_CMD_HIDDEN_UNLOCK_2 : GB_MBC6_FLASH_CMD_IDLE;
 		break;
 	case GB_MBC6_FLASH_CMD_HIDDEN_UNLOCK_2:
-		state->flashCommand = ((offset & 0x7FFF) == 0x2AAA && value == 0x55) ? GB_MBC6_FLASH_CMD_HIDDEN_UNLOCK_3 : GB_MBC6_FLASH_CMD_IDLE;
+		state->flashCommand = ((offset & 0x7FFF) == 0x2AAA && value == 0x55)
+			? GB_MBC6_FLASH_CMD_HIDDEN_UNLOCK_3 : GB_MBC6_FLASH_CMD_IDLE;
 		break;
 	case GB_MBC6_FLASH_CMD_HIDDEN_UNLOCK_3:
 		state->flashCommand = GB_MBC6_FLASH_CMD_IDLE;

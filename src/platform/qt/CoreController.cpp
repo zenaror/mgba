@@ -52,7 +52,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	updateROMInfo();
 
 #ifdef USE_LIBMOBILE
-	memset(&m_gbmobile, 0, sizeof(m_gbmobile));
+	memset(&m_gbMobile, 0, sizeof(m_gbMobile));
 	memset(&m_mobile, 0, sizeof(m_mobile));
 #endif
 
@@ -1175,20 +1175,20 @@ void CoreController::attachMobileAdapter() {
 	if (platform() == mPLATFORM_GBA) {
 		GBASIOMobileAdapterCreate(&m_mobile);
 	} else {
-		GBSIOMobileAdapterCreate(&m_gbmobile);
+		GBSIOMobileAdapterCreate(&m_gbMobile);
 	}
 
-	QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
-	if (fconfig.open(QIODevice::ReadOnly)) {
-		fconfig.read((char*) getMobileAdapter()->config, MOBILE_CONFIG_SIZE);
-		fconfig.close();
+	QFile configFile(ConfigController::configDir() + "/mobile_config.bin");
+	if (configFile.open(QIODevice::ReadOnly)) {
+		configFile.read((char*) getMobileAdapter()->config, MOBILE_CONFIG_SIZE);
+		configFile.close();
 	}
 
 	if (platform() == mPLATFORM_GBA) {
 		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, &m_mobile);
 	} else {
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
-		GBSIOSetDriver(&gb->sio, &m_gbmobile.d);
+		GBSIOSetDriver(&gb->sio, &m_gbMobile.d);
 	}
 }
 
@@ -1208,10 +1208,10 @@ void CoreController::detachMobileAdapter() {
 void CoreController::saveMobileAdapterConfig() {
 	Interrupter interrupter(this);
 
-	QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
-	if (fconfig.open(QIODevice::WriteOnly)) {
-		fconfig.write((char*) getMobileAdapter()->config, MOBILE_CONFIG_SIZE);
-		fconfig.close();
+	QFile configFile(ConfigController::configDir() + "/mobile_config.bin");
+	if (configFile.open(QIODevice::WriteOnly)) {
+		configFile.write((char*) getMobileAdapter()->config, MOBILE_CONFIG_SIZE);
+		configFile.close();
 		getMobileAdapter()->configDirty = false;
 	}
 }
@@ -1223,11 +1223,11 @@ void CoreController::importMobileAdapterConfig(const QString& filename) {
 		return;
 	}
 
-	QFile fconfig(filename);
-	if (fconfig.open(QIODevice::ReadOnly)) {
+	QFile configFile(filename);
+	if (configFile.open(QIODevice::ReadOnly)) {
 		mobile_stop(adapter);
-		fconfig.read((char*) getMobileAdapter()->config, MOBILE_CONFIG_SIZE);
-		fconfig.close();
+		configFile.read((char*) getMobileAdapter()->config, MOBILE_CONFIG_SIZE);
+		configFile.close();
 		mobile_config_load(adapter);
 		mobile_start(adapter);
 	}

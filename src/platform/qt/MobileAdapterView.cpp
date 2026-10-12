@@ -24,14 +24,14 @@
 
 using namespace QGBA;
 
-static int mobileConvertAddr(const QString& addr, Address* output, unsigned* port) {
-	QHostAddress qaddress;
+static int _mobileConvertAddr(const QString& addr, Address* output, unsigned* port) {
+	QHostAddress qAddress;
 	if (addr.isEmpty()) {
 		return 0;
 	}
 	bool hasPort = false;
 	unsigned portInt = *port;
-	if (!qaddress.setAddress(addr)) {
+	if (!qAddress.setAddress(addr)) {
 		QString portText = addr.section(':', -1);
 		QString mainText = addr.section(':', 0, -2);
 		hasPort = false;
@@ -50,11 +50,11 @@ static int mobileConvertAddr(const QString& addr, Address* output, unsigned* por
 			mainText.remove(0, 1);
 			mainText.remove(-1, 1);
 		}
-		if (!qaddress.setAddress(mainText)) {
+		if (!qAddress.setAddress(mainText)) {
 			return -1;
 		}
 	}
-	if (!convertAddress(&qaddress, output)) {
+	if (!convertAddress(&qAddress, output)) {
 		return -1;
 	}
 	if (hasPort) {
@@ -65,19 +65,19 @@ static int mobileConvertAddr(const QString& addr, Address* output, unsigned* por
 
 bool MobileAdapterView::s_wanted = false;
 
-static QString mobileAddrToString(const struct mobile_addr* addr, unsigned defaultPort) {
+static QString _mobileAddrToString(const struct mobile_addr* addr, unsigned defaultPort) {
 	QString ret = "";
 	if (addr->type == MOBILE_ADDRTYPE_IPV6) {
 		const struct mobile_addr6* addr6 = (const struct mobile_addr6*) addr;
-		QHostAddress qaddress(addr6->host);
-		ret = qaddress.toString();
+		QHostAddress qAddress(addr6->host);
+		ret = qAddress.toString();
 		if (addr6->port != defaultPort) {
 			ret = QString('[') + ret + "]:" + QString::number(addr6->port);
 		}
 	} else if (addr->type == MOBILE_ADDRTYPE_IPV4) {
 		const struct mobile_addr4* addr4 = (const struct mobile_addr4*) addr;
-		QHostAddress qaddress(ntohl(*(unsigned*) addr4->host));
-		ret = qaddress.toString();
+		QHostAddress qAddress(ntohl(*(unsigned*) addr4->host));
+		ret = qAddress.toString();
 		if (addr4->port != defaultPort) {
 			ret += QString(':') + QString::number(addr4->port);
 		}
@@ -96,8 +96,7 @@ MobileAdapterGB* MobileAdapterView::adapterGB() {
 MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller, Window* window, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
-	, m_window(window)
-{
+	, m_window(window) {
 	m_ui.setupUi(this);
 
 	QRegularExpression reToken("[\\dA-Fa-f]{32}?");
@@ -163,10 +162,10 @@ void MobileAdapterView::setAdapterEnabled(bool enabled) {
 
 // Turns typed text into an address, treating empty text as "none". Returns
 // false if something was typed but couldn't be read as an address.
-static bool parseMobileAddr(const QString& text, unsigned defaultPort, struct mobile_addr* out) {
+static bool _parseMobileAddr(const QString& text, unsigned defaultPort, struct mobile_addr* out) {
 	unsigned port = defaultPort;
 	Address host;
-	int res = mobileConvertAddr(text, &host, &port);
+	int res = _mobileConvertAddr(text, &host, &port);
 	if (res < 0) {
 		return false;
 	}
@@ -208,7 +207,7 @@ void MobileAdapterView::setUnmetered(bool unmetered) {
 
 void MobileAdapterView::setDns(int which, const QString& text) {
 	struct mobile_addr addr;
-	if (!parseMobileAddr(text, MOBILE_DNS_PORT, &addr)) {
+	if (!_parseMobileAddr(text, MOBILE_DNS_PORT, &addr)) {
 		getConfig();
 		return;
 	}
@@ -233,7 +232,7 @@ void MobileAdapterView::setPort(int port) {
 
 void MobileAdapterView::setRelay() {
 	struct mobile_addr addr;
-	if (!parseMobileAddr(m_ui.setRelay->text(), MOBILE_DEFAULT_RELAY_PORT, &addr)) {
+	if (!_parseMobileAddr(m_ui.setRelay->text(), MOBILE_DEFAULT_RELAY_PORT, &addr)) {
 		getConfig();
 		return;
 	}
@@ -314,11 +313,11 @@ void MobileAdapterView::getConfig() {
 
 	struct mobile_addr addr;
 	mobile_config_get_dns(adapter, &addr, MOBILE_DNS1);
-	m_ui.setDns1->setText(mobileAddrToString(&addr, MOBILE_DNS_PORT));
+	m_ui.setDns1->setText(_mobileAddrToString(&addr, MOBILE_DNS_PORT));
 	mobile_config_get_dns(adapter, &addr, MOBILE_DNS2);
-	m_ui.setDns2->setText(mobileAddrToString(&addr, MOBILE_DNS_PORT));
+	m_ui.setDns2->setText(_mobileAddrToString(&addr, MOBILE_DNS_PORT));
 	mobile_config_get_relay(adapter, &addr);
-	m_ui.setRelay->setText(mobileAddrToString(&addr, MOBILE_DEFAULT_RELAY_PORT));
+	m_ui.setRelay->setText(_mobileAddrToString(&addr, MOBILE_DEFAULT_RELAY_PORT));
 
 	unsigned p2pPort;
 	mobile_config_get_p2p_port(adapter, &p2pPort);
