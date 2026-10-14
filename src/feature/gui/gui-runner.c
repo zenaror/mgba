@@ -248,6 +248,13 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 
 	char path[PATH_MAX];
 	mCoreConfigDirectory(path, PATH_MAX);
+#if defined(__3DS__) || defined(PSP2) || defined(__SWITCH__) || defined(GEKKO)
+	// Do not default the fork's writable data to the shared ROM directory.
+	mCoreConfigSetDefaultValue(&runner->config, "savegamePath", path);
+	mCoreConfigSetDefaultValue(&runner->config, "savestatePath", path);
+	mCoreConfigSetDefaultValue(&runner->config, "screenshotPath", path);
+	mCoreConfigSetDefaultValue(&runner->config, "cheatsPath", path);
+#endif
 	strncat(path, PATH_SEP "log", PATH_MAX - strlen(path));
 	logger.vf = VFileOpen(path, O_CREAT | O_WRONLY | O_APPEND);
 	mLogSetDefaultLogger(&logger.d);
@@ -471,6 +478,19 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Loading config...");
 	mCoreLoadForeignConfig(runner->core, &runner->config);
+#if defined(__3DS__) || defined(PSP2) || defined(__SWITCH__) || defined(GEKKO)
+	if (!runner->core->dirs.save || runner->core->dirs.save == runner->core->dirs.base ||
+	    !runner->core->dirs.state || runner->core->dirs.state == runner->core->dirs.base ||
+	    !runner->core->dirs.screenshot || runner->core->dirs.screenshot == runner->core->dirs.base ||
+	    !runner->core->dirs.cheats || runner->core->dirs.cheats == runner->core->dirs.base) {
+		// Never fall back to the ROM directory when private storage cannot open.
+		GUIShowMessageBox(&runner->params, GUI_MESSAGE_BOX_OK, 240, "REON data folder unavailable!");
+		mCoreConfigDeinit(&runner->core->config);
+		runner->core->deinit(runner->core);
+		runner->core = NULL;
+		return;
+	}
+#endif
 
 	mLOG(GUI_RUNNER, DEBUG, "Loading save...");
 	mCoreAutoloadSave(runner->core);

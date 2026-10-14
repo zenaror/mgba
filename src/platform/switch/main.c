@@ -1084,7 +1084,7 @@ int main(int argc, char* argv[]) {
 			vf->close(vf);
 			snprintf(buffer[1], size + strlen(arg0), buffer[0], arg0);
 			mkdir("sdmc:/config/nx-hbmenu/fileassoc", 0755);
-			vf = VFileOpen("sdmc:/config/nx-hbmenu/fileassoc/mgba.cfg", O_CREAT | O_TRUNC | O_WRONLY);
+			vf = VFileOpen("sdmc:/config/nx-hbmenu/fileassoc/mgba-reon.cfg", O_CREAT | O_TRUNC | O_WRONLY);
 			if (vf) {
 				vf->write(vf, buffer[1], strlen(buffer[1]));
 				vf->close(vf);

@@ -223,6 +223,10 @@ bool isAbsolute(const char* path) {
 	WCHAR wpath[PATH_MAX];
 	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, PATH_MAX);
 	return !PathIsRelativeW(wpath);
+#elif defined(PSP2)
+	const char* device = strchr(path, ':');
+	const char* slash = strchr(path, '/');
+	return path[0] == '/' || (device && device != path && (!slash || device < slash));
 #else
 	return path[0] == '/';
 #endif

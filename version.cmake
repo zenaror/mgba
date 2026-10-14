@@ -1,13 +1,10 @@
 if(NOT PROJECT_NAME)
 	set(PROJECT_NAME "mGBA")
 endif()
-# What a person sees — window titles, app names, the core's name in a
-# frontend — as opposed to PROJECT_NAME, which names files and folders and
-# must stay what upstream's is, or every existing config goes missing. This
-# fork says so in its name, so that nobody takes it for the official build
-# or installs it over one.
+# Visible fork identity; PROJECT_NAME still identifies the upstream project.
+# Console configuration directories use binaryName to remain separate.
 if(NOT PROJECT_DISPLAY_NAME)
-	set(PROJECT_DISPLAY_NAME "mGBA (MAGB fork)")
+	set(PROJECT_DISPLAY_NAME "mGBA REON")
 endif()
 set(LIB_VERSION_MAJOR 0)
 set(LIB_VERSION_MINOR 11)

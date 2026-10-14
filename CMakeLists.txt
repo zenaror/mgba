@@ -15,7 +15,10 @@ if(NOT DEFINED LIBMGBA_ONLY)
 	get_directory_property(LIBMGBA_ONLY EXCLUDE_FROM_ALL)
 endif()
 
-if(NOT DEFINED BINARY_NAME)
+if((3DS OR PSP2 OR SWITCH OR WII) AND (NOT DEFINED BINARY_NAME OR BINARY_NAME STREQUAL "mgba"))
+	# Keep old build caches from producing packages named like the official app.
+	set(BINARY_NAME mgba-reon)
+elseif(NOT DEFINED BINARY_NAME)
 	set(BINARY_NAME mgba)
 endif()
 if(NOT LIBMGBA_ONLY)
@@ -1086,16 +1089,25 @@ if(BUILD_LIBRETRO)
 	endif()
 	# A frontend keeps one core per file name, so this fork's core has its
 	# own and sits beside the official mgba_libretro rather than over it.
-	set(RETRO_TARGET ${BINARY_NAME}_magb_libretro)
+	set(RETRO_TARGET mgba_reon_libretro)
 	add_library(${RETRO_TARGET} SHARED ${RETRO_CORE_SRC} ${RETRO_SRC} ${CORE_VFS_SRC})
 	add_dependencies(${RETRO_TARGET} ${BINARY_NAME}-version-info)
 	set_target_properties(${RETRO_TARGET} PROPERTIES PREFIX "" COMPILE_DEFINITIONS "__LIBRETRO__;COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};ENABLE_VFS;MINIMAL_CORE=2;${RETRO_DEFINES}")
 	target_link_libraries(${RETRO_TARGET} ${RETRO_LIB})
-	if(MSVC)
-		install(TARGETS ${RETRO_TARGET} RUNTIME DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${RETRO_TARGET})
-	else()
-		install(TARGETS ${RETRO_TARGET} LIBRARY DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${RETRO_TARGET} NAMELINK_SKIP)
-	endif()
+	set(LIBRETRO_INFODIR "${CMAKE_INSTALL_DATADIR}/libretro/info" CACHE PATH "Installed core information directory")
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/platform/libretro/mgba_reon_libretro.info.in
+		${CMAKE_CURRENT_BINARY_DIR}/${RETRO_TARGET}.info @ONLY)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${RETRO_TARGET}.info
+		DESTINATION ${LIBRETRO_INFODIR} COMPONENT ${RETRO_TARGET})
+	set(LIBRETRO_CONFIGDIR "${CMAKE_INSTALL_DATADIR}/libretro/retroarch-config" CACHE PATH "Installed RetroArch override directory")
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/libretro/mgba_reon_retroarch.cfg
+		DESTINATION "${LIBRETRO_CONFIGDIR}/${PROJECT_DISPLAY_NAME}"
+		RENAME "${PROJECT_DISPLAY_NAME}.cfg" COMPONENT ${RETRO_TARGET})
+	install(TARGETS ${RETRO_TARGET}
+		RUNTIME DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${RETRO_TARGET}
+		LIBRARY DESTINATION ${LIBRETRO_LIBDIR} COMPONENT ${RETRO_TARGET} NAMELINK_SKIP)
+	install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/tools/mbc6/install_reon_profile.py
+		DESTINATION ${LIBRETRO_CONFIGDIR} COMPONENT ${RETRO_TARGET})
 endif()
 
 if(BUILD_QT AND (WIN32 OR APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND ENABLE_VFS)
@@ -1278,6 +1290,11 @@ set(CPACK_PACKAGE_VENDOR "Vicki Pfau")
 set(CPACK_PACKAGE_CONTACT "Vicki Pfau <vi@endrift.com>")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_DEBIAN_PACKAGE_SECTION "games")
+if(3DS OR PSP2 OR SWITCH OR WII OR BUILD_LIBRETRO)
+	set(CPACK_PACKAGE_NAME "mgba-reon")
+	set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DISPLAY_NAME} Game Boy Advance Emulator")
+	set(CPACK_PACKAGE_VENDOR "Vicki Pfau (endrift)/REON")
+endif()
 
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 
@@ -1315,10 +1332,17 @@ if(DISTBUILD)
 	endif()
 endif()
 
+if(BUILD_LIBRETRO AND DEFINED CPACK_COMPONENTS_ALL)
+	list(APPEND CPACK_COMPONENTS_ALL ${RETRO_TARGET})
+endif()
+
 include(CPack)
 
 cpack_add_component_group(base)
 cpack_add_component(${BINARY_NAME} GROUP base)
+if(BUILD_LIBRETRO)
+	cpack_add_component(${RETRO_TARGET} GROUP base)
+endif()
 
 cpack_add_component_group(dev PARENT_GROUP base)
 if(BUILD_SHARED)

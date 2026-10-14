@@ -108,7 +108,7 @@ in; at worst a game has to be reset after the adapter is switched on.
 
 ### Where the config lives
 
-`sdmc:/mGBA/mobile_config.bin`, from `mCoreConfigDirectory()`, next to
+`sdmc:/mgba-reon/mobile_config.bin`, from `mCoreConfigDirectory()`, next to
 `config.ini`. The directory is created by that same call. There is no portable
 mode on the 3DS — `mCoreConfigPortableIniPath()` returns nothing there, so a
 `portable.ini` beside the executable does nothing.
@@ -233,6 +233,80 @@ emulated seconds, and the console is frame-limited).
 
 ## Building
 
+### Installing beside official mGBA
+
+The fork is displayed as **mGBA REON**. Desktop package identifiers are outside
+this console/core separation; the desktop UI also uses the new display name.
+
+| Target | Fork artifact / identity |
+| --- | --- |
+| RetroArch | `mgba_reon_libretro.so` / `.dll` / `.dylib`, plus `mgba_reon_libretro.info` |
+| 3DS | `mgba-reon.3dsx` / `.cia`; existing fork UniqueId `0xD7AB`, product code `CTR-P-MAGB` |
+| Vita | `mgba-reon.vpk`; existing fork title ID `MAGB00001` |
+| Switch | `mgba-reon.nro`; association file `mgba-reon.cfg` |
+| Wii | installed under `apps/mgba-reon/` with `boot.dol`, `meta.xml`, `icon.png` |
+
+The existing Vita/3DS fork IDs are retained so a new fork package updates its
+previous installation while staying distinct from the official application.
+Author metadata that has an author field retains endrift and adds `/REON`;
+the Wii metadata retains the original full credit as well. Copyright and
+license notices are unchanged.
+
+For RetroArch, copy the library into the configured **Cores** directory and
+the matching `.info` into the configured **Core Info** directory. Both the
+filename and the reported core name are distinct from official mGBA. Do not
+rename this library or its info file to `mgba_libretro`. CMake installs the
+info file to `share/libretro/info` by default; `LIBRETRO_INFODIR` overrides it.
+The previous `mgba_magb_libretro` fork filename is no longer produced. Existing
+playlists that select it need to select the new fork core; neither older core
+file is removed automatically. This manually installed fork is not an official
+Online Updater entry.
+
+Console configuration directories are now `/mgba-reon` on 3DS/Switch/Wii and
+`ux0:data/mgba-reon` on Vita. Saves, flash, states, cheats and screenshots default
+to this same private root instead of the ROM directory. Forwarders use its
+`forwarders` subdirectory. If a configured data directory cannot be opened,
+the console refuses to load the game rather than falling back beside the ROM. Existing `/mGBA` / `ux0:data/mGBA` configuration and
+ROM-side saves are not imported or modified automatically. Explicit user path
+overrides can still opt into shared storage; review them before use.
+
+RetroArch owns SRAM/state persistence, so installing a uniquely named core alone
+does **not** isolate saves. Before first use, prepare the supplied per-core profile
+with Python 3 (the command inspects paths; add `--write` after reviewing them):
+
+```sh
+python3 tools/mbc6/install_reon_profile.py \
+  --config-dir /path/to/RetroArch/config --data-dir /path/to/REON-data
+```
+
+This creates only `config/mGBA REON/mGBA REON.cfg` and dedicated
+`REON-data/mgba-reon/{saves,states,screenshots}` directories. It refuses to replace
+an existing profile. On a target without Python, create the same override with
+paths valid on that target. The packaged `retroarch-config/mGBA REON/` template
+alternatively enables per-core save/state sorting; explicit private paths from
+the helper also isolate screenshots. Keep automatic overrides enabled and check
+the active directories before opening a game. Game/folder overrides or command
+line directory arguments can take precedence. No core can prevent a frontend
+from deliberately selecting shared save paths.
+
+The fork's RetroArch options use `mgba_reon_*` keys, separate from `mgba_*`.
+Adapter files also use private names in the selected system directory (save
+directory fallback): `mgba-reon-mobile_config.bin`,
+`mgba-reon-mobile_identity.bin`, and `mgba-reon-config.ini`. A downloaded
+`mobile_config.bin` must be renamed when deliberately provisioning this core;
+no identity/counter state is imported automatically. Server protocol names
+including implementation `mgba` are unchanged. BIOS files remain read-only
+shared resources. Do not copy adapter identity files between live instances.
+
+The same installation rule applies to a Wii SD-card package: copy the complete
+`apps/mgba-reon` directory, not its contents into `apps/mgba`. Reconfiguring old
+console CMake caches with the default `mgba` binary name selects `mgba-reon`;
+explicit custom names are retained and their coexistence is the builder's
+responsibility. Previously accepted release artifacts are historical and must
+not be renamed to imply they were rebuilt with these changes.
+
+### Container builds
+
 This fork uses Podman for container builds. The image/toolchain versions below
 describe the recorded build environment; they are not a statement of the latest
 available versions. Generic host build instructions remain in the README.
@@ -245,7 +319,7 @@ produced a build that went looking for a `libmgba.so`, because the recipe that
 was skipped is where `BUILD_SHARED=OFF` lives.
 
 ```sh
-podman run --rm -v "$PWD":/home/mgba/src mgba/3ds            # mgba.3dsx, mgba.cia
+podman run --rm -v "$PWD":/home/mgba/src mgba/3ds            # mgba-reon.3dsx, mgba-reon.cia
 podman run --rm -v "$PWD":/home/mgba/src mgba/ubuntu:noble   # mgba-qt, mgba, libs
 podman run --rm -v "$PWD":/home/mgba/src \
   -e CMAKE_FLAGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" mgba/windows:w64

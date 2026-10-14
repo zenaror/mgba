@@ -157,7 +157,7 @@ struct retro_core_option_v2_category option_cats_ar[] = {
 };
 struct retro_core_option_v2_definition option_defs_ar[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_AR,
       NULL,
       MGBA_GB_MODEL_INFO_0_AR,
@@ -174,7 +174,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_AR,
       NULL,
       MGBA_USE_BIOS_INFO_0_AR,
@@ -188,7 +188,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_AR,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_AR,
@@ -202,7 +202,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_AR,
       NULL,
       MGBA_GB_COLORS_INFO_0_AR,
@@ -216,7 +216,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_AR,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_AR,
@@ -231,7 +231,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_AR,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_AR,
@@ -247,7 +247,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_AR,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_AR,
@@ -265,7 +265,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_AR,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_AR,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_AR,
@@ -279,7 +279,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_AR,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_AR,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_AR,
@@ -310,7 +310,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_AR,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_AR,
@@ -324,7 +324,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_AR,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AR,
@@ -348,7 +348,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_AR,
       NULL,
       MGBA_FORCE_GBP_INFO_0_AR,
@@ -362,7 +362,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_AR,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_AR,
@@ -377,7 +377,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_AR,
       NULL,
       MGBA_FRAMESKIP_INFO_0_AR,
@@ -393,7 +393,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_AR,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_AR,
@@ -421,7 +421,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_AR,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_AR,
@@ -570,7 +570,7 @@ struct retro_core_option_v2_category option_cats_ast[] = {
 };
 struct retro_core_option_v2_definition option_defs_ast[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_AST,
       NULL,
       MGBA_GB_MODEL_INFO_0_AST,
@@ -587,7 +587,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_AST,
       NULL,
       MGBA_USE_BIOS_INFO_0_AST,
@@ -601,7 +601,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_AST,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_AST,
@@ -615,7 +615,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_AST,
       NULL,
       MGBA_GB_COLORS_INFO_0_AST,
@@ -629,7 +629,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_AST,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_AST,
@@ -644,7 +644,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_AST,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_AST,
@@ -660,7 +660,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_AST,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_AST,
@@ -678,7 +678,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_AST,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_AST,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_AST,
@@ -692,7 +692,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_AST,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_AST,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_AST,
@@ -723,7 +723,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_AST,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_AST,
@@ -737,7 +737,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_AST,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AST,
@@ -761,7 +761,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_AST,
       NULL,
       MGBA_FORCE_GBP_INFO_0_AST,
@@ -775,7 +775,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_AST,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_AST,
@@ -790,7 +790,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_AST,
       NULL,
       MGBA_FRAMESKIP_INFO_0_AST,
@@ -806,7 +806,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_AST,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_AST,
@@ -834,7 +834,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_AST,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_AST,
@@ -983,7 +983,7 @@ struct retro_core_option_v2_category option_cats_ca[] = {
 };
 struct retro_core_option_v2_definition option_defs_ca[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_CA,
       NULL,
       MGBA_GB_MODEL_INFO_0_CA,
@@ -1000,7 +1000,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_CA,
       NULL,
       MGBA_USE_BIOS_INFO_0_CA,
@@ -1014,7 +1014,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_CA,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_CA,
@@ -1028,7 +1028,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_CA,
       NULL,
       MGBA_GB_COLORS_INFO_0_CA,
@@ -1042,7 +1042,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_CA,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_CA,
@@ -1057,7 +1057,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_CA,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_CA,
@@ -1073,7 +1073,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_CA,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_CA,
@@ -1091,7 +1091,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CA,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_CA,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_CA,
@@ -1105,7 +1105,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CA,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_CA,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_CA,
@@ -1136,7 +1136,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CA,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CA,
@@ -1150,7 +1150,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_CA,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CA,
@@ -1174,7 +1174,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_CA,
       NULL,
       MGBA_FORCE_GBP_INFO_0_CA,
@@ -1188,7 +1188,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_CA,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_CA,
@@ -1203,7 +1203,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_CA,
       NULL,
       MGBA_FRAMESKIP_INFO_0_CA,
@@ -1219,7 +1219,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_CA,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_CA,
@@ -1247,7 +1247,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_CA,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_CA,
@@ -1396,7 +1396,7 @@ struct retro_core_option_v2_category option_cats_chs[] = {
 };
 struct retro_core_option_v2_definition option_defs_chs[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_CHS,
       NULL,
       MGBA_GB_MODEL_INFO_0_CHS,
@@ -1413,7 +1413,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_CHS,
       NULL,
       MGBA_USE_BIOS_INFO_0_CHS,
@@ -1427,7 +1427,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_CHS,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_CHS,
@@ -1441,7 +1441,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_CHS,
       NULL,
       MGBA_GB_COLORS_INFO_0_CHS,
@@ -1455,7 +1455,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_CHS,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_CHS,
@@ -1470,7 +1470,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_CHS,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_CHS,
@@ -1486,7 +1486,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_CHS,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_CHS,
@@ -1504,7 +1504,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CHS,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_CHS,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_CHS,
@@ -1518,7 +1518,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CHS,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_CHS,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_CHS,
@@ -1549,7 +1549,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CHS,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CHS,
@@ -1563,7 +1563,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHS,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHS,
@@ -1587,7 +1587,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_CHS,
       NULL,
       MGBA_FORCE_GBP_INFO_0_CHS,
@@ -1601,7 +1601,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_CHS,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_CHS,
@@ -1616,7 +1616,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_CHS,
       NULL,
       MGBA_FRAMESKIP_INFO_0_CHS,
@@ -1632,7 +1632,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_CHS,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_CHS,
@@ -1660,7 +1660,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_CHS,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_CHS,
@@ -1809,7 +1809,7 @@ struct retro_core_option_v2_category option_cats_cht[] = {
 };
 struct retro_core_option_v2_definition option_defs_cht[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_CHT,
       NULL,
       MGBA_GB_MODEL_INFO_0_CHT,
@@ -1826,7 +1826,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_CHT,
       NULL,
       MGBA_USE_BIOS_INFO_0_CHT,
@@ -1840,7 +1840,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_CHT,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_CHT,
@@ -1854,7 +1854,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_CHT,
       NULL,
       MGBA_GB_COLORS_INFO_0_CHT,
@@ -1868,7 +1868,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_CHT,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_CHT,
@@ -1883,7 +1883,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_CHT,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_CHT,
@@ -1899,7 +1899,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_CHT,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_CHT,
@@ -1917,7 +1917,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CHT,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_CHT,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_CHT,
@@ -1931,7 +1931,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CHT,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_CHT,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_CHT,
@@ -1962,7 +1962,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CHT,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CHT,
@@ -1976,7 +1976,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHT,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHT,
@@ -2000,7 +2000,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_CHT,
       NULL,
       MGBA_FORCE_GBP_INFO_0_CHT,
@@ -2014,7 +2014,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_CHT,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_CHT,
@@ -2029,7 +2029,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_CHT,
       NULL,
       MGBA_FRAMESKIP_INFO_0_CHT,
@@ -2045,7 +2045,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_CHT,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_CHT,
@@ -2073,7 +2073,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_CHT,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_CHT,
@@ -2222,7 +2222,7 @@ struct retro_core_option_v2_category option_cats_cs[] = {
 };
 struct retro_core_option_v2_definition option_defs_cs[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_CS,
       NULL,
       MGBA_GB_MODEL_INFO_0_CS,
@@ -2239,7 +2239,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_CS,
       NULL,
       MGBA_USE_BIOS_INFO_0_CS,
@@ -2253,7 +2253,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_CS,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_CS,
@@ -2267,7 +2267,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_CS,
       NULL,
       MGBA_GB_COLORS_INFO_0_CS,
@@ -2281,7 +2281,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_CS,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_CS,
@@ -2296,7 +2296,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_CS,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_CS,
@@ -2312,7 +2312,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_CS,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_CS,
@@ -2330,7 +2330,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CS,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_CS,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_CS,
@@ -2344,7 +2344,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CS,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_CS,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_CS,
@@ -2375,7 +2375,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CS,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CS,
@@ -2389,7 +2389,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_CS,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CS,
@@ -2413,7 +2413,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_CS,
       NULL,
       MGBA_FORCE_GBP_INFO_0_CS,
@@ -2427,7 +2427,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_CS,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_CS,
@@ -2442,7 +2442,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_CS,
       NULL,
       MGBA_FRAMESKIP_INFO_0_CS,
@@ -2458,7 +2458,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_CS,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_CS,
@@ -2486,7 +2486,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_CS,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_CS,
@@ -2635,7 +2635,7 @@ struct retro_core_option_v2_category option_cats_cy[] = {
 };
 struct retro_core_option_v2_definition option_defs_cy[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_CY,
       NULL,
       MGBA_GB_MODEL_INFO_0_CY,
@@ -2652,7 +2652,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_CY,
       NULL,
       MGBA_USE_BIOS_INFO_0_CY,
@@ -2666,7 +2666,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_CY,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_CY,
@@ -2680,7 +2680,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_CY,
       NULL,
       MGBA_GB_COLORS_INFO_0_CY,
@@ -2694,7 +2694,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_CY,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_CY,
@@ -2709,7 +2709,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_CY,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_CY,
@@ -2725,7 +2725,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_CY,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_CY,
@@ -2743,7 +2743,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CY,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_CY,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_CY,
@@ -2757,7 +2757,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CY,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_CY,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_CY,
@@ -2788,7 +2788,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CY,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CY,
@@ -2802,7 +2802,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_CY,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CY,
@@ -2826,7 +2826,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_CY,
       NULL,
       MGBA_FORCE_GBP_INFO_0_CY,
@@ -2840,7 +2840,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_CY,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_CY,
@@ -2855,7 +2855,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_CY,
       NULL,
       MGBA_FRAMESKIP_INFO_0_CY,
@@ -2871,7 +2871,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_CY,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_CY,
@@ -2899,7 +2899,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_CY,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_CY,
@@ -3048,7 +3048,7 @@ struct retro_core_option_v2_category option_cats_da[] = {
 };
 struct retro_core_option_v2_definition option_defs_da[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_DA,
       NULL,
       MGBA_GB_MODEL_INFO_0_DA,
@@ -3065,7 +3065,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_DA,
       NULL,
       MGBA_USE_BIOS_INFO_0_DA,
@@ -3079,7 +3079,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_DA,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_DA,
@@ -3093,7 +3093,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_DA,
       NULL,
       MGBA_GB_COLORS_INFO_0_DA,
@@ -3107,7 +3107,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_DA,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_DA,
@@ -3122,7 +3122,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_DA,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_DA,
@@ -3138,7 +3138,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_DA,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_DA,
@@ -3156,7 +3156,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_DA,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_DA,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_DA,
@@ -3170,7 +3170,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_DA,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_DA,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_DA,
@@ -3201,7 +3201,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_DA,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_DA,
@@ -3215,7 +3215,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_DA,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DA,
@@ -3239,7 +3239,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_DA,
       NULL,
       MGBA_FORCE_GBP_INFO_0_DA,
@@ -3253,7 +3253,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_DA,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_DA,
@@ -3268,7 +3268,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_DA,
       NULL,
       MGBA_FRAMESKIP_INFO_0_DA,
@@ -3284,7 +3284,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_DA,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_DA,
@@ -3312,7 +3312,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_DA,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_DA,
@@ -3461,7 +3461,7 @@ struct retro_core_option_v2_category option_cats_de[] = {
 };
 struct retro_core_option_v2_definition option_defs_de[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_DE,
       NULL,
       MGBA_GB_MODEL_INFO_0_DE,
@@ -3478,7 +3478,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_DE,
       NULL,
       MGBA_USE_BIOS_INFO_0_DE,
@@ -3492,7 +3492,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_DE,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_DE,
@@ -3506,7 +3506,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_DE,
       NULL,
       MGBA_GB_COLORS_INFO_0_DE,
@@ -3520,7 +3520,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_DE,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_DE,
@@ -3535,7 +3535,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_DE,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_DE,
@@ -3551,7 +3551,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_DE,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_DE,
@@ -3569,7 +3569,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_DE,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_DE,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_DE,
@@ -3583,7 +3583,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_DE,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_DE,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_DE,
@@ -3614,7 +3614,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_DE,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_DE,
@@ -3628,7 +3628,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_DE,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DE,
@@ -3652,7 +3652,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_DE,
       NULL,
       MGBA_FORCE_GBP_INFO_0_DE,
@@ -3666,7 +3666,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_DE,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_DE,
@@ -3681,7 +3681,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_DE,
       NULL,
       MGBA_FRAMESKIP_INFO_0_DE,
@@ -3697,7 +3697,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_DE,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_DE,
@@ -3725,7 +3725,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_DE,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_DE,
@@ -3874,7 +3874,7 @@ struct retro_core_option_v2_category option_cats_el[] = {
 };
 struct retro_core_option_v2_definition option_defs_el[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_EL,
       NULL,
       MGBA_GB_MODEL_INFO_0_EL,
@@ -3891,7 +3891,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_EL,
       NULL,
       MGBA_USE_BIOS_INFO_0_EL,
@@ -3905,7 +3905,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_EL,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_EL,
@@ -3919,7 +3919,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_EL,
       NULL,
       MGBA_GB_COLORS_INFO_0_EL,
@@ -3933,7 +3933,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_EL,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_EL,
@@ -3948,7 +3948,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_EL,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_EL,
@@ -3964,7 +3964,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_EL,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_EL,
@@ -3982,7 +3982,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_EL,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_EL,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_EL,
@@ -3996,7 +3996,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_EL,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_EL,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_EL,
@@ -4027,7 +4027,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_EL,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_EL,
@@ -4041,7 +4041,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_EL,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EL,
@@ -4065,7 +4065,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_EL,
       NULL,
       MGBA_FORCE_GBP_INFO_0_EL,
@@ -4079,7 +4079,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_EL,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_EL,
@@ -4094,7 +4094,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_EL,
       NULL,
       MGBA_FRAMESKIP_INFO_0_EL,
@@ -4110,7 +4110,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_EL,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_EL,
@@ -4138,7 +4138,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_EL,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_EL,
@@ -4287,7 +4287,7 @@ struct retro_core_option_v2_category option_cats_eo[] = {
 };
 struct retro_core_option_v2_definition option_defs_eo[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_EO,
       NULL,
       MGBA_GB_MODEL_INFO_0_EO,
@@ -4304,7 +4304,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_EO,
       NULL,
       MGBA_USE_BIOS_INFO_0_EO,
@@ -4318,7 +4318,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_EO,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_EO,
@@ -4332,7 +4332,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_EO,
       NULL,
       MGBA_GB_COLORS_INFO_0_EO,
@@ -4346,7 +4346,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_EO,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_EO,
@@ -4361,7 +4361,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_EO,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_EO,
@@ -4377,7 +4377,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_EO,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_EO,
@@ -4395,7 +4395,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_EO,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_EO,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_EO,
@@ -4409,7 +4409,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_EO,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_EO,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_EO,
@@ -4440,7 +4440,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_EO,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_EO,
@@ -4454,7 +4454,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_EO,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EO,
@@ -4478,7 +4478,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_EO,
       NULL,
       MGBA_FORCE_GBP_INFO_0_EO,
@@ -4492,7 +4492,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_EO,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_EO,
@@ -4507,7 +4507,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_EO,
       NULL,
       MGBA_FRAMESKIP_INFO_0_EO,
@@ -4523,7 +4523,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_EO,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_EO,
@@ -4551,7 +4551,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_EO,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_EO,
@@ -4700,7 +4700,7 @@ struct retro_core_option_v2_category option_cats_es[] = {
 };
 struct retro_core_option_v2_definition option_defs_es[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_ES,
       NULL,
       MGBA_GB_MODEL_INFO_0_ES,
@@ -4717,7 +4717,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_ES,
       NULL,
       MGBA_USE_BIOS_INFO_0_ES,
@@ -4731,7 +4731,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_ES,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_ES,
@@ -4745,7 +4745,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_ES,
       NULL,
       MGBA_GB_COLORS_INFO_0_ES,
@@ -4759,7 +4759,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_ES,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_ES,
@@ -4774,7 +4774,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_ES,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_ES,
@@ -4790,7 +4790,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_ES,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_ES,
@@ -4808,7 +4808,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_ES,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_ES,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_ES,
@@ -4822,7 +4822,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_ES,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_ES,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_ES,
@@ -4853,7 +4853,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_ES,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_ES,
@@ -4867,7 +4867,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_ES,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ES,
@@ -4891,7 +4891,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_ES,
       NULL,
       MGBA_FORCE_GBP_INFO_0_ES,
@@ -4905,7 +4905,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_ES,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_ES,
@@ -4920,7 +4920,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_ES,
       NULL,
       MGBA_FRAMESKIP_INFO_0_ES,
@@ -4936,7 +4936,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_ES,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_ES,
@@ -4964,7 +4964,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_ES,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_ES,
@@ -5113,7 +5113,7 @@ struct retro_core_option_v2_category option_cats_fa[] = {
 };
 struct retro_core_option_v2_definition option_defs_fa[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_FA,
       NULL,
       MGBA_GB_MODEL_INFO_0_FA,
@@ -5130,7 +5130,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_FA,
       NULL,
       MGBA_USE_BIOS_INFO_0_FA,
@@ -5144,7 +5144,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_FA,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_FA,
@@ -5158,7 +5158,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_FA,
       NULL,
       MGBA_GB_COLORS_INFO_0_FA,
@@ -5172,7 +5172,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_FA,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_FA,
@@ -5187,7 +5187,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_FA,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_FA,
@@ -5203,7 +5203,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_FA,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_FA,
@@ -5221,7 +5221,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_FA,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_FA,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_FA,
@@ -5235,7 +5235,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_FA,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_FA,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_FA,
@@ -5266,7 +5266,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FA,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FA,
@@ -5280,7 +5280,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_FA,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FA,
@@ -5304,7 +5304,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_FA,
       NULL,
       MGBA_FORCE_GBP_INFO_0_FA,
@@ -5318,7 +5318,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_FA,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_FA,
@@ -5333,7 +5333,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_FA,
       NULL,
       MGBA_FRAMESKIP_INFO_0_FA,
@@ -5349,7 +5349,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_FA,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_FA,
@@ -5377,7 +5377,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_FA,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_FA,
@@ -5526,7 +5526,7 @@ struct retro_core_option_v2_category option_cats_fi[] = {
 };
 struct retro_core_option_v2_definition option_defs_fi[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_FI,
       NULL,
       MGBA_GB_MODEL_INFO_0_FI,
@@ -5543,7 +5543,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_FI,
       NULL,
       MGBA_USE_BIOS_INFO_0_FI,
@@ -5557,7 +5557,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_FI,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_FI,
@@ -5571,7 +5571,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_FI,
       NULL,
       MGBA_GB_COLORS_INFO_0_FI,
@@ -5585,7 +5585,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_FI,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_FI,
@@ -5600,7 +5600,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_FI,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_FI,
@@ -5616,7 +5616,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_FI,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_FI,
@@ -5634,7 +5634,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_FI,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_FI,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_FI,
@@ -5648,7 +5648,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_FI,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_FI,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_FI,
@@ -5679,7 +5679,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FI,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FI,
@@ -5693,7 +5693,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_FI,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FI,
@@ -5717,7 +5717,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_FI,
       NULL,
       MGBA_FORCE_GBP_INFO_0_FI,
@@ -5731,7 +5731,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_FI,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_FI,
@@ -5746,7 +5746,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_FI,
       NULL,
       MGBA_FRAMESKIP_INFO_0_FI,
@@ -5762,7 +5762,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_FI,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_FI,
@@ -5790,7 +5790,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_FI,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_FI,
@@ -5939,7 +5939,7 @@ struct retro_core_option_v2_category option_cats_fr[] = {
 };
 struct retro_core_option_v2_definition option_defs_fr[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_FR,
       NULL,
       MGBA_GB_MODEL_INFO_0_FR,
@@ -5956,7 +5956,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_FR,
       NULL,
       MGBA_USE_BIOS_INFO_0_FR,
@@ -5970,7 +5970,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_FR,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_FR,
@@ -5984,7 +5984,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_FR,
       NULL,
       MGBA_GB_COLORS_INFO_0_FR,
@@ -5998,7 +5998,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_FR,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_FR,
@@ -6013,7 +6013,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_FR,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_FR,
@@ -6029,7 +6029,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_FR,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_FR,
@@ -6047,7 +6047,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_FR,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_FR,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_FR,
@@ -6061,7 +6061,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_FR,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_FR,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_FR,
@@ -6092,7 +6092,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FR,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FR,
@@ -6106,7 +6106,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_FR,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FR,
@@ -6130,7 +6130,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_FR,
       NULL,
       MGBA_FORCE_GBP_INFO_0_FR,
@@ -6144,7 +6144,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_FR,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_FR,
@@ -6159,7 +6159,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_FR,
       NULL,
       MGBA_FRAMESKIP_INFO_0_FR,
@@ -6175,7 +6175,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_FR,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_FR,
@@ -6203,7 +6203,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_FR,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_FR,
@@ -6352,7 +6352,7 @@ struct retro_core_option_v2_category option_cats_gl[] = {
 };
 struct retro_core_option_v2_definition option_defs_gl[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_GL,
       NULL,
       MGBA_GB_MODEL_INFO_0_GL,
@@ -6369,7 +6369,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_GL,
       NULL,
       MGBA_USE_BIOS_INFO_0_GL,
@@ -6383,7 +6383,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_GL,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_GL,
@@ -6397,7 +6397,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_GL,
       NULL,
       MGBA_GB_COLORS_INFO_0_GL,
@@ -6411,7 +6411,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_GL,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_GL,
@@ -6426,7 +6426,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_GL,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_GL,
@@ -6442,7 +6442,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_GL,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_GL,
@@ -6460,7 +6460,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_GL,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_GL,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_GL,
@@ -6474,7 +6474,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_GL,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_GL,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_GL,
@@ -6505,7 +6505,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_GL,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_GL,
@@ -6519,7 +6519,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_GL,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_GL,
@@ -6543,7 +6543,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_GL,
       NULL,
       MGBA_FORCE_GBP_INFO_0_GL,
@@ -6557,7 +6557,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_GL,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_GL,
@@ -6572,7 +6572,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_GL,
       NULL,
       MGBA_FRAMESKIP_INFO_0_GL,
@@ -6588,7 +6588,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_GL,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_GL,
@@ -6616,7 +6616,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_GL,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_GL,
@@ -6765,7 +6765,7 @@ struct retro_core_option_v2_category option_cats_he[] = {
 };
 struct retro_core_option_v2_definition option_defs_he[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_HE,
       NULL,
       MGBA_GB_MODEL_INFO_0_HE,
@@ -6782,7 +6782,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_HE,
       NULL,
       MGBA_USE_BIOS_INFO_0_HE,
@@ -6796,7 +6796,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_HE,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_HE,
@@ -6810,7 +6810,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_HE,
       NULL,
       MGBA_GB_COLORS_INFO_0_HE,
@@ -6824,7 +6824,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_HE,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_HE,
@@ -6839,7 +6839,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_HE,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_HE,
@@ -6855,7 +6855,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_HE,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_HE,
@@ -6873,7 +6873,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_HE,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_HE,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_HE,
@@ -6887,7 +6887,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_HE,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_HE,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_HE,
@@ -6918,7 +6918,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_HE,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_HE,
@@ -6932,7 +6932,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_HE,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HE,
@@ -6956,7 +6956,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_HE,
       NULL,
       MGBA_FORCE_GBP_INFO_0_HE,
@@ -6970,7 +6970,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_HE,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_HE,
@@ -6985,7 +6985,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_HE,
       NULL,
       MGBA_FRAMESKIP_INFO_0_HE,
@@ -7001,7 +7001,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_HE,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_HE,
@@ -7029,7 +7029,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_HE,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_HE,
@@ -7178,7 +7178,7 @@ struct retro_core_option_v2_category option_cats_hu[] = {
 };
 struct retro_core_option_v2_definition option_defs_hu[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_HU,
       NULL,
       MGBA_GB_MODEL_INFO_0_HU,
@@ -7195,7 +7195,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_HU,
       NULL,
       MGBA_USE_BIOS_INFO_0_HU,
@@ -7209,7 +7209,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_HU,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_HU,
@@ -7223,7 +7223,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_HU,
       NULL,
       MGBA_GB_COLORS_INFO_0_HU,
@@ -7237,7 +7237,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_HU,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_HU,
@@ -7252,7 +7252,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_HU,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_HU,
@@ -7268,7 +7268,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_HU,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_HU,
@@ -7286,7 +7286,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_HU,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_HU,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_HU,
@@ -7300,7 +7300,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_HU,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_HU,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_HU,
@@ -7331,7 +7331,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_HU,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_HU,
@@ -7345,7 +7345,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_HU,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HU,
@@ -7369,7 +7369,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_HU,
       NULL,
       MGBA_FORCE_GBP_INFO_0_HU,
@@ -7383,7 +7383,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_HU,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_HU,
@@ -7398,7 +7398,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_HU,
       NULL,
       MGBA_FRAMESKIP_INFO_0_HU,
@@ -7414,7 +7414,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_HU,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_HU,
@@ -7442,7 +7442,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_HU,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_HU,
@@ -7591,7 +7591,7 @@ struct retro_core_option_v2_category option_cats_id[] = {
 };
 struct retro_core_option_v2_definition option_defs_id[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_ID,
       NULL,
       MGBA_GB_MODEL_INFO_0_ID,
@@ -7608,7 +7608,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_ID,
       NULL,
       MGBA_USE_BIOS_INFO_0_ID,
@@ -7622,7 +7622,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_ID,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_ID,
@@ -7636,7 +7636,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_ID,
       NULL,
       MGBA_GB_COLORS_INFO_0_ID,
@@ -7650,7 +7650,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_ID,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_ID,
@@ -7665,7 +7665,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_ID,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_ID,
@@ -7681,7 +7681,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_ID,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_ID,
@@ -7699,7 +7699,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_ID,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_ID,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_ID,
@@ -7713,7 +7713,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_ID,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_ID,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_ID,
@@ -7744,7 +7744,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_ID,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_ID,
@@ -7758,7 +7758,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_ID,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ID,
@@ -7782,7 +7782,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_ID,
       NULL,
       MGBA_FORCE_GBP_INFO_0_ID,
@@ -7796,7 +7796,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_ID,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_ID,
@@ -7811,7 +7811,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_ID,
       NULL,
       MGBA_FRAMESKIP_INFO_0_ID,
@@ -7827,7 +7827,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_ID,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_ID,
@@ -7855,7 +7855,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_ID,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_ID,
@@ -8004,7 +8004,7 @@ struct retro_core_option_v2_category option_cats_it[] = {
 };
 struct retro_core_option_v2_definition option_defs_it[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_IT,
       NULL,
       MGBA_GB_MODEL_INFO_0_IT,
@@ -8021,7 +8021,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_IT,
       NULL,
       MGBA_USE_BIOS_INFO_0_IT,
@@ -8035,7 +8035,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_IT,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_IT,
@@ -8049,7 +8049,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_IT,
       NULL,
       MGBA_GB_COLORS_INFO_0_IT,
@@ -8063,7 +8063,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_IT,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_IT,
@@ -8078,7 +8078,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_IT,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_IT,
@@ -8094,7 +8094,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_IT,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_IT,
@@ -8112,7 +8112,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_IT,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_IT,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_IT,
@@ -8126,7 +8126,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_IT,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_IT,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_IT,
@@ -8157,7 +8157,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_IT,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_IT,
@@ -8171,7 +8171,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_IT,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_IT,
@@ -8195,7 +8195,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_IT,
       NULL,
       MGBA_FORCE_GBP_INFO_0_IT,
@@ -8209,7 +8209,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_IT,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_IT,
@@ -8224,7 +8224,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_IT,
       NULL,
       MGBA_FRAMESKIP_INFO_0_IT,
@@ -8240,7 +8240,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_IT,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_IT,
@@ -8268,7 +8268,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_IT,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_IT,
@@ -8417,7 +8417,7 @@ struct retro_core_option_v2_category option_cats_ja[] = {
 };
 struct retro_core_option_v2_definition option_defs_ja[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_JA,
       NULL,
       MGBA_GB_MODEL_INFO_0_JA,
@@ -8434,7 +8434,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_JA,
       NULL,
       MGBA_USE_BIOS_INFO_0_JA,
@@ -8448,7 +8448,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_JA,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_JA,
@@ -8462,7 +8462,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_JA,
       NULL,
       MGBA_GB_COLORS_INFO_0_JA,
@@ -8476,7 +8476,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_JA,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_JA,
@@ -8491,7 +8491,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_JA,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_JA,
@@ -8507,7 +8507,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_JA,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_JA,
@@ -8525,7 +8525,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_JA,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_JA,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_JA,
@@ -8539,7 +8539,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_JA,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_JA,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_JA,
@@ -8570,7 +8570,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_JA,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_JA,
@@ -8584,7 +8584,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_JA,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_JA,
@@ -8608,7 +8608,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_JA,
       NULL,
       MGBA_FORCE_GBP_INFO_0_JA,
@@ -8622,7 +8622,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_JA,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_JA,
@@ -8637,7 +8637,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_JA,
       NULL,
       MGBA_FRAMESKIP_INFO_0_JA,
@@ -8653,7 +8653,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_JA,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_JA,
@@ -8681,7 +8681,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_JA,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_JA,
@@ -8830,7 +8830,7 @@ struct retro_core_option_v2_category option_cats_ko[] = {
 };
 struct retro_core_option_v2_definition option_defs_ko[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_KO,
       NULL,
       MGBA_GB_MODEL_INFO_0_KO,
@@ -8847,7 +8847,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_KO,
       NULL,
       MGBA_USE_BIOS_INFO_0_KO,
@@ -8861,7 +8861,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_KO,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_KO,
@@ -8875,7 +8875,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_KO,
       NULL,
       MGBA_GB_COLORS_INFO_0_KO,
@@ -8889,7 +8889,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_KO,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_KO,
@@ -8904,7 +8904,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_KO,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_KO,
@@ -8920,7 +8920,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_KO,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_KO,
@@ -8938,7 +8938,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_KO,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_KO,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_KO,
@@ -8952,7 +8952,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_KO,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_KO,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_KO,
@@ -8983,7 +8983,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_KO,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_KO,
@@ -8997,7 +8997,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_KO,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_KO,
@@ -9021,7 +9021,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_KO,
       NULL,
       MGBA_FORCE_GBP_INFO_0_KO,
@@ -9035,7 +9035,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_KO,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_KO,
@@ -9050,7 +9050,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_KO,
       NULL,
       MGBA_FRAMESKIP_INFO_0_KO,
@@ -9066,7 +9066,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_KO,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_KO,
@@ -9094,7 +9094,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_KO,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_KO,
@@ -9243,7 +9243,7 @@ struct retro_core_option_v2_category option_cats_mt[] = {
 };
 struct retro_core_option_v2_definition option_defs_mt[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_MT,
       NULL,
       MGBA_GB_MODEL_INFO_0_MT,
@@ -9260,7 +9260,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_MT,
       NULL,
       MGBA_USE_BIOS_INFO_0_MT,
@@ -9274,7 +9274,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_MT,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_MT,
@@ -9288,7 +9288,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_MT,
       NULL,
       MGBA_GB_COLORS_INFO_0_MT,
@@ -9302,7 +9302,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_MT,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_MT,
@@ -9317,7 +9317,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_MT,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_MT,
@@ -9333,7 +9333,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_MT,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_MT,
@@ -9351,7 +9351,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_MT,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_MT,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_MT,
@@ -9365,7 +9365,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_MT,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_MT,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_MT,
@@ -9396,7 +9396,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_MT,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_MT,
@@ -9410,7 +9410,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_MT,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_MT,
@@ -9434,7 +9434,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_MT,
       NULL,
       MGBA_FORCE_GBP_INFO_0_MT,
@@ -9448,7 +9448,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_MT,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_MT,
@@ -9463,7 +9463,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_MT,
       NULL,
       MGBA_FRAMESKIP_INFO_0_MT,
@@ -9479,7 +9479,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_MT,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_MT,
@@ -9507,7 +9507,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_MT,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_MT,
@@ -9656,7 +9656,7 @@ struct retro_core_option_v2_category option_cats_nl[] = {
 };
 struct retro_core_option_v2_definition option_defs_nl[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_NL,
       NULL,
       MGBA_GB_MODEL_INFO_0_NL,
@@ -9673,7 +9673,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_NL,
       NULL,
       MGBA_USE_BIOS_INFO_0_NL,
@@ -9687,7 +9687,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_NL,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_NL,
@@ -9701,7 +9701,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_NL,
       NULL,
       MGBA_GB_COLORS_INFO_0_NL,
@@ -9715,7 +9715,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_NL,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_NL,
@@ -9730,7 +9730,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_NL,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_NL,
@@ -9746,7 +9746,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_NL,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_NL,
@@ -9764,7 +9764,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_NL,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_NL,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_NL,
@@ -9778,7 +9778,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_NL,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_NL,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_NL,
@@ -9809,7 +9809,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_NL,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_NL,
@@ -9823,7 +9823,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_NL,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NL,
@@ -9847,7 +9847,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_NL,
       NULL,
       MGBA_FORCE_GBP_INFO_0_NL,
@@ -9861,7 +9861,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_NL,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_NL,
@@ -9876,7 +9876,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_NL,
       NULL,
       MGBA_FRAMESKIP_INFO_0_NL,
@@ -9892,7 +9892,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_NL,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_NL,
@@ -9920,7 +9920,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_NL,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_NL,
@@ -10069,7 +10069,7 @@ struct retro_core_option_v2_category option_cats_oc[] = {
 };
 struct retro_core_option_v2_definition option_defs_oc[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_OC,
       NULL,
       MGBA_GB_MODEL_INFO_0_OC,
@@ -10086,7 +10086,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_OC,
       NULL,
       MGBA_USE_BIOS_INFO_0_OC,
@@ -10100,7 +10100,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_OC,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_OC,
@@ -10114,7 +10114,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_OC,
       NULL,
       MGBA_GB_COLORS_INFO_0_OC,
@@ -10128,7 +10128,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_OC,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_OC,
@@ -10143,7 +10143,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_OC,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_OC,
@@ -10159,7 +10159,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_OC,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_OC,
@@ -10177,7 +10177,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_OC,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_OC,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_OC,
@@ -10191,7 +10191,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_OC,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_OC,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_OC,
@@ -10222,7 +10222,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_OC,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_OC,
@@ -10236,7 +10236,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_OC,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_OC,
@@ -10260,7 +10260,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_OC,
       NULL,
       MGBA_FORCE_GBP_INFO_0_OC,
@@ -10274,7 +10274,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_OC,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_OC,
@@ -10289,7 +10289,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_OC,
       NULL,
       MGBA_FRAMESKIP_INFO_0_OC,
@@ -10305,7 +10305,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_OC,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_OC,
@@ -10333,7 +10333,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_OC,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_OC,
@@ -10482,7 +10482,7 @@ struct retro_core_option_v2_category option_cats_pl[] = {
 };
 struct retro_core_option_v2_definition option_defs_pl[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_PL,
       NULL,
       MGBA_GB_MODEL_INFO_0_PL,
@@ -10499,7 +10499,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_PL,
       NULL,
       MGBA_USE_BIOS_INFO_0_PL,
@@ -10513,7 +10513,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_PL,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_PL,
@@ -10527,7 +10527,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_PL,
       NULL,
       MGBA_GB_COLORS_INFO_0_PL,
@@ -10541,7 +10541,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_PL,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_PL,
@@ -10556,7 +10556,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_PL,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_PL,
@@ -10572,7 +10572,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_PL,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_PL,
@@ -10590,7 +10590,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_PL,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_PL,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_PL,
@@ -10604,7 +10604,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_PL,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_PL,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_PL,
@@ -10635,7 +10635,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PL,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PL,
@@ -10649,7 +10649,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_PL,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PL,
@@ -10673,7 +10673,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_PL,
       NULL,
       MGBA_FORCE_GBP_INFO_0_PL,
@@ -10687,7 +10687,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_PL,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_PL,
@@ -10702,7 +10702,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_PL,
       NULL,
       MGBA_FRAMESKIP_INFO_0_PL,
@@ -10718,7 +10718,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_PL,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_PL,
@@ -10746,7 +10746,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_PL,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_PL,
@@ -10895,7 +10895,7 @@ struct retro_core_option_v2_category option_cats_pt_br[] = {
 };
 struct retro_core_option_v2_definition option_defs_pt_br[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_PT_BR,
       NULL,
       MGBA_GB_MODEL_INFO_0_PT_BR,
@@ -10912,7 +10912,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_PT_BR,
       NULL,
       MGBA_USE_BIOS_INFO_0_PT_BR,
@@ -10926,7 +10926,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_PT_BR,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_PT_BR,
@@ -10940,7 +10940,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_PT_BR,
       NULL,
       MGBA_GB_COLORS_INFO_0_PT_BR,
@@ -10954,7 +10954,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_PT_BR,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_PT_BR,
@@ -10969,7 +10969,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_PT_BR,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_PT_BR,
@@ -10985,7 +10985,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_PT_BR,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_PT_BR,
@@ -11003,7 +11003,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_PT_BR,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_PT_BR,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_PT_BR,
@@ -11017,7 +11017,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_PT_BR,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_PT_BR,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_PT_BR,
@@ -11048,7 +11048,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_BR,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_BR,
@@ -11062,7 +11062,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_BR,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_BR,
@@ -11086,7 +11086,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_PT_BR,
       NULL,
       MGBA_FORCE_GBP_INFO_0_PT_BR,
@@ -11100,7 +11100,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_PT_BR,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_PT_BR,
@@ -11115,7 +11115,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_PT_BR,
       NULL,
       MGBA_FRAMESKIP_INFO_0_PT_BR,
@@ -11131,7 +11131,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_PT_BR,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_PT_BR,
@@ -11159,7 +11159,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_PT_BR,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_PT_BR,
@@ -11308,7 +11308,7 @@ struct retro_core_option_v2_category option_cats_pt_pt[] = {
 };
 struct retro_core_option_v2_definition option_defs_pt_pt[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_PT_PT,
       NULL,
       MGBA_GB_MODEL_INFO_0_PT_PT,
@@ -11325,7 +11325,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_PT_PT,
       NULL,
       MGBA_USE_BIOS_INFO_0_PT_PT,
@@ -11339,7 +11339,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_PT_PT,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_PT_PT,
@@ -11353,7 +11353,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_PT_PT,
       NULL,
       MGBA_GB_COLORS_INFO_0_PT_PT,
@@ -11367,7 +11367,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_PT_PT,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_PT_PT,
@@ -11382,7 +11382,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_PT_PT,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_PT_PT,
@@ -11398,7 +11398,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_PT_PT,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_PT_PT,
@@ -11416,7 +11416,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_PT_PT,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_PT_PT,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_PT_PT,
@@ -11430,7 +11430,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_PT_PT,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_PT_PT,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_PT_PT,
@@ -11461,7 +11461,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_PT,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_PT,
@@ -11475,7 +11475,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_PT,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_PT,
@@ -11499,7 +11499,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_PT_PT,
       NULL,
       MGBA_FORCE_GBP_INFO_0_PT_PT,
@@ -11513,7 +11513,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_PT_PT,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_PT_PT,
@@ -11528,7 +11528,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_PT_PT,
       NULL,
       MGBA_FRAMESKIP_INFO_0_PT_PT,
@@ -11544,7 +11544,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_PT_PT,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_PT_PT,
@@ -11572,7 +11572,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_PT_PT,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_PT_PT,
@@ -11721,7 +11721,7 @@ struct retro_core_option_v2_category option_cats_ro[] = {
 };
 struct retro_core_option_v2_definition option_defs_ro[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_RO,
       NULL,
       MGBA_GB_MODEL_INFO_0_RO,
@@ -11738,7 +11738,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_RO,
       NULL,
       MGBA_USE_BIOS_INFO_0_RO,
@@ -11752,7 +11752,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_RO,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_RO,
@@ -11766,7 +11766,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_RO,
       NULL,
       MGBA_GB_COLORS_INFO_0_RO,
@@ -11780,7 +11780,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_RO,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_RO,
@@ -11795,7 +11795,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_RO,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_RO,
@@ -11811,7 +11811,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_RO,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_RO,
@@ -11829,7 +11829,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_RO,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_RO,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_RO,
@@ -11843,7 +11843,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_RO,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_RO,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_RO,
@@ -11874,7 +11874,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_RO,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_RO,
@@ -11888,7 +11888,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_RO,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RO,
@@ -11912,7 +11912,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_RO,
       NULL,
       MGBA_FORCE_GBP_INFO_0_RO,
@@ -11926,7 +11926,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_RO,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_RO,
@@ -11941,7 +11941,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_RO,
       NULL,
       MGBA_FRAMESKIP_INFO_0_RO,
@@ -11957,7 +11957,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_RO,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_RO,
@@ -11985,7 +11985,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_RO,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_RO,
@@ -12134,7 +12134,7 @@ struct retro_core_option_v2_category option_cats_ru[] = {
 };
 struct retro_core_option_v2_definition option_defs_ru[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_RU,
       NULL,
       MGBA_GB_MODEL_INFO_0_RU,
@@ -12151,7 +12151,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_RU,
       NULL,
       MGBA_USE_BIOS_INFO_0_RU,
@@ -12165,7 +12165,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_RU,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_RU,
@@ -12179,7 +12179,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_RU,
       NULL,
       MGBA_GB_COLORS_INFO_0_RU,
@@ -12193,7 +12193,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_RU,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_RU,
@@ -12208,7 +12208,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_RU,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_RU,
@@ -12224,7 +12224,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_RU,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_RU,
@@ -12242,7 +12242,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_RU,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_RU,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_RU,
@@ -12256,7 +12256,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_RU,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_RU,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_RU,
@@ -12287,7 +12287,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_RU,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_RU,
@@ -12301,7 +12301,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_RU,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RU,
@@ -12325,7 +12325,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_RU,
       NULL,
       MGBA_FORCE_GBP_INFO_0_RU,
@@ -12339,7 +12339,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_RU,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_RU,
@@ -12354,7 +12354,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_RU,
       NULL,
       MGBA_FRAMESKIP_INFO_0_RU,
@@ -12370,7 +12370,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_RU,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_RU,
@@ -12398,7 +12398,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_RU,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_RU,
@@ -12547,7 +12547,7 @@ struct retro_core_option_v2_category option_cats_si[] = {
 };
 struct retro_core_option_v2_definition option_defs_si[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_SI,
       NULL,
       MGBA_GB_MODEL_INFO_0_SI,
@@ -12564,7 +12564,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_SI,
       NULL,
       MGBA_USE_BIOS_INFO_0_SI,
@@ -12578,7 +12578,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_SI,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_SI,
@@ -12592,7 +12592,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_SI,
       NULL,
       MGBA_GB_COLORS_INFO_0_SI,
@@ -12606,7 +12606,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_SI,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_SI,
@@ -12621,7 +12621,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_SI,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_SI,
@@ -12637,7 +12637,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_SI,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_SI,
@@ -12655,7 +12655,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_SI,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_SI,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_SI,
@@ -12669,7 +12669,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_SI,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_SI,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_SI,
@@ -12700,7 +12700,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SI,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SI,
@@ -12714,7 +12714,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_SI,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SI,
@@ -12738,7 +12738,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_SI,
       NULL,
       MGBA_FORCE_GBP_INFO_0_SI,
@@ -12752,7 +12752,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_SI,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_SI,
@@ -12767,7 +12767,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_SI,
       NULL,
       MGBA_FRAMESKIP_INFO_0_SI,
@@ -12783,7 +12783,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_SI,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_SI,
@@ -12811,7 +12811,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_SI,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_SI,
@@ -12960,7 +12960,7 @@ struct retro_core_option_v2_category option_cats_sk[] = {
 };
 struct retro_core_option_v2_definition option_defs_sk[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_SK,
       NULL,
       MGBA_GB_MODEL_INFO_0_SK,
@@ -12977,7 +12977,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_SK,
       NULL,
       MGBA_USE_BIOS_INFO_0_SK,
@@ -12991,7 +12991,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_SK,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_SK,
@@ -13005,7 +13005,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_SK,
       NULL,
       MGBA_GB_COLORS_INFO_0_SK,
@@ -13019,7 +13019,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_SK,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_SK,
@@ -13034,7 +13034,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_SK,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_SK,
@@ -13050,7 +13050,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_SK,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_SK,
@@ -13068,7 +13068,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_SK,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_SK,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_SK,
@@ -13082,7 +13082,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_SK,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_SK,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_SK,
@@ -13113,7 +13113,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SK,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SK,
@@ -13127,7 +13127,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_SK,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SK,
@@ -13151,7 +13151,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_SK,
       NULL,
       MGBA_FORCE_GBP_INFO_0_SK,
@@ -13165,7 +13165,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_SK,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_SK,
@@ -13180,7 +13180,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_SK,
       NULL,
       MGBA_FRAMESKIP_INFO_0_SK,
@@ -13196,7 +13196,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_SK,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_SK,
@@ -13224,7 +13224,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_SK,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_SK,
@@ -13373,7 +13373,7 @@ struct retro_core_option_v2_category option_cats_sr[] = {
 };
 struct retro_core_option_v2_definition option_defs_sr[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_SR,
       NULL,
       MGBA_GB_MODEL_INFO_0_SR,
@@ -13390,7 +13390,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_SR,
       NULL,
       MGBA_USE_BIOS_INFO_0_SR,
@@ -13404,7 +13404,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_SR,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_SR,
@@ -13418,7 +13418,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_SR,
       NULL,
       MGBA_GB_COLORS_INFO_0_SR,
@@ -13432,7 +13432,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_SR,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_SR,
@@ -13447,7 +13447,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_SR,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_SR,
@@ -13463,7 +13463,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_SR,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_SR,
@@ -13481,7 +13481,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_SR,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_SR,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_SR,
@@ -13495,7 +13495,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_SR,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_SR,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_SR,
@@ -13526,7 +13526,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SR,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SR,
@@ -13540,7 +13540,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_SR,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SR,
@@ -13564,7 +13564,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_SR,
       NULL,
       MGBA_FORCE_GBP_INFO_0_SR,
@@ -13578,7 +13578,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_SR,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_SR,
@@ -13593,7 +13593,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_SR,
       NULL,
       MGBA_FRAMESKIP_INFO_0_SR,
@@ -13609,7 +13609,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_SR,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_SR,
@@ -13637,7 +13637,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_SR,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_SR,
@@ -13786,7 +13786,7 @@ struct retro_core_option_v2_category option_cats_sv[] = {
 };
 struct retro_core_option_v2_definition option_defs_sv[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_SV,
       NULL,
       MGBA_GB_MODEL_INFO_0_SV,
@@ -13803,7 +13803,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_SV,
       NULL,
       MGBA_USE_BIOS_INFO_0_SV,
@@ -13817,7 +13817,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_SV,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_SV,
@@ -13831,7 +13831,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_SV,
       NULL,
       MGBA_GB_COLORS_INFO_0_SV,
@@ -13845,7 +13845,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_SV,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_SV,
@@ -13860,7 +13860,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_SV,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_SV,
@@ -13876,7 +13876,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_SV,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_SV,
@@ -13894,7 +13894,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_SV,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_SV,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_SV,
@@ -13908,7 +13908,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_SV,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_SV,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_SV,
@@ -13939,7 +13939,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SV,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SV,
@@ -13953,7 +13953,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_SV,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SV,
@@ -13977,7 +13977,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_SV,
       NULL,
       MGBA_FORCE_GBP_INFO_0_SV,
@@ -13991,7 +13991,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_SV,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_SV,
@@ -14006,7 +14006,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_SV,
       NULL,
       MGBA_FRAMESKIP_INFO_0_SV,
@@ -14022,7 +14022,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_SV,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_SV,
@@ -14050,7 +14050,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_SV,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_SV,
@@ -14199,7 +14199,7 @@ struct retro_core_option_v2_category option_cats_tr[] = {
 };
 struct retro_core_option_v2_definition option_defs_tr[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_TR,
       NULL,
       MGBA_GB_MODEL_INFO_0_TR,
@@ -14216,7 +14216,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_TR,
       NULL,
       MGBA_USE_BIOS_INFO_0_TR,
@@ -14230,7 +14230,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_TR,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_TR,
@@ -14244,7 +14244,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_TR,
       NULL,
       MGBA_GB_COLORS_INFO_0_TR,
@@ -14258,7 +14258,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_TR,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_TR,
@@ -14273,7 +14273,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_TR,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_TR,
@@ -14289,7 +14289,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_TR,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_TR,
@@ -14307,7 +14307,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_TR,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_TR,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_TR,
@@ -14321,7 +14321,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_TR,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_TR,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_TR,
@@ -14352,7 +14352,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_TR,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_TR,
@@ -14366,7 +14366,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_TR,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_TR,
@@ -14390,7 +14390,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_TR,
       NULL,
       MGBA_FORCE_GBP_INFO_0_TR,
@@ -14404,7 +14404,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_TR,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_TR,
@@ -14419,7 +14419,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_TR,
       NULL,
       MGBA_FRAMESKIP_INFO_0_TR,
@@ -14435,7 +14435,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_TR,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_TR,
@@ -14463,7 +14463,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_TR,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_TR,
@@ -14612,7 +14612,7 @@ struct retro_core_option_v2_category option_cats_uk[] = {
 };
 struct retro_core_option_v2_definition option_defs_uk[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_UK,
       NULL,
       MGBA_GB_MODEL_INFO_0_UK,
@@ -14629,7 +14629,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_UK,
       NULL,
       MGBA_USE_BIOS_INFO_0_UK,
@@ -14643,7 +14643,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_UK,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_UK,
@@ -14657,7 +14657,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_UK,
       NULL,
       MGBA_GB_COLORS_INFO_0_UK,
@@ -14671,7 +14671,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_UK,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_UK,
@@ -14686,7 +14686,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_UK,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_UK,
@@ -14702,7 +14702,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_UK,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_UK,
@@ -14720,7 +14720,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_UK,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_UK,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_UK,
@@ -14734,7 +14734,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_UK,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_UK,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_UK,
@@ -14765,7 +14765,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_UK,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_UK,
@@ -14779,7 +14779,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_UK,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_UK,
@@ -14803,7 +14803,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_UK,
       NULL,
       MGBA_FORCE_GBP_INFO_0_UK,
@@ -14817,7 +14817,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_UK,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_UK,
@@ -14832,7 +14832,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_UK,
       NULL,
       MGBA_FRAMESKIP_INFO_0_UK,
@@ -14848,7 +14848,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_UK,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_UK,
@@ -14876,7 +14876,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_UK,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_UK,
@@ -15025,7 +15025,7 @@ struct retro_core_option_v2_category option_cats_vn[] = {
 };
 struct retro_core_option_v2_definition option_defs_vn[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       MGBA_GB_MODEL_LABEL_VN,
       NULL,
       MGBA_GB_MODEL_INFO_0_VN,
@@ -15042,7 +15042,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       MGBA_USE_BIOS_LABEL_VN,
       NULL,
       MGBA_USE_BIOS_INFO_0_VN,
@@ -15056,7 +15056,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       MGBA_SKIP_BIOS_LABEL_VN,
       NULL,
       MGBA_SKIP_BIOS_INFO_0_VN,
@@ -15070,7 +15070,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       MGBA_GB_COLORS_LABEL_VN,
       NULL,
       MGBA_GB_COLORS_INFO_0_VN,
@@ -15084,7 +15084,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "Grayscale"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       MGBA_SGB_BORDERS_LABEL_VN,
       NULL,
       MGBA_SGB_BORDERS_INFO_0_VN,
@@ -15099,7 +15099,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
    },
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
    {
-      "mgba_color_correction",
+      "mgba_reon_color_correction",
       MGBA_COLOR_CORRECTION_LABEL_VN,
       NULL,
       MGBA_COLOR_CORRECTION_INFO_0_VN,
@@ -15115,7 +15115,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "OFF"
    },
    {
-      "mgba_interframe_blending",
+      "mgba_reon_interframe_blending",
       MGBA_INTERFRAME_BLENDING_LABEL_VN,
       NULL,
       MGBA_INTERFRAME_BLENDING_INFO_0_VN,
@@ -15133,7 +15133,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
    },
 #endif
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_VN,
       MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_VN,
       MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_VN,
@@ -15147,7 +15147,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_VN,
       MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_VN,
       MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_VN,
@@ -15178,7 +15178,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_VN,
       NULL,
       MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_VN,
@@ -15192,7 +15192,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       MGBA_SOLAR_SENSOR_LEVEL_LABEL_VN,
       NULL,
       MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VN,
@@ -15216,7 +15216,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       MGBA_FORCE_GBP_LABEL_VN,
       NULL,
       MGBA_FORCE_GBP_INFO_0_VN,
@@ -15230,7 +15230,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       MGBA_IDLE_OPTIMIZATION_LABEL_VN,
       NULL,
       MGBA_IDLE_OPTIMIZATION_INFO_0_VN,
@@ -15245,7 +15245,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       MGBA_FRAMESKIP_LABEL_VN,
       NULL,
       MGBA_FRAMESKIP_INFO_0_VN,
@@ -15261,7 +15261,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "disabled"
    },
    {
-      "mgba_frameskip_threshold",
+      "mgba_reon_frameskip_threshold",
       MGBA_FRAMESKIP_THRESHOLD_LABEL_VN,
       NULL,
       MGBA_FRAMESKIP_THRESHOLD_INFO_0_VN,
@@ -15289,7 +15289,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "33"
    },
    {
-      "mgba_frameskip_interval",
+      "mgba_reon_frameskip_interval",
       MGBA_FRAMESKIP_INTERVAL_LABEL_VN,
       NULL,
       MGBA_FRAMESKIP_INTERVAL_INFO_0_VN,

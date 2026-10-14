@@ -734,7 +734,7 @@ static void _announceIdentity(struct mGUIRunner* runner) {
 		// looks ready and then fetches nothing.
 		if (!MobileAdapterGBHasAuthKey(gb)) {
 			_logPrintf("<mGBA> No mail key yet - download mobile_config.bin from your "
-			           "account. Put it in the mGBA folder on the SD card; mail will "
+			           "account. Put it in the mgba-reon folder on the SD card; mail will "
 			           "not work until then.");
 		}
 		announced = true;

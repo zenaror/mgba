@@ -80,7 +80,7 @@ struct retro_core_option_v2_category option_cats_us[] = {
 
 struct retro_core_option_v2_definition option_defs_us[] = {
    {
-      "mgba_gb_model",
+      "mgba_reon_gb_model",
       "Game Boy Model (Restart)",
       NULL,
       "Runs loaded content with a specific Game Boy model. 'Autodetect' will select the most appropriate model for the current game.",
@@ -98,7 +98,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "Autodetect"
    },
    {
-      "mgba_use_bios",
+      "mgba_reon_use_bios",
       "Use BIOS File if Found (Restart)",
       NULL,
       "Use official BIOS/bootloader for emulated hardware, if present in RetroArch's system directory.",
@@ -112,7 +112,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "ON"
    },
    {
-      "mgba_skip_bios",
+      "mgba_reon_skip_bios",
       "Skip BIOS Intro (Restart)",
       NULL,
       "When using an official BIOS/bootloader, skip the start-up logo animation. This setting is ignored when 'Use BIOS File if Found' is disabled.",
@@ -126,7 +126,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "OFF"
    },
    {
-      "mgba_gb_colors",
+      "mgba_reon_gb_colors",
       "Default Game Boy Palette",
       NULL,
       "Selects which palette is used for Game Boy games that are not Game Boy Color or Super Game Boy compatible, or if the model is forced to Game Boy.",
@@ -140,7 +140,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "Grayscale"
    },
    {
-      "mgba_gb_colors_preset",
+      "mgba_reon_gb_colors_preset",
       "Hardware Preset Game Boy Palettes (Restart)",
       NULL,
       "Use the palettes for Game Boy games that have presets on the Game Boy Color or Super Game Boy.",
@@ -156,7 +156,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "0"
    },
    {
-      "mgba_sgb_borders",
+      "mgba_reon_sgb_borders",
       "Use Super Game Boy Borders (Restart)",
       NULL,
       "Display Super Game Boy borders when running Super Game Boy enhanced games.",
@@ -170,7 +170,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "ON"
    },
    {
-      "mgba_audio_low_pass_filter",
+      "mgba_reon_audio_low_pass_filter",
       "Audio Filter",
       "Low Pass Filter",
       "Enables a low pass audio filter to reduce the 'harshness' of generated audio.",
@@ -184,7 +184,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "disabled"
    },
    {
-      "mgba_audio_low_pass_range",
+      "mgba_reon_audio_low_pass_range",
       "Audio Filter Level",
       "Filter Level",
       "Specifies the cut-off frequency of the low pass audio filter. A higher value increases the perceived 'strength' of the filter, since a wider range of the high frequency spectrum is attenuated.",
@@ -215,7 +215,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "60"
    },
    {
-      "mgba_allow_opposing_directions",
+      "mgba_reon_allow_opposing_directions",
       "Allow Opposing Directional Input",
       NULL,
       "Enabling this will allow pressing / quickly alternating / holding both left and right (or up and down) directions at the same time. This may cause movement-based glitches.",
@@ -229,7 +229,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_level",
+      "mgba_reon_solar_sensor_level",
       "Solar Sensor Level",
       NULL,
       "Sets ambient sunlight intensity. Can be used by games that included a solar sensor in their cartridges, e.g: the Boktai series.",
@@ -253,7 +253,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "0"
    },
    {
-      "mgba_force_gbp",
+      "mgba_reon_force_gbp",
       "Game Boy Player Rumble (Restart)",
       NULL,
       "Enabling this will allow compatible games with the Game Boy Player boot logo to make the controller rumble. Due to how Nintendo decided this feature should work, it may cause glitches such as flickering or lag in some of these games.",
@@ -267,7 +267,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "OFF"
    },
    {
-      "mgba_idle_optimization",
+      "mgba_reon_idle_optimization",
       "Idle Loop Removal",
       NULL,
       "Reduce system load by optimizing so-called 'idle-loops' - sections in the code where nothing happens, but the CPU runs at full speed (like a car revving in neutral). Improves performance, and should be enabled on low-end hardware.",
@@ -282,7 +282,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "Remove Known"
    },
    {
-      "mgba_frameskip",
+      "mgba_reon_frameskip",
       "Frameskip",
       NULL,
       "Skip frames to improve performance at the expense of visual smoothness. The value set here is the number of frames omitted after a frame is rendered - i.e. '0' = 60fps, '1' = 30fps, '2' = 15fps, etc.",
@@ -306,10 +306,10 @@ struct retro_core_option_v2_definition option_defs_us[] = {
    },
 #ifdef USE_LIBMOBILE
 	{
-		"mgba_mobile_adapter",
+		"mgba_reon_mobile_adapter",
 		"Mobile Adapter GB",
 		NULL,
-		"Plugs a Mobile Adapter GB into the link port, for games that connect to the Mobile System GB service. Its settings come from 'mobile_config.bin' and 'magb_config.ini' in the frontend's system directory (the same folder as the BIOS files); the ini is created with every setting commented out the first time the adapter is switched on. The pairing code that identifies this device on the service's site is shown when the adapter comes on.",
+		"Plugs a Mobile Adapter GB into the link port, for games that connect to the Mobile System GB service. Its settings come from 'mgba-reon-mobile_config.bin' and 'mgba-reon-config.ini' in the frontend's system directory (the same folder as the BIOS files); the ini is created with every setting commented out the first time the adapter is switched on. The pairing code that identifies this device on the service's site is shown when the adapter comes on.",
 		NULL,
 		"input",
 		{

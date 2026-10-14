@@ -158,7 +158,7 @@ static void _loadAudioLowPassFilterSettings(void) {
 	audioLowPassEnabled = false;
 	audioLowPassRange = (60 * 0x10000) / 100;
 
-	var.key = "mgba_audio_low_pass_filter";
+	var.key = "mgba_reon_audio_low_pass_filter";
 	var.value = 0;
 
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -167,7 +167,7 @@ static void _loadAudioLowPassFilterSettings(void) {
 		}
 	}
 
-	var.key = "mgba_audio_low_pass_range";
+	var.key = "mgba_reon_audio_low_pass_range";
 	var.value = 0;
 
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -219,7 +219,7 @@ static void _initRumble(void) {
 #ifdef M_CORE_GB
 static void _updateGbPal(void) {
 	struct retro_variable var;
-	var.key = "mgba_gb_colors";
+	var.key = "mgba_reon_gb_colors";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		const struct GBColorPreset* presets;
@@ -259,7 +259,7 @@ static void _reloadSettings(void) {
 	enum GBModel model;
 	const char* modelName;
 
-	var.key = "mgba_gb_model";
+	var.key = "mgba_reon_gb_model";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		if (strcmp(var.value, "Game Boy") == 0) {
@@ -284,13 +284,13 @@ static void _reloadSettings(void) {
 		mCoreConfigSetDefaultValue(&core->config, "cgb.sgbModel", modelName);
 	}
 
-	var.key = "mgba_sgb_borders";
+	var.key = "mgba_reon_sgb_borders";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", strcmp(var.value, "ON") == 0);
 	}
 
-	var.key = "mgba_gb_colors_preset";
+	var.key = "mgba_reon_gb_colors_preset";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		mCoreConfigSetDefaultIntValue(&core->config, "gb.colors", strtol(var.value, NULL, 10));
@@ -299,19 +299,19 @@ static void _reloadSettings(void) {
 	_updateGbPal();
 #endif
 
-	var.key = "mgba_use_bios";
+	var.key = "mgba_reon_use_bios";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		opts.useBios = strcmp(var.value, "ON") == 0;
 	}
 
-	var.key = "mgba_skip_bios";
+	var.key = "mgba_reon_skip_bios";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		opts.skipBios = strcmp(var.value, "ON") == 0;
 	}
 
-	var.key = "mgba_frameskip";
+	var.key = "mgba_reon_frameskip";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		opts.frameskip = strtol(var.value, NULL, 10);
@@ -319,7 +319,7 @@ static void _reloadSettings(void) {
 
 	_loadAudioLowPassFilterSettings();
 
-	var.key = "mgba_idle_optimization";
+	var.key = "mgba_reon_idle_optimization";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		if (strcmp(var.value, "Don't Remove") == 0) {
@@ -332,7 +332,7 @@ static void _reloadSettings(void) {
 	}
 
 #ifdef M_CORE_GBA
-	var.key = "mgba_force_gbp";
+	var.key = "mgba_reon_force_gbp";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		mCoreConfigSetDefaultIntValue(&core->config, "gba.forceGbp", strcmp(var.value, "ON") == 0);
@@ -374,7 +374,7 @@ void retro_set_environment(retro_environment_t env) {
 
 	size_t colorOpt;
 	for (colorOpt = 0; option_defs_us[colorOpt].key; ++colorOpt) {
-		if (strcmp(option_defs_us[colorOpt].key, "mgba_gb_colors") == 0) {
+		if (strcmp(option_defs_us[colorOpt].key, "mgba_reon_gb_colors") == 0) {
 			break;
 		}
 	}
@@ -570,7 +570,7 @@ void retro_run(void) {
 		envVarsUpdated = true;
 
 		struct retro_variable var = {
-			.key = "mgba_allow_opposing_directions",
+			.key = "mgba_reon_allow_opposing_directions",
 			.value = 0
 		};
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -579,7 +579,7 @@ void retro_run(void) {
 		}
 
 		_loadAudioLowPassFilterSettings();
-		var.key = "mgba_frameskip";
+		var.key = "mgba_reon_frameskip";
 		var.value = 0;
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 			mCoreConfigSetIntValue(&core->config, "frameskip", strtol(var.value, NULL, 10));
@@ -1300,7 +1300,7 @@ static void _setRumble(struct mRumbleIntegrator* rumble, float level) {
 static void _updateLux(struct GBALuminanceSource* lux) {
 	UNUSED(lux);
 	struct retro_variable var = {
-		.key = "mgba_solar_sensor_level",
+		.key = "mgba_reon_solar_sensor_level",
 		.value = 0
 	};
 	bool luxVarUpdated = envVarsUpdated;

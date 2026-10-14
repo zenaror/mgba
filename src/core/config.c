@@ -256,13 +256,13 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	}
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #elif defined(PSP2)
-	snprintf(out, outLength, "ux0:data/%s", projectName);
+	snprintf(out, outLength, "ux0:data/%s", binaryName);
 	sceIoMkdir(out, 0777);
 #elif defined(GEKKO) || defined(__SWITCH__)
-	snprintf(out, outLength, "/%s", projectName);
+	snprintf(out, outLength, "/%s", binaryName);
 	mkdir(out, 0777);
 #elif defined(__3DS__)
-	snprintf(out, outLength, "/%s", projectName);
+	snprintf(out, outLength, "/%s", binaryName);
 	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, out), 0);
 #elif defined(__HAIKU__)
 	char path[B_PATH_NAME_LENGTH];

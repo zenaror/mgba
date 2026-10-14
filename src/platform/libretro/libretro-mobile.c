@@ -27,13 +27,13 @@
 mLOG_DECLARE_CATEGORY(RETRO_MOBILE);
 mLOG_DEFINE_CATEGORY(RETRO_MOBILE, "Mobile Adapter", "retro.mobile");
 
-#define MOBILE_OPTION "mgba_mobile_adapter"
-#define MOBILE_CONFIG_FILE "mobile_config.bin"
-#define MOBILE_IDENTITY_FILE "mobile_identity.bin"
+#define MOBILE_OPTION "mgba_reon_mobile_adapter"
+#define MOBILE_CONFIG_FILE "mgba-reon-mobile_config.bin"
+#define MOBILE_IDENTITY_FILE "mgba-reon-mobile_identity.bin"
 #define MOBILE_IDENTITY_SIZE 16
 // The keys DoubleCherryGB reads from its own ini are spelled the same here,
 // so a line copied from one works in the other.
-#define MOBILE_INI_FILE "magb_config.ini"
+#define MOBILE_INI_FILE "mgba-reon-config.ini"
 #define MOBILE_INI_MAX 4096
 #define ADDR_TEXT_LEN 64
 // Roughly five seconds on the frontend's message line.
@@ -120,10 +120,8 @@ static void _path(char* out, size_t size, const char* name) {
 // The system directory, where a libretro frontend keeps what its cores need
 // and is not a game's own — BIOS images, and the other core with a Mobile
 // Adapter (DoubleCherryGB) keeps its config there too, so it is where a user
-// already looks. The save directory failing that. The file keeps the name
-// mGBA gives it on every platform, and is deliberately not the other core's
-// file: a config carries the device-auth counter state, and two adapters
-// writing one would replay each other's counters.
+// already looks. The save directory failing that. Fork-specific filenames keep
+// configuration and device-auth counters separate from other cores sharing it.
 static bool _resolveDir(void) {
 	const char* dir = NULL;
 	if (!_env(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) || !dir || !dir[0]) {
@@ -383,7 +381,7 @@ static void _iniLine(struct RetroMobileIni* ini, char* line) {
 static void _writeIniTemplate(const char* path) {
 	static const char template[] =
 	    "# Mobile Adapter GB settings for the mGBA libretro core.\n"
-	    "# Anything set here overrides mobile_config.bin when the adapter is\n"
+	    "# Anything set here overrides mgba-reon-mobile_config.bin when the adapter is\n"
 	    "# switched on; a line starting with # is ignored. The keys dns_ip,\n"
 	    "# dns_port, relay_ip and relay_port mean the same as in DoubleCherryGB.\n"
 	    "\n"
@@ -626,10 +624,12 @@ void mRetroMobileAttach(struct mCore* core) {
 	// same whether or not mail can authenticate. Without this, a core with no
 	// key announces itself as ready and then fetches nothing.
 	if (haveCode && !MobileAdapterGBHasAuthKey(gb)) {
-		_message("No mail key yet - download mobile_config.bin from your account. "
+		_message("No mail key yet - download mobile_config.bin from your account "
+		         "and rename it to mgba-reon-mobile_config.bin. "
 		         "Put it in RetroArch's system folder; mail will not work until then.");
 		mLOG(RETRO_MOBILE, WARN,
-		     "No mail key yet - download mobile_config.bin from your account. "
+		     "No mail key yet - download mobile_config.bin from your account "
+		     "and rename it to mgba-reon-mobile_config.bin. "
 		     "Put it in RetroArch's system folder; mail will not work until then.");
 	}
 }
