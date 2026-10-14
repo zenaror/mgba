@@ -297,11 +297,15 @@ line directory arguments can take precedence. No core can prevent a frontend
 from deliberately selecting shared save paths.
 
 The fork's RetroArch options use `mgba_reon_*` keys, separate from `mgba_*`.
-Adapter files also use private names in the selected system directory (save
-directory fallback): `mgba-reon-mobile_config.bin`,
-`mgba-reon-mobile_identity.bin`, and `mgba-reon-config.ini`. A downloaded
-`mobile_config.bin` must be renamed when deliberately provisioning this core;
-no identity/counter state is imported automatically. Server protocol names
+Adapter files live in the private `mgba-reon` subdirectory of the selected
+system directory (save directory fallback). The configuration filename is
+**`mobile_config.bin` in every mGBA implementation**; do not rename a file
+downloaded from the service. For example, Android uses
+`/storage/emulated/0/RetroArch/system/mgba-reon/mobile_config.bin` when the
+system directory has its usual location. The core creates the subdirectory
+when enabling the adapter and refuses to attach if it is unavailable.
+`mgba-reon-mobile_identity.bin` and `mgba-reon-config.ini` also live there.
+No identity/counter state is imported automatically. Server protocol names
 including implementation `mgba` are unchanged. BIOS files remain read-only
 shared resources. Do not copy adapter identity files between live instances.
 

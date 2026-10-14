@@ -23,12 +23,16 @@
 #endif
 
 #include <mobile_inet.h>
+#include <sys/stat.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 mLOG_DECLARE_CATEGORY(RETRO_MOBILE);
 mLOG_DEFINE_CATEGORY(RETRO_MOBILE, "Mobile Adapter", "retro.mobile");
 
 #define MOBILE_OPTION "mgba_reon_mobile_adapter"
-#define MOBILE_CONFIG_FILE "mgba-reon-mobile_config.bin"
+#define MOBILE_CONFIG_FILE "mobile_config.bin"
 #define MOBILE_IDENTITY_FILE "mgba-reon-mobile_identity.bin"
 #define MOBILE_IDENTITY_SIZE 16
 // The keys DoubleCherryGB reads from its own ini are spelled the same here,
@@ -117,11 +121,9 @@ static void _path(char* out, size_t size, const char* name) {
 	snprintf(out, size, "%s%s%s", _dir, PATH_SEP, name);
 }
 
-// The system directory, where a libretro frontend keeps what its cores need
-// and is not a game's own — BIOS images, and the other core with a Mobile
-// Adapter (DoubleCherryGB) keeps its config there too, so it is where a user
-// already looks. The save directory failing that. Fork-specific filenames keep
-// configuration and device-auth counters separate from other cores sharing it.
+// Keep the canonical config filename in a private directory beneath the
+// frontend's system directory (save directory fallback). Other cores can use
+// their own mobile_config.bin without sharing counters with this instance.
 static bool _resolveDir(void) {
 	const char* dir = NULL;
 	if (!_env(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) || !dir || !dir[0]) {
@@ -129,8 +131,27 @@ static bool _resolveDir(void) {
 			return false;
 		}
 	}
-	strlcpy(_dir, dir, sizeof(_dir));
-	return true;
+	int length = snprintf(_dir, sizeof(_dir), "%s%smgba-reon", dir, PATH_SEP);
+	if (length < 0 || (size_t) length >= sizeof(_dir)) {
+		return false;
+	}
+#ifdef _WIN32
+	wchar_t path[PATH_MAX];
+	if (!MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, _dir, -1, path, PATH_MAX)) {
+		return false;
+	}
+	if (CreateDirectoryW(path, NULL)) {
+		return true;
+	}
+	DWORD attributes = GetFileAttributesW(path);
+	return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY);
+#else
+	if (mkdir(_dir, 0777) == 0) {
+		return true;
+	}
+	struct stat st;
+	return stat(_dir, &st) == 0 && S_ISDIR(st.st_mode);
+#endif
 }
 
 static void _loadConfig(struct MobileAdapterGB* gb) {
@@ -381,7 +402,7 @@ static void _iniLine(struct RetroMobileIni* ini, char* line) {
 static void _writeIniTemplate(const char* path) {
 	static const char template[] =
 	    "# Mobile Adapter GB settings for the mGBA libretro core.\n"
-	    "# Anything set here overrides mgba-reon-mobile_config.bin when the adapter is\n"
+	    "# Anything set here overrides mobile_config.bin when the adapter is\n"
 	    "# switched on; a line starting with # is ignored. The keys dns_ip,\n"
 	    "# dns_port, relay_ip and relay_port mean the same as in DoubleCherryGB.\n"
 	    "\n"
@@ -625,12 +646,8 @@ void mRetroMobileAttach(struct mCore* core) {
 	// key announces itself as ready and then fetches nothing.
 	if (haveCode && !MobileAdapterGBHasAuthKey(gb)) {
 		_message("No mail key yet - download mobile_config.bin from your account "
-		         "and rename it to mgba-reon-mobile_config.bin. "
-		         "Put it in RetroArch's system folder; mail will not work until then.");
-		mLOG(RETRO_MOBILE, WARN,
-		     "No mail key yet - download mobile_config.bin from your account "
-		     "and rename it to mgba-reon-mobile_config.bin. "
-		     "Put it in RetroArch's system folder; mail will not work until then.");
+		         "and put it in the mgba-reon folder inside RetroArch's system folder.");
+		mLOG(RETRO_MOBILE, WARN, "No mail key yet - put mobile_config.bin in %s", _dir);
 	}
 }
 
