@@ -97,6 +97,7 @@ static unsigned imcapWidth;
 static unsigned imcapHeight;
 static size_t camStride;
 static bool deferredSetup = false;
+static bool _avInfoDirty = false;
 static bool useBitmasks = true;
 static bool envVarsUpdated;
 static int32_t tiltX = 0;
@@ -438,6 +439,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 }
 
 void retro_init(void) {
+	_avInfoDirty = false;
 	enum retro_pixel_format fmt;
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -554,6 +556,12 @@ void retro_deinit(void) {
 }
 
 void retro_run(void) {
+	if (_avInfoDirty) {
+		struct retro_system_av_info info;
+		retro_get_system_av_info(&info);
+		_avInfoDirty = false;
+		environCallback(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &info);
+	}
 	if (deferredSetup) {
 		_doDeferredSetup();
 	}
@@ -1016,6 +1024,9 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->reset(core);
 	_setupMaps(core);
 	mRetroMobileAttach(core);
+	// The frontend queries the initial AV information after loading. Sending
+	// SET_SYSTEM_AV_INFO here would initialize its drivers prematurely.
+	_avInfoDirty = false;
 
 	return true;
 }
@@ -1279,9 +1290,10 @@ static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buff
 
 static void _audioRateChanged(struct mAVStream* stream, unsigned rate) {
 	UNUSED(stream);
-	struct retro_system_av_info info;
-	retro_get_system_av_info(&info);
-	environCallback(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &info);
+	UNUSED(rate);
+	// This callback also runs while attaching the stream during ROM loading.
+	// Libretro permits SET_SYSTEM_AV_INFO only from retro_run().
+	_avInfoDirty = true;
 }
 
 static void _setRumble(struct mRumbleIntegrator* rumble, float level) {

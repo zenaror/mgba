@@ -262,6 +262,13 @@ playlists that select it need to select the new fork core; neither older core
 file is removed automatically. This manually installed fork is not an official
 Online Updater entry.
 
+On Android, **Install or Restore a Core** installs the `.so`, not its `.info`.
+If Core Info points inside the application's private `/data/user/0/` directory,
+choose an accessible Core Info directory in RetroArch's Directory settings,
+use **Update Core Info Files** to populate official metadata, then copy the
+fork's `.info` there and restart RetroArch. Keep the installed core library in
+the location managed by RetroArch.
+
 Console configuration directories are now `/mgba-reon` on 3DS/Switch/Wii and
 `ux0:data/mgba-reon` on Vita. Saves, flash, states, cheats and screenshots default
 to this same private root instead of the ROM directory. Forwarders use its
