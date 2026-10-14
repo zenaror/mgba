@@ -6,11 +6,32 @@ mGBA
 > libmobile (LGPL-3.0, vendored under `src/third-party/libmobile`), including
 > device authentication for the REON relay; see
 > [MOBILE_ADAPTER_3DS.md](MOBILE_ADAPTER_3DS.md) for what was done and how it
-> works. Apart from the AI-assistance note below, the remaining text is
+> works. After the fork-specific sections below, the remaining text is
 > upstream's own README. This fork
 > lives at [github.com/zenaror/mgba](https://github.com/zenaror/mgba): report
 > problems with it there, not to the mGBA project. For the official emulator
 > go to [mgba.io](https://mgba.io/).
+
+### Fork documentation and layout
+
+- Code: [src/](src/) and public/internal headers in [include/](include/).
+- Mobile Adapter architecture, build gates and platform build recipes:
+  [MOBILE_ADAPTER_3DS.md](MOBILE_ADAPTER_3DS.md). This fork uses Podman.
+- MBC6 protocol, `.sav`/`.flash` storage and bounded Net de Get runtime evidence:
+  [doc/MBC6_FLASH.md](doc/MBC6_FLASH.md).
+- Reproducible local integration command, dependencies and fixture restrictions:
+  [tools/mbc6/README.md](tools/mbc6/README.md); delete/rearrangement and occupied
+  sector reuse evidence: [tools/mbc6/MAINTENANCE.md](tools/mbc6/MAINTENANCE.md).
+- Existing mapper tests: [src/gb/test/](src/gb/test/). Programming standards:
+  [CONTRIBUTING.md](CONTRIBUTING.md); agent scope and retention: [AGENTS.md](AGENTS.md).
+- Open Mobile Adapter limitations remain in
+  [Still open](MOBILE_ADAPTER_3DS.md#still-open). Runtime evidence is specific to
+  its documented core, fixtures and environment; it is not a claim that every
+  platform or arbitrary minigame has been validated.
+
+This repository maintains the emulator fork. Maker, Net de Get disassembly,
+MBC6 Test ROM, libmobile and the REON server are separate projects. The upstream
+layout, including `doc/`, is retained; generated builds are not source directories.
 
 ### AI assistance in this fork
 

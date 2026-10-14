@@ -233,6 +233,10 @@ emulated seconds, and the console is frame-limited).
 
 ## Building
 
+This fork uses Podman for container builds. The image/toolchain versions below
+describe the recorded build environment; they are not a statement of the latest
+available versions. Generic host build instructions remain in the README.
+
 Each image carries its own recipe as its default command — the toolchain file
 it needs, and whether to build shared or static. Run it with nothing after the
 image name and let it do that. Writing the `cmake` line by hand instead works
@@ -241,9 +245,9 @@ produced a build that went looking for a `libmgba.so`, because the recipe that
 was skipped is where `BUILD_SHARED=OFF` lives.
 
 ```sh
-docker run --rm -v "$PWD":/home/mgba/src mgba/3ds            # mgba.3dsx, mgba.cia
-docker run --rm -v "$PWD":/home/mgba/src mgba/ubuntu:noble   # mgba-qt, mgba, libs
-docker run --rm -v "$PWD":/home/mgba/src \
+podman run --rm -v "$PWD":/home/mgba/src mgba/3ds            # mgba.3dsx, mgba.cia
+podman run --rm -v "$PWD":/home/mgba/src mgba/ubuntu:noble   # mgba-qt, mgba, libs
+podman run --rm -v "$PWD":/home/mgba/src \
   -e CMAKE_FLAGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" mgba/windows:w64
 ```
 
