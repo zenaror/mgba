@@ -51,6 +51,7 @@ Estos mappers tienen soporte completo:
 - MBC3+RTC
 - MBC5
 - MBC5+Rumble
+- MBC6
 - MBC7
 - Wisdom Tree (sin licencia)
 - Pokémon Jade/Diamond (sin licencia)
@@ -59,7 +60,6 @@ Estos mappers tienen soporte completo:
 
 Estos mappers tienen soporte parcial:
 
-- MBC6 (sin soporte para escribir a la memoria flash)
 - MMM01
 - Pocket Cam
 - TAMA5 (sin soporte para RTC)

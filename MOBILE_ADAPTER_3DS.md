@@ -304,7 +304,10 @@ downloaded from the service. For example, Android uses
 `/storage/emulated/0/RetroArch/system/mgba-reon/mobile_config.bin` when the
 system directory has its usual location. The core creates the subdirectory
 when enabling the adapter and refuses to attach if it is unavailable.
-`mgba-reon-mobile_identity.bin` and `mgba-reon-config.ini` also live there.
+`mobile_identity.bin` and `mobile_config.ini` also live there.
+When upgrading from prefixed filenames, rename the existing identity and INI
+files within this instance's directory before enabling the adapter to preserve
+its device identity and overrides. Do not overwrite existing destination files.
 No identity/counter state is imported automatically. Server protocol names
 including implementation `mgba` are unchanged. BIOS files remain read-only
 shared resources. Do not copy adapter identity files between live instances.

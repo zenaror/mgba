@@ -53,6 +53,7 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 - MBC3+RTC
 - MBC5
 - MBC5+振动
+- MBC6
 - MBC7
 - Wisdom Tree（未授权）
 - NT "old type" 1 and 2 (未授权多合一卡带)
@@ -62,7 +63,6 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 
 部分支持以下 mapper：
 
-- MBC6（缺少闪存写入支持）
 - MMM01
 - Pocket Cam
 - TAMA5（缺少 RTC 支持）

@@ -91,6 +91,7 @@ The following mappers are fully supported:
 - MBC30
 - MBC5
 - MBC5+Rumble
+- MBC6 (including flash programming, erase operations and persistent storage; see [protocol notes](doc/MBC6_FLASH.md))
 - MBC7
 - M161
 - Wisdom Tree (unlicensed)
@@ -101,7 +102,6 @@ The following mappers are fully supported:
 
 The following mappers are partially supported:
 
-- MBC6 (missing flash memory write support)
 - MMM01
 - Pocket Cam
 - TAMA5 (incomplete RTC support)

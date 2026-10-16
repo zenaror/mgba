@@ -309,7 +309,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
 		"mgba_reon_mobile_adapter",
 		"Mobile Adapter GB",
 		NULL,
-		"Plugs a Mobile Adapter GB into the link port, for games that connect to the Mobile System GB service. Its settings come from 'mobile_config.bin' and 'mgba-reon-config.ini' in the mgba-reon subfolder of the frontend's system directory; the ini is created with every setting commented out the first time the adapter is switched on. The pairing code that identifies this device on the service's site is shown when the adapter comes on.",
+		"Plugs a Mobile Adapter GB into the link port, for games that connect to the Mobile System GB service. Its settings come from 'mobile_config.bin' and 'mobile_config.ini' in the mgba-reon subfolder of the frontend's system directory; the ini is created with every setting commented out the first time the adapter is switched on. The pairing code that identifies this device on the service's site is shown when the adapter comes on.",
 		NULL,
 		"input",
 		{

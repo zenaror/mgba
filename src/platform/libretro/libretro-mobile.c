@@ -33,11 +33,11 @@ mLOG_DEFINE_CATEGORY(RETRO_MOBILE, "Mobile Adapter", "retro.mobile");
 
 #define MOBILE_OPTION "mgba_reon_mobile_adapter"
 #define MOBILE_CONFIG_FILE "mobile_config.bin"
-#define MOBILE_IDENTITY_FILE "mgba-reon-mobile_identity.bin"
+#define MOBILE_IDENTITY_FILE "mobile_identity.bin"
 #define MOBILE_IDENTITY_SIZE 16
 // The keys DoubleCherryGB reads from its own ini are spelled the same here,
 // so a line copied from one works in the other.
-#define MOBILE_INI_FILE "mgba-reon-config.ini"
+#define MOBILE_INI_FILE "mobile_config.ini"
 #define MOBILE_INI_MAX 4096
 #define ADDR_TEXT_LEN 64
 // Roughly five seconds on the frontend's message line.

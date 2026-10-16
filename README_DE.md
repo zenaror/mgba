@@ -53,6 +53,7 @@ Die folgenden Mapper werden vollständig unterstützt:
 - MBC30
 - MBC5
 - MBC5+Rumble (MBC5+Rüttel-Modul)
+- MBC6
 - MBC7
 - M161
 - Wisdom Tree (nicht lizenziert)
@@ -63,7 +64,6 @@ Die folgenden Mapper werden vollständig unterstützt:
 
 Die folgenden Mapper werden teilweise unterstützt:
 
-- MBC6 (fehlende Unterstützung für Schreibzugriffe auf den Flash-Speicher)
 - MMM01
 - Pocket Cam
 - TAMA5 (unvollständige RTC-Unterstützung)
